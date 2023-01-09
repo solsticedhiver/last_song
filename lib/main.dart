@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:recase/recase.dart';
 import 'package:provider/provider.dart';
-//import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:args/args.dart';
 
@@ -148,7 +146,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               String artist;
                               artist = ct.artist
                                   .split('/')
-                                  .map((e) => myTitleCase(e))
+                                  .map((e) => toTitleCase(e))
                                   .join(' /\n');
                               return Flexible(
                                   child: Container(
@@ -160,7 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                               fontWeight: FontWeight.bold))));
                             }),
                             Consumer<Track>(builder: (context, ct, child) {
-                              return Text(myTitleCase(ct.title),
+                              return Text(toTitleCase(ct.title),
                                   style: const TextStyle(
                                       fontSize: 35,
                                       fontWeight: FontWeight.normal));
@@ -272,14 +270,22 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-// add back dash (-) and period (.) to titleCase String
-String myTitleCase(String s) {
-  String t = s.titleCase;
-  String ret = t;
-  for (int i = 0; i < s.length; i++) {
-    if (s[i] == '-' || s[i] == '.') {
-      ret = t.substring(0, i) + s[i] + t.substring(i + 1);
+// https://gist.github.com/filiph/d4e0c0a9efb0f869f984317372f5bee8?permalink_comment_id=3486118#gistcomment-3486118
+String toTitleCase(String name) {
+  final stringBuffer = StringBuffer();
+
+  var capitalizeNext = true;
+  for (final letter in name.toLowerCase().codeUnits) {
+    // UTF-16: A-Z => 65-90, a-z => 97-122.
+    if (capitalizeNext && letter >= 97 && letter <= 122) {
+      stringBuffer.writeCharCode(letter - 32);
+      capitalizeNext = false;
+    } else {
+      // UTF-16: 32 == space, 46 == period
+      if (letter == 32 || letter == 46) capitalizeNext = true;
+      stringBuffer.writeCharCode(letter);
     }
   }
-  return ret;
+
+  return stringBuffer.toString();
 }
