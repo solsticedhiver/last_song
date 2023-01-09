@@ -128,14 +128,21 @@ class _MyHomePageState extends State<MyHomePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Consumer<Track>(builder: (context, ct, child) {
-                              return Text(
-                                  ct.diffusionDate
-                                      .split('T')[1]
-                                      .substring(0, 8),
-                                  style: const TextStyle(
-                                      fontSize: 35,
-                                      fontWeight: FontWeight.normal,
-                                      color: Colors.deepOrange));
+                              String dd = ct.diffusionDate
+                                  .split('T')[1]
+                                  .substring(0, 8);
+                              return RichText(
+                                  text: TextSpan(
+                                      text: dd.substring(0, 5),
+                                      style: const TextStyle(
+                                          fontSize: 35,
+                                          fontWeight: FontWeight.normal,
+                                          color: Colors.deepOrange),
+                                      children: <TextSpan>[
+                                    TextSpan(
+                                        text: dd.substring(5, 8),
+                                        style: const TextStyle(fontSize: 20))
+                                  ]));
                             }),
                             Consumer<Track>(builder: (context, ct, child) {
                               String artist;
