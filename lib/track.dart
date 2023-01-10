@@ -3,12 +3,14 @@ import 'package:flutter/cupertino.dart';
 class CurrentShow {
   late String imageUrl;
   late String title;
+  late String channel;
   late String author;
   late String airingTime;
 
   CurrentShow({
     this.imageUrl = '',
     this.title = 'Unknown',
+    this.channel = 'Unknown',
     this.author = 'Unknown',
     this.airingTime = 'Unknown',
   });

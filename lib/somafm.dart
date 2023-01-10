@@ -7,58 +7,58 @@ import 'bandcamp.dart';
 
 class SomaFmTrack extends Track {
   static const channels = {
-    "Groove Salad": {"code": "groovesalad", "image": "groovesalad120.png"},
-    "Groove Salad Classic": {"code": "gsclassic", "image": "gsclassic120.jpg"},
-    "Synphaera Radio": {"code": "synphaera", "image": "synphaera120.jpg"},
-    "Drone Zone": {"code": "dronezone", "image": "dronezone120.jpg"},
-    "The Dark Zone": {"code": "darkzone", "image": "darkzone-120.jpg"},
-    "Metal Detector": {"code": "metal", "image": "metal120.png"},
-    "Illinois Street Lounge": {"code": "illstreet", "image": "illstreet.jpg"},
-    "Suburbs of Goa": {"code": "suburbsofgoa", "image": "sog120.jpg"},
-    "Boot Liquor": {"code": "bootliquor", "image": "bootliquor120.jpg"},
-    "Seven Inch Soul": {"code": "7soul", "image": "7soul120.png"},
-    "Left Coast 70s": {"code": "seventies", "image": "seventies120.jpg"},
-    "Underground 80s": {"code": "u80s", "image": "u80s-120.png"},
-    "DEF CON Radio": {"code": "defcon", "image": "defcon120.png"},
-    "Fluid": {"code": "fluid", "image": "fluid120.jpg"},
-    "Lush": {"code": "lush", "image": "lush120.jpg"},
-    "PopTron": {"code": "poptron", "image": "poptron120.png"},
-    "Covers": {"code": "covers", "image": "covers120.jpg"},
-    "cliqhop idm": {"code": "cliqhop", "image": "cliqhop120.png"},
-    "Dub Step Beyond": {"code": "dubstep", "image": "dubstep120.png"},
-    "Beat Blender": {"code": "beatblender", "image": "blender120.png"},
-    "Deep Space One": {"code": "deepspaceone", "image": "deepspaceone120.gif"},
-    "Space Station Soma": {"code": "spacestation", "image": "sss.jpg"},
-    "n5MD Radio": {"code": "n5md", "image": "n5md120.png"},
-    "Vaporwaves": {"code": "vaporwaves", "image": "vaporwaves120.jpg"},
-    "Secret Agent": {"code": "secretagent", "image": "secretagent120.jpg"},
-    "Heavyweight Reggae": {"code": "reggae", "image": "reggae120.png"},
-    "The Trip": {"code": "thetrip", "image": "thetrip120.jpg"},
-    "Sonic Universe": {
-      "code": "sonicuniverse",
+    "groovesalad": {"name": "Groove Salad", "image": "groovesalad120.png"},
+    "gsclassic": {"name": "Groove Salad Classic", "image": "gsclassic120.jpg"},
+    "synphaera": {"name": "Synphaera Radio", "image": "synphaera120.jpg"},
+    "dronezone": {"name": "Drone Zone", "image": "dronezone120.jpg"},
+    "darkzone": {"name": "The Dark Zone", "image": "darkzone-120.jpg"},
+    "metal": {"name": "Metal Detector", "image": "metal120.png"},
+    "illstreet": {"name": "Illinois Street Lounge", "image": "illstreet.jpg"},
+    "suburbsofgoa": {"name": "Suburbs of Goa", "image": "sog120.jpg"},
+    "bootliquor": {"name": "Boot Liquor", "image": "bootliquor120.jpg"},
+    "7soul": {"name": "Seven Inch Soul", "image": "7soul120.png"},
+    "seventies": {"name": "Left Coast 70s", "image": "seventies120.jpg"},
+    "u80s": {"name": "Underground 80s", "image": "u80s-120.png"},
+    "defcon": {"name": "DEF CON Radio", "image": "defcon120.png"},
+    "fluid": {"name": "Fluid", "image": "fluid120.jpg"},
+    "lush": {"name": "Lush", "image": "lush120.jpg"},
+    "poptron": {"name": "PopTron", "image": "poptron120.png"},
+    "covers": {"name": "Covers", "image": "covers120.jpg"},
+    "cliqhop": {"name": "cliqhop idm", "image": "cliqhop120.png"},
+    "dubstep": {"name": "Dub Step Beyond", "image": "dubstep120.png"},
+    "beatblender": {"name": "Beat Blender", "image": "blender120.png"},
+    "deepspaceone": {"name": "Deep Space One", "image": "deepspaceone120.gif"},
+    "spacestation": {"name": "Space Station Soma", "image": "sss.jpg"},
+    "n5md": {"name": "n5MD Radio", "image": "n5md120.png"},
+    "vaporwaves": {"name": "Vaporwaves", "image": "vaporwaves120.jpg"},
+    "secretagent": {"name": "Secret Agent", "image": "secretagent120.jpg"},
+    "reggae": {"name": "Heavyweight Reggae", "image": "reggae120.png"},
+    "thetrip": {"name": "The Trip", "image": "thetrip120.jpg"},
+    "sonicuniverse": {
+      "name": "Sonic Universe",
       "image": "sonicuniverse120.jpg"
     },
-    "Mission Control": {
-      "code": "missioncontrol",
+    "missioncontrol": {
+      "name": "Mission Control",
       "image": "missioncontrol120.jpg"
     },
-    "Indie Pop Rocks!": {"code": "indiepop", "image": "indychick.jpg"},
-    "Digitalis": {"code": "digitalis", "image": "digitalis120.png"},
-    "Folk Forward": {"code": "folkfwd", "image": "folkfwd120.jpg"},
-    "ThistleRadio": {"code": "thistle", "image": "thistle120.png"},
-    "Black Rock FM": {"code": "brfm", "image": "1023brc.jpg"},
-    "SF 10-33": {"code": "sf1033", "image": "sf1033120.png"},
-    "SF Police Scanner": {"code": "scanner", "image": "sf1033120.png"},
-    "SomaFM Live": {"code": "live", "image": "SomaFMDJSquare120.jpg"},
-    "Xmas in Frisko": {"code": "xmasinfrisko", "image": "xmasinfrisco120.jpg"},
-    "Christmas Lounge": {
-      "code": "christmas",
+    "indiepop": {"name": "Indie Pop Rocks!", "image": "indychick.jpg"},
+    "digitalis": {"name": "Digitalis", "image": "digitalis120.png"},
+    "folkfwd": {"name": "Folk Forward", "image": "folkfwd120.jpg"},
+    "thistle": {"name": "ThistleRadio", "image": "thistle120.png"},
+    "brfm": {"name": "Black Rock FM", "image": "1023brc.jpg"},
+    "sf1033": {"name": "SF 10-33", "image": "sf1033120.png"},
+    "scanner": {"name": "SF Police Scanner", "image": "sf1033120.png"},
+    "live": {"name": "SomaFM Live", "image": "SomaFMDJSquare120.jpg"},
+    "xmasinfrisko": {"name": "Xmas in Frisko", "image": "xmasinfrisco120.jpg"},
+    "christmas": {
+      "name": "Christmas Lounge",
       "image": "christmaslounge120.png"
     },
-    "Christmas Rocks!": {"code": "xmasrocks", "image": "xmasrocks120.png"},
-    "Jolly Ol' Soul": {"code": "jollysoul", "image": "jollysoul120.png"},
-    "Department Store Christmas": {
-      "code": "specials",
+    "xmasrocks": {"name": "Christmas Rocks!", "image": "xmasrocks120.png"},
+    "jollysoul": {"name": "Jolly Ol' Soul", "image": "jollysoul120.png"},
+    "specials": {
+      "name": "Department Store Christmas",
       "image": "deptstorexmas120.jpg"
     },
   };
@@ -66,7 +66,7 @@ class SomaFmTrack extends Track {
   @override
   Future<int> fetchCurrentTrack([bool manual = false]) async {
     int ret = 0;
-    Track track = await SomaFmTrack.getLastTrack(currentShow.title);
+    Track track = await SomaFmTrack.getLastTrack(currentShow.channel);
     if (track.title != title && track.artist != artist) {
       updateFrom(track);
       String newImageUrl =
@@ -86,8 +86,8 @@ class SomaFmTrack extends Track {
     return ret;
   }
 
-  static Future<Track> getLastTrack(String radio) async {
-    List<Track> recentTracks = await SomaFmTrack.getRecentTrack(radio);
+  static Future<Track> getLastTrack(String channel) async {
+    List<Track> recentTracks = await SomaFmTrack.getRecentTrack(channel);
     if (recentTracks.isNotEmpty) {
       return recentTracks.elementAt(0);
     } else {
@@ -95,7 +95,7 @@ class SomaFmTrack extends Track {
     }
   }
 
-  static Future<List<Track>> getRecentTrack(String radio) async {
+  static Future<List<Track>> getRecentTrack(String channel) async {
     // get timezone and current date of San Francisco
     tz.initializeTimeZones();
     tz.Location sanFrancisco = tz.getLocation('America/Los_Angeles');
@@ -107,7 +107,7 @@ class SomaFmTrack extends Track {
     WebScraper webScraper = WebScraper('https://somafm.com');
 
     List<Track> ret = <Track>[];
-    String page = '/recent/${SomaFmTrack.channels[radio]?["code"]}.html';
+    String page = '/recent/$channel.html';
     if (await webScraper.loadWebPage(page)) {
       List<Map<String, dynamic>> elements =
           webScraper.getElement('#playinc table tr td', ['colspan']);

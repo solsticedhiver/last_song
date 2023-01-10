@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:args/args.dart';
@@ -14,22 +15,37 @@ GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
 void main(List<String> args) {
   var parser = ArgParser();
-  parser.addOption('radio');
+  parser.addOption('somafm');
   var results = parser.parse(args);
   //print(results['radio']);
 
   runApp(ChangeNotifierProvider(
     create: (context) {
       Track track;
-      if (results['radio'] != null) {
+      if (results['somafm'] != null) {
+        String channel = results['somafm'];
         track = SomaFmTrack();
         track.radio = 'Soma FM';
-        track.currentShow.title = results['radio'];
         track.currentShow.imageUrl = '';
-        String? siu = SomaFmTrack.channels[results['radio']]?['image'];
-        if (siu != null) {
-          track.currentShow.imageUrl = 'https://somafm.com/img/$siu';
+        if (SomaFmTrack.channels.containsKey(channel)) {
+          String? scn = SomaFmTrack.channels[channel]?['name'];
+          if (scn != null) {
+            track.currentShow.title = scn;
+          }
+          String? sci = SomaFmTrack.channels[channel]?['image'];
+          if (sci != null) {
+            track.currentShow.imageUrl = 'https://somafm.com/img/$sci';
+          }
+        } else {
+          // error
+          print(
+              'Error: unknown channel code. Here is the list of known channel code:');
+          SomaFmTrack.channels.forEach((key, value) {
+            print('${value["name"]}: $key');
+          });
+          SystemNavigator.pop();
         }
+        track.currentShow.channel = channel;
         track.currentShow.author = 'Rusty Hodge';
         track.currentShow.airingTime = '';
       } else {
