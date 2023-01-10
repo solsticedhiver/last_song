@@ -15,10 +15,16 @@ GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
 void main(List<String> args) {
   var parser = ArgParser();
-  parser.addOption('somafm');
+  parser.addFlag('help',
+      abbr: 'h', help: "display this help", negatable: false);
+  parser.addOption('somafm', help: "Soma FM channel to follow");
   String? channel;
   try {
     var results = parser.parse(args);
+    if (results['help']) {
+      print('Usage:\n${parser.usage}');
+      exit(1);
+    }
     channel = results['somafm'];
     if (channel != null && !SomaFmTrack.channels.containsKey(channel)) {
       print(
