@@ -158,7 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   text: TextSpan(
                                       text: dd.substring(0, 5),
                                       style: const TextStyle(
-                                          fontSize: 35,
+                                          fontSize: 40,
                                           fontWeight: FontWeight.normal,
                                           color: Colors.deepOrange),
                                       children: <TextSpan>[
@@ -202,7 +202,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             }),
                             Consumer<Track>(builder: (context, ct, child) {
                               return Text(
-                                  '${ct.duration.replaceFirst(RegExp(r'^0'), '').replaceFirst(':', 'm')}s',
+                                  '${ct.duration.replaceFirst(RegExp(r'^0'), '').replaceFirst(':', 'min ')}s',
                                   style: const TextStyle(
                                       fontSize: 20, color: Colors.deepOrange));
                             }),
