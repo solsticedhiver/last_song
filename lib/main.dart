@@ -136,12 +136,15 @@ class _MyHomePageState extends State<MyHomePage> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Consumer<Track>(builder: (context, ct, child) {
+                      double imgSize = 400;
                       if (ct.imageUrl.isEmpty) {
                         return Image.asset(defaultImage,
-                            height: 640, width: 640);
+                            height: imgSize, width: imgSize);
                       } else {
                         return CachedNetworkImage(
-                            imageUrl: ct.imageUrl, height: 640, width: 640);
+                            imageUrl: ct.imageUrl,
+                            height: imgSize,
+                            width: imgSize);
                       }
                     }),
                     Container(
