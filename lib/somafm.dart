@@ -69,6 +69,7 @@ class SomaFmTrack extends Track {
     Track track = await SomaFmTrack.getLastTrack(currentShow.channel);
     if (track.title != title && track.artist != artist) {
       updateFrom(track);
+      // search for an image cover
       String newImageUrl =
           await searchBandcamp('${track.title} ${track.artist}', 't');
       if (newImageUrl.isNotEmpty) {

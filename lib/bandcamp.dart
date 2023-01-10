@@ -8,7 +8,7 @@ Future<String> searchBandcamp(String s, String type) async {
   String imageUrl = '';
   String rawData = json.encode({
     'search_text': s,
-    'search_filter': '',
+    'search_filter': type,
     'full_page': false,
     'fan_id': null
   });
