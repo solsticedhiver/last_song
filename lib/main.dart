@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:args/args.dart';
@@ -16,34 +16,37 @@ GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 void main(List<String> args) {
   var parser = ArgParser();
   parser.addOption('somafm');
-  var results = parser.parse(args);
-  //print(results['radio']);
+  String? channel;
+  try {
+    var results = parser.parse(args);
+    channel = results['somafm'];
+    if (channel != null && !SomaFmTrack.channels.containsKey(channel)) {
+      print(
+          'Error: unknown channel code. Here is the list of known channel code:');
+      SomaFmTrack.channels.forEach((key, value) {
+        print('${value["name"]}: $key');
+      });
+      exit(1);
+    }
+  } on FormatException {
+    print('Error: unknown option');
+    exit(1);
+  }
 
   runApp(ChangeNotifierProvider(
     create: (context) {
       Track track;
-      if (results['somafm'] != null) {
-        String channel = results['somafm'];
+      if (channel != null) {
         track = SomaFmTrack();
         track.radio = 'Soma FM';
         track.currentShow.imageUrl = '';
-        if (SomaFmTrack.channels.containsKey(channel)) {
-          String? scn = SomaFmTrack.channels[channel]?['name'];
-          if (scn != null) {
-            track.currentShow.title = scn;
-          }
-          String? sci = SomaFmTrack.channels[channel]?['image'];
-          if (sci != null) {
-            track.currentShow.imageUrl = 'https://somafm.com/img/$sci';
-          }
-        } else {
-          // error
-          print(
-              'Error: unknown channel code. Here is the list of known channel code:');
-          SomaFmTrack.channels.forEach((key, value) {
-            print('${value["name"]}: $key');
-          });
-          SystemNavigator.pop();
+        String? scn = SomaFmTrack.channels[channel]?['name'];
+        if (scn != null) {
+          track.currentShow.title = scn;
+        }
+        String? sci = SomaFmTrack.channels[channel]?['image'];
+        if (sci != null) {
+          track.currentShow.imageUrl = 'https://somafm.com/img/$sci';
         }
         track.currentShow.channel = channel;
         track.currentShow.author = 'Rusty Hodge';
