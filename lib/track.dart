@@ -9,10 +9,10 @@ class CurrentShow {
 
   CurrentShow({
     this.imageUrl = '',
-    this.title = 'Unknown',
-    this.channel = 'Unknown',
-    this.author = 'Unknown',
-    this.airingTime = 'Unknown',
+    this.title = 'Show',
+    this.channel = 'Channel',
+    this.author = 'Author',
+    this.airingTime = '00:00 - 00:00',
   });
 }
 
@@ -29,9 +29,9 @@ class Track extends ChangeNotifier {
 
   Track({
     this.id = -1,
-    this.artist = 'Unknown',
-    this.title = 'Unknown',
-    this.album = 'Unknown',
+    this.artist = 'Artist',
+    this.title = 'Title',
+    this.album = 'Album',
     this.imageUrl = '',
     this.duration = '00:00',
     this.diffusionDate = "2000-01-01T00:00:00",
