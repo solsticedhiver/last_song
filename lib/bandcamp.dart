@@ -33,7 +33,8 @@ Future<String> searchBandcamp(String s, String type) async {
     for (var res in results) {
       if (res['type'] == type) {
         // reconstruct image url because res['img'] is a 404
-        imageUrl = 'https://f4.bcbits.com/img/a${res["art_id"]}_13.jpg';
+        imageUrl =
+            'https://f4.bcbits.com/img/a${res["art_id"]}_16.jpg'; // 13 => 400p, 16 => 700p
         break;
       }
     }

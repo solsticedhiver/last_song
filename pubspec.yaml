@@ -71,6 +71,7 @@ flutter:
   assets:
     - assets/spotify.png
     - assets/black-record-vinyl.png
+    - assets/black-record-vinyl-640x640.png
     - assets/itunes.png
     - assets/deezer.png
 

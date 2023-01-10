@@ -9,7 +9,7 @@ import 'track.dart';
 import 'somafm.dart';
 import 'nova.dart';
 
-const String defaultImage = 'assets/black-record-vinyl.png';
+const String defaultImage = 'assets/black-record-vinyl-640x640.png';
 
 GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -138,10 +138,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     Consumer<Track>(builder: (context, ct, child) {
                       if (ct.imageUrl.isEmpty) {
                         return Image.asset(defaultImage,
-                            height: 400, width: 400);
+                            height: 640, width: 640);
                       } else {
                         return CachedNetworkImage(
-                            imageUrl: ct.imageUrl, height: 400, width: 400);
+                            imageUrl: ct.imageUrl, height: 640, width: 640);
                       }
                     }),
                     Container(
