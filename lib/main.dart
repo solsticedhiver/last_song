@@ -246,10 +246,6 @@ class _MyHomePageState extends State<MyHomePage> {
             isSmallScreen ? MainAxisAlignment.start : MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const SizedBox(
-            height: 15,
-            width: 15,
-          ),
           Consumer<Track>(builder: (context, ct, child) {
             String dd = ct.diffusionDate.split('T')[1].substring(0, 8);
             return RichText(
