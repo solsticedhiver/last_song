@@ -275,14 +275,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     overflow: TextOverflow.fade,
                     softWrap: true,
                     style: TextStyle(
-                        fontSize: isSmallScreen ? 35 : 55,
+                        fontSize: isSmallScreen ? 30 : 55,
                         fontWeight: FontWeight.bold)));
           }),
           Consumer<Track>(builder: (context, ct, child) {
             return Text(toTitleCase(ct.title),
                 overflow: TextOverflow.fade,
                 style: TextStyle(
-                    fontSize: isSmallScreen ? 25 : 35,
+                    fontSize: isSmallScreen ? 20 : 35,
                     fontWeight: FontWeight.normal));
           }),
           Consumer<Track>(builder: (context, ct, child) {
@@ -290,7 +290,7 @@ class _MyHomePageState extends State<MyHomePage> {
               return Text(ct.album,
                   overflow: TextOverflow.fade,
                   style: TextStyle(
-                      fontSize: isSmallScreen ? 25 : 35,
+                      fontSize: isSmallScreen ? 20 : 35,
                       fontWeight: FontWeight.normal,
                       fontStyle: FontStyle.italic));
             } else {
