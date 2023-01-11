@@ -56,9 +56,14 @@ class NovaTrack extends Track {
   Future<int> fetchCurrentTrack([bool manual = false]) async {
     int ret = 0;
 
+    final http.Response resp;
     // update if cache is old
     if (DateTime.now().compareTo(validity) >= 0) {
-      final resp = await http.get(Uri.parse(radioNova));
+      try {
+        resp = await http.get(Uri.parse(radioNova));
+      } catch (e) {
+        return 0;
+      }
 
       if (resp.statusCode == 200) {
         ret = updateFromJson(jsonDecode(resp.body));
