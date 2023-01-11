@@ -208,7 +208,8 @@ class _MyHomePageState extends State<MyHomePage> {
           }),
           Flexible(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 15),
+              padding:
+                  const EdgeInsets.only(top: 5, bottom: 5, right: 10, left: 10),
               child: _buildCurrentTrackText(isSmallScreen: true),
             ),
           ),
