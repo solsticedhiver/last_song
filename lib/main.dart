@@ -9,8 +9,9 @@ import 'track.dart';
 import 'somafm.dart';
 import 'nova.dart';
 
-const double bottomSheetSize = 75;
 const String defaultImage = 'assets/black-record-vinyl-640x640.png';
+const double bottomSheetSizeLargeScreen = 75;
+const double bottomSheetSizeSmallScreen = 55;
 
 GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -125,26 +126,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Container(
-          padding: const EdgeInsets.only(bottom: bottomSheetSize),
-          child: Row(
-            //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Consumer<Track>(builder: (context, ct, child) {
-                double imgSize = 400;
-                if (ct.imageUrl.isEmpty) {
-                  return Image.asset(defaultImage,
-                      height: imgSize, width: imgSize);
-                } else {
-                  return CachedNetworkImage(
-                      imageUrl: ct.imageUrl, height: imgSize, width: imgSize);
-                }
-              }),
-              _buildCurrentTrackText(),
-            ],
-          ),
-        ),
+        child: _buildCurrentTrackWidget(),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -153,96 +135,176 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'sync',
         child: const Icon(Icons.sync),
       ),
-      bottomSheet: BottomSheet(
-        enableDrag: false,
-        builder: (context) {
-          return Container(
-              height: bottomSheetSize,
-              color: Colors.grey[800],
-              child: Row(
-                children: [
-                  Consumer<Track>(
-                    builder: (context, ct, child) {
-                      return Image(
-                        image:
-                            CachedNetworkImageProvider(ct.currentShow.imageUrl),
-                        height: bottomSheetSize,
-                        width: bottomSheetSize,
-                      );
-                    },
-                  ),
-                  const SizedBox(
-                    width: 15,
-                  ),
-                  _buildCurrentShowText(),
-                ],
-              ));
-        },
-        onClosing: () {},
-      ),
+      bottomSheet: _buildBottomSheet(),
     );
     return scaffold;
   }
 
-  Widget _buildCurrentTrackText() {
-    return Container(
-      padding: const EdgeInsets.only(left: 15, right: 15),
-      child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Consumer<Track>(builder: (context, ct, child) {
-              String dd = ct.diffusionDate.split('T')[1].substring(0, 8);
-              return RichText(
-                  text: TextSpan(
-                      text: dd.substring(0, 5),
-                      style: const TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.deepOrange),
-                      children: <TextSpan>[
-                    TextSpan(
-                        text: dd.substring(5, 8),
-                        style: const TextStyle(fontSize: 20))
-                  ]));
-            }),
-            Consumer<Track>(builder: (context, ct, child) {
-              String artist;
-              artist =
-                  ct.artist.split('/').map((e) => toTitleCase(e)).join(' /\n');
-              return Flexible(
-                  child: Text(artist,
-                      overflow: TextOverflow.fade,
-                      softWrap: true,
-                      style: const TextStyle(
-                          fontSize: 55, fontWeight: FontWeight.bold)));
-            }),
-            Consumer<Track>(builder: (context, ct, child) {
-              return Text(toTitleCase(ct.title),
-                  overflow: TextOverflow.fade,
-                  style: const TextStyle(
-                      fontSize: 35, fontWeight: FontWeight.normal));
-            }),
-            Consumer<Track>(builder: (context, ct, child) {
-              if (ct.album.isNotEmpty && ct.album != 'Unknown') {
-                return Text(ct.album,
-                    overflow: TextOverflow.fade,
-                    style: const TextStyle(
-                        fontSize: 35,
-                        fontWeight: FontWeight.normal,
-                        fontStyle: FontStyle.italic));
-              } else {
-                return Container();
-              }
-            }),
-            Consumer<Track>(builder: (context, ct, child) {
-              return Text(
-                  '${ct.duration.replaceFirst(RegExp(r'^0'), '').replaceFirst(':', 'min ')}s',
-                  style:
-                      const TextStyle(fontSize: 20, color: Colors.deepOrange));
-            }),
-          ]),
+  Widget _buildBottomSheet() {
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+      if (constraints.maxHeight > 700) {
+        return _buildBottomSheetWidget(bottomSheetSizeLargeScreen);
+      } else {
+        return _buildBottomSheetWidget(bottomSheetSizeSmallScreen);
+      }
+    });
+  }
+
+  Widget _buildBottomSheetWidget(double bottomSheetSize) {
+    return BottomSheet(
+      enableDrag: false,
+      builder: (context) {
+        return Container(
+            height: bottomSheetSize,
+            color: Colors.grey[800],
+            child: Row(
+              children: [
+                Consumer<Track>(
+                  builder: (context, ct, child) {
+                    return Image(
+                      image:
+                          CachedNetworkImageProvider(ct.currentShow.imageUrl),
+                      height: bottomSheetSize,
+                      width: bottomSheetSize,
+                    );
+                  },
+                ),
+                const SizedBox(
+                  width: 15,
+                ),
+                _buildCurrentShowText(),
+              ],
+            ));
+      },
+      onClosing: () {},
     );
+  }
+
+  Widget _buildCurrentTrackWidget() {
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+      if (constraints.maxWidth > 1000) {
+        return _buildCurrentTrackWidgetLargeScreen();
+      } else {
+        return _buildCurrentTrackWidgetSmallScreen();
+      }
+    });
+  }
+
+  Widget _buildCurrentTrackWidgetSmallScreen() {
+    return Container(
+      padding: const EdgeInsets.only(bottom: bottomSheetSizeSmallScreen),
+      child: Column(
+        children: <Widget>[
+          Consumer<Track>(builder: (context, ct, child) {
+            double imgSize = 400;
+            if (ct.imageUrl.isEmpty) {
+              return Image.asset(defaultImage, height: imgSize, width: imgSize);
+            } else {
+              return CachedNetworkImage(
+                  imageUrl: ct.imageUrl, height: imgSize, width: imgSize);
+            }
+          }),
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: _buildCurrentTrackText(isSmallScreen: true),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCurrentTrackWidgetLargeScreen() {
+    return Container(
+      padding: const EdgeInsets.only(bottom: bottomSheetSizeLargeScreen),
+      child: Row(
+        //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Consumer<Track>(builder: (context, ct, child) {
+            double imgSize = 400;
+            if (ct.imageUrl.isEmpty) {
+              return Image.asset(defaultImage, height: imgSize, width: imgSize);
+            } else {
+              return CachedNetworkImage(
+                  imageUrl: ct.imageUrl, height: imgSize, width: imgSize);
+            }
+          }),
+          const SizedBox(width: 15),
+          _buildCurrentTrackText(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCurrentTrackText({bool isSmallScreen = false}) {
+    return Column(
+        mainAxisAlignment:
+            isSmallScreen ? MainAxisAlignment.start : MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          const SizedBox(
+            height: 15,
+            width: 15,
+          ),
+          Consumer<Track>(builder: (context, ct, child) {
+            String dd = ct.diffusionDate.split('T')[1].substring(0, 8);
+            return RichText(
+                text: TextSpan(
+                    text: dd.substring(0, 5),
+                    style: TextStyle(
+                        fontSize: isSmallScreen ? 25 : 40,
+                        fontWeight:
+                            isSmallScreen ? FontWeight.bold : FontWeight.normal,
+                        color: Colors.deepOrange),
+                    children: <TextSpan>[
+                  TextSpan(
+                      text: dd.substring(5, 8),
+                      style: const TextStyle(fontSize: 20))
+                ]));
+          }),
+          Consumer<Track>(builder: (context, ct, child) {
+            String artist;
+            artist =
+                ct.artist.split('/').map((e) => toTitleCase(e)).join(' /\n');
+            return Flexible(
+                child: Text(artist,
+                    overflow: TextOverflow.fade,
+                    softWrap: true,
+                    style: TextStyle(
+                        fontSize: isSmallScreen ? 35 : 55,
+                        fontWeight: FontWeight.bold)));
+          }),
+          Consumer<Track>(builder: (context, ct, child) {
+            return Text(toTitleCase(ct.title),
+                overflow: TextOverflow.fade,
+                style: TextStyle(
+                    fontSize: isSmallScreen ? 25 : 35,
+                    fontWeight: FontWeight.normal));
+          }),
+          Consumer<Track>(builder: (context, ct, child) {
+            if (ct.album.isNotEmpty && ct.album != 'Album') {
+              return Text(ct.album,
+                  overflow: TextOverflow.fade,
+                  style: TextStyle(
+                      fontSize: isSmallScreen ? 25 : 35,
+                      fontWeight: FontWeight.normal,
+                      fontStyle: FontStyle.italic));
+            } else {
+              return Container();
+            }
+          }),
+          Consumer<Track>(builder: (context, ct, child) {
+            return Text(
+                '${ct.duration.replaceFirst(RegExp(r'^0'), '').replaceFirst(':', 'min ')}s',
+                style: TextStyle(
+                    fontSize: isSmallScreen ? 15 : 20,
+                    color: Colors.deepOrange));
+          }),
+        ]);
   }
 
   Widget _buildCurrentShowText() {
