@@ -196,17 +196,26 @@ class _MyHomePageState extends State<MyHomePage> {
     return Container(
       padding: const EdgeInsets.only(bottom: bottomSheetSizeSmallScreen),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Consumer<Track>(builder: (context, ct, child) {
-            double imgSize = 400;
-            if (ct.imageUrl.isEmpty) {
-              return Image.asset(defaultImage, height: imgSize, width: imgSize);
-            } else {
-              return CachedNetworkImage(
-                  imageUrl: ct.imageUrl, height: imgSize, width: imgSize);
-            }
-          }),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.only(
+                  top: 10, right: 15, left: 15, bottom: 5),
+              child: Consumer<Track>(builder: (context, ct, child) {
+                double imgSize = 400;
+                if (ct.imageUrl.isEmpty) {
+                  return Image.asset(defaultImage,
+                      height: imgSize, width: imgSize);
+                } else {
+                  return CachedNetworkImage(
+                      imageUrl: ct.imageUrl, height: imgSize, width: imgSize);
+                }
+              }),
+            ),
+          ),
           Flexible(
+            flex: 1,
             child: Container(
               padding:
                   const EdgeInsets.only(top: 5, bottom: 5, right: 10, left: 10),
@@ -222,7 +231,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Container(
       padding: const EdgeInsets.only(bottom: bottomSheetSizeLargeScreen),
       child: Row(
-        //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        //mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Consumer<Track>(builder: (context, ct, child) {
@@ -235,7 +244,10 @@ class _MyHomePageState extends State<MyHomePage> {
             }
           }),
           const SizedBox(width: 15),
-          _buildCurrentTrackText(),
+          Flexible(
+            flex: 0,
+            child: _buildCurrentTrackText(),
+          ),
         ],
       ),
     );
