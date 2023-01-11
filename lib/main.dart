@@ -9,6 +9,7 @@ import 'track.dart';
 import 'somafm.dart';
 import 'nova.dart';
 
+const double bottomSheetSize = 75;
 const String defaultImage = 'assets/black-record-vinyl-640x640.png';
 
 GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
@@ -124,98 +125,25 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            Expanded(
-              flex: 1,
-              child: Container(
-                padding: const EdgeInsets.only(bottom: 75),
-                child: Row(
-                  //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Consumer<Track>(builder: (context, ct, child) {
-                      double imgSize = 400;
-                      if (ct.imageUrl.isEmpty) {
-                        return Image.asset(defaultImage,
-                            height: imgSize, width: imgSize);
-                      } else {
-                        return CachedNetworkImage(
-                            imageUrl: ct.imageUrl,
-                            height: imgSize,
-                            width: imgSize);
-                      }
-                    }),
-                    Container(
-                      padding: const EdgeInsets.only(left: 15, right: 15),
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Consumer<Track>(builder: (context, ct, child) {
-                              String dd = ct.diffusionDate
-                                  .split('T')[1]
-                                  .substring(0, 8);
-                              return RichText(
-                                  text: TextSpan(
-                                      text: dd.substring(0, 5),
-                                      style: const TextStyle(
-                                          fontSize: 40,
-                                          fontWeight: FontWeight.normal,
-                                          color: Colors.deepOrange),
-                                      children: <TextSpan>[
-                                    TextSpan(
-                                        text: dd.substring(5, 8),
-                                        style: const TextStyle(fontSize: 20))
-                                  ]));
-                            }),
-                            Consumer<Track>(builder: (context, ct, child) {
-                              String artist;
-                              artist = ct.artist
-                                  .split('/')
-                                  .map((e) => toTitleCase(e))
-                                  .join(' /\n');
-                              return Flexible(
-                                  child: Container(
-                                      child: Text(artist,
-                                          overflow: TextOverflow.fade,
-                                          softWrap: true,
-                                          style: const TextStyle(
-                                              fontSize: 55,
-                                              fontWeight: FontWeight.bold))));
-                            }),
-                            Consumer<Track>(builder: (context, ct, child) {
-                              return Text(toTitleCase(ct.title),
-                                  style: const TextStyle(
-                                      fontSize: 35,
-                                      fontWeight: FontWeight.normal));
-                            }),
-                            Consumer<Track>(builder: (context, ct, child) {
-                              if (ct.album.isNotEmpty &&
-                                  ct.album != 'Unknown') {
-                                return Text(ct.album,
-                                    style: const TextStyle(
-                                        fontSize: 35,
-                                        fontWeight: FontWeight.normal,
-                                        fontStyle: FontStyle.italic));
-                              } else {
-                                return Container();
-                              }
-                            }),
-                            Consumer<Track>(builder: (context, ct, child) {
-                              return Text(
-                                  '${ct.duration.replaceFirst(RegExp(r'^0'), '').replaceFirst(':', 'min ')}s',
-                                  style: const TextStyle(
-                                      fontSize: 20, color: Colors.deepOrange));
-                            }),
-                          ]),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+        child: Container(
+          padding: const EdgeInsets.only(bottom: bottomSheetSize),
+          child: Row(
+            //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Consumer<Track>(builder: (context, ct, child) {
+                double imgSize = 400;
+                if (ct.imageUrl.isEmpty) {
+                  return Image.asset(defaultImage,
+                      height: imgSize, width: imgSize);
+                } else {
+                  return CachedNetworkImage(
+                      imageUrl: ct.imageUrl, height: imgSize, width: imgSize);
+                }
+              }),
+              _buildCurrentTrackText(),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -229,7 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
         enableDrag: false,
         builder: (context) {
           return Container(
-              height: 75,
+              height: bottomSheetSize,
               color: Colors.grey[800],
               child: Row(
                 children: [
@@ -238,48 +166,15 @@ class _MyHomePageState extends State<MyHomePage> {
                       return Image(
                         image:
                             CachedNetworkImageProvider(ct.currentShow.imageUrl),
-                        height: 75,
-                        width: 75,
+                        height: bottomSheetSize,
+                        width: bottomSheetSize,
                       );
                     },
                   ),
-                  Container(
+                  const SizedBox(
                     width: 15,
                   ),
-                  Consumer<Track>(builder: (context, ct, child) {
-                    return RichText(
-                        text: TextSpan(
-                            text:
-                                '', // empty just to define the default style of the whole RichText
-                            style: DefaultTextStyle.of(context).style,
-                            children: <TextSpan>[
-                          TextSpan(
-                            text: ct.currentShow.title,
-                            style: const TextStyle(
-                                fontWeight: FontWeight
-                                    .w700, // bold is too heavy and cause blur/smudge
-                                color: Colors.white),
-                          ),
-                          TextSpan(
-                            text: ct.currentShow.author.isNotEmpty
-                                ? ' - ${ct.currentShow.author}'
-                                : '',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w300, // same idea as above
-                            ),
-                          ),
-                          TextSpan(
-                            text: ct.currentShow.airingTime.isNotEmpty
-                                ? '\n${ct.currentShow.airingTime}'
-                                : '',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w300,
-                            ),
-                          ),
-                        ]));
-                  }),
+                  _buildCurrentShowText(),
                 ],
               ));
         },
@@ -287,6 +182,104 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
     return scaffold;
+  }
+
+  Widget _buildCurrentTrackText() {
+    return Container(
+      padding: const EdgeInsets.only(left: 15, right: 15),
+      child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Consumer<Track>(builder: (context, ct, child) {
+              String dd = ct.diffusionDate.split('T')[1].substring(0, 8);
+              return RichText(
+                  text: TextSpan(
+                      text: dd.substring(0, 5),
+                      style: const TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.deepOrange),
+                      children: <TextSpan>[
+                    TextSpan(
+                        text: dd.substring(5, 8),
+                        style: const TextStyle(fontSize: 20))
+                  ]));
+            }),
+            Consumer<Track>(builder: (context, ct, child) {
+              String artist;
+              artist =
+                  ct.artist.split('/').map((e) => toTitleCase(e)).join(' /\n');
+              return Flexible(
+                  child: Text(artist,
+                      overflow: TextOverflow.fade,
+                      softWrap: true,
+                      style: const TextStyle(
+                          fontSize: 55, fontWeight: FontWeight.bold)));
+            }),
+            Consumer<Track>(builder: (context, ct, child) {
+              return Text(toTitleCase(ct.title),
+                  overflow: TextOverflow.fade,
+                  style: const TextStyle(
+                      fontSize: 35, fontWeight: FontWeight.normal));
+            }),
+            Consumer<Track>(builder: (context, ct, child) {
+              if (ct.album.isNotEmpty && ct.album != 'Unknown') {
+                return Text(ct.album,
+                    overflow: TextOverflow.fade,
+                    style: const TextStyle(
+                        fontSize: 35,
+                        fontWeight: FontWeight.normal,
+                        fontStyle: FontStyle.italic));
+              } else {
+                return Container();
+              }
+            }),
+            Consumer<Track>(builder: (context, ct, child) {
+              return Text(
+                  '${ct.duration.replaceFirst(RegExp(r'^0'), '').replaceFirst(':', 'min ')}s',
+                  style:
+                      const TextStyle(fontSize: 20, color: Colors.deepOrange));
+            }),
+          ]),
+    );
+  }
+
+  Widget _buildCurrentShowText() {
+    return Consumer<Track>(builder: (context, ct, child) {
+      return RichText(
+          text: TextSpan(
+              text:
+                  '', // empty just to define the default style of the whole RichText
+              style: DefaultTextStyle.of(context).style,
+              children: <TextSpan>[
+            TextSpan(
+              text: ct.currentShow.title,
+              style: const TextStyle(
+                  fontWeight: FontWeight
+                      .w700, // bold is too heavy and cause blur/smudge
+                  color: Colors.white),
+            ),
+            TextSpan(
+              text: ct.currentShow.author.isNotEmpty
+                  ? ' - ${ct.currentShow.author}'
+                  : '',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w300, // same idea as above
+              ),
+            ),
+            TextSpan(
+              text: ct.currentShow.airingTime.isNotEmpty
+                  ? '\n${ct.currentShow.airingTime}'
+                  : '',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+          ]));
+    });
   }
 
   @override
