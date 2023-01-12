@@ -1,8 +1,7 @@
 import 'dart:convert';
 
-import 'package:nova_title/bandcamp.dart';
-
-import 'track.dart';
+import 'bandcamp.dart';
+import 'helpers.dart';
 
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
@@ -12,29 +11,34 @@ const String radioNova = 'https://www.nova.fr/wp-json/radios/radio-nova';
 const String defaultShowImageUrl =
     'https://www.nova.fr/wp-content/uploads/sites/2/2022/12/Radio-Nova-en-direct.png';
 
-class NovaTrack extends Track {
+class Nova extends Channel {
   // datetime until which the last update request is valid according to cache-control(max-age) header, age and date
   static DateTime validity =
       DateTime.now().subtract(const Duration(minutes: 1));
 
+  Nova() {
+    radio = 'Radio Nova';
+    subchannel = '';
+    imageUrl = defaultShowImageUrl;
+  }
+
   int updateFromJson(Map<String, dynamic> json) {
     int ret = 0;
-    currentShow.imageUrl = json['radio']['thumbnail'];
 
-    Map<String, dynamic>? ct = json['currentTrack'];
+    final ct = json['currentTrack'];
     if (ct != null) {
-      int oldId = id;
-      id = int.parse(ct['id']);
-      if (oldId != id) {
+      int oldId = currentTrack.id;
+      currentTrack.id = int.parse(ct['id']);
+      if (oldId != currentTrack.id) {
         ret += 1;
-        artist = ct['artist'];
-        title = ct['title'];
-        imageUrl = ct['image'] is String ? ct['image'] : '';
-        diffusionDate = ct['diffusion_date'];
-        duration = ct['duration'];
-        final ds = duration.split(':');
+        currentTrack.artist = ct['artist'];
+        currentTrack.title = ct['title'];
+        currentTrack.imageUrl = ct['image'] is String ? ct['image'] : '';
+        currentTrack.diffusionDate = ct['diffusion_date'];
+        currentTrack.duration = ct['duration'];
+        final ds = currentTrack.duration.split(':');
         // WTF: why does the datetime always late for around 10 minutes??
-        diffusionDate = DateTime.parse(diffusionDate)
+        currentTrack.diffusionDate = DateTime.parse(currentTrack.diffusionDate)
             // add 10 minutes
             .add(const Duration(minutes: 10))
             // but subtract track length
@@ -43,11 +47,16 @@ class NovaTrack extends Track {
             .toIso8601String();
       }
     }
-    Map<String, dynamic>? cs = json['currentShow'];
+    final cs = json['currentShow'];
     if (cs != null) {
-      currentShow.title = cs['title'];
-      currentShow.author = HtmlUnescape().convert(cs['author']);
-      currentShow.airingTime = '${cs["start_time"]} - ${cs["end_time"]}';
+      title = cs['title'];
+      author = HtmlUnescape().convert(cs['author']);
+      airingTime = '${cs["start_time"]} - ${cs["end_time"]}';
+      subchannel = '';
+    }
+    final radio = json['radio'];
+    if (radio != null) {
+      imageUrl = radio['thumbnail'];
     }
     return ret;
   }
@@ -68,10 +77,11 @@ class NovaTrack extends Track {
       if (resp.statusCode == 200) {
         ret = updateFromJson(jsonDecode(resp.body));
         // try to get an image cover if there is none
-        if (id != -1 && imageUrl.isEmpty) {
-          ResponseBandcamp resp = await searchBandcamp('$artist $title', 't');
+        if (currentTrack.id != -1 && currentTrack.imageUrl.isEmpty) {
+          ResponseBandcamp resp = await searchBandcamp(
+              '${currentTrack.artist} ${currentTrack.title}', 't');
           if (resp.imageUrl.isNotEmpty) {
-            imageUrl = resp.imageUrl;
+            currentTrack.imageUrl = resp.imageUrl;
           }
         }
         // update validity variable

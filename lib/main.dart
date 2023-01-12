@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:args/args.dart';
 
-import 'track.dart';
+import 'helpers.dart';
 import 'somafm.dart';
 import 'nova.dart';
 
@@ -20,18 +20,21 @@ void main(List<String> args) {
   parser.addFlag('help',
       abbr: 'h', help: "display this help", negatable: false);
   parser.addOption('somafm', help: "Soma FM channel to follow");
-  String? channel;
+  String subchannel = '';
+
   try {
     var results = parser.parse(args);
     if (results['help']) {
       print('Usage:\n${parser.usage}');
       exit(1);
     }
-    channel = results['somafm'];
-    if (channel != null && !SomaFmTrack.channels.containsKey(channel)) {
+    if (results['somafm'] != null) {
+      subchannel = results['somafm'];
+    }
+    if (subchannel != '' && !SomaFm.subchannels.containsKey(subchannel)) {
       print(
           'Error: unknown channel code. Here is the list of known channel code:');
-      SomaFmTrack.channels.forEach((key, value) {
+      SomaFm.subchannels.forEach((key, value) {
         print('${value["name"]}: $key');
       });
       exit(1);
@@ -41,31 +44,16 @@ void main(List<String> args) {
     exit(1);
   }
 
-  runApp(ChangeNotifierProvider(
-    create: (context) {
-      Track track;
-      if (channel != null) {
-        track = SomaFmTrack();
-        track.radio = 'Soma FM';
-        track.currentShow.imageUrl = '';
-        String? scn = SomaFmTrack.channels[channel]?['name'];
-        if (scn != null) {
-          track.currentShow.title = scn;
-        }
-        String? sci = SomaFmTrack.channels[channel]?['image'];
-        if (sci != null) {
-          track.currentShow.imageUrl = 'https://somafm.com/img/$sci';
-        }
-        track.currentShow.channel = channel;
-        track.currentShow.author = 'Rusty Hodge';
-        track.currentShow.airingTime = '';
-      } else {
-        track = NovaTrack();
-        track.radio = 'Radio Nova';
-        track.currentShow.imageUrl = defaultShowImageUrl;
-      }
-      return track;
-    },
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider<ChannelManager>(
+        create: (context) {
+          ChannelManager cm = ChannelManager();
+          cm.initialize();
+          return cm;
+        },
+      ),
+    ],
     child: const MyApp(),
   ));
 }
@@ -82,8 +70,9 @@ class MyApp extends StatelessWidget {
         //useMaterial3: true,
         primarySwatch: Colors.deepOrange,
       ),
-      home: Consumer<Track>(builder: (context, ct, child) {
-        return MyHomePage(title: "Last played song on ${ct.radio}");
+      home: Consumer<ChannelManager>(builder: (context, channel, child) {
+        return MyHomePage(
+            title: "Last played song on ${channel.currentChannel.radio}");
       }),
     );
   }
@@ -101,9 +90,11 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   Timer? timer;
 
-  void _fetchCurrentTrack({bool manual = false}) async {
+  void _fetchCurrentTrack({bool cancel = false, bool manual = false}) async {
+    print(
+        '${DateTime.now().toString().substring(11, 19)}: _fetchCurrentTrack(manual:$manual)');
     // reschedule a new timer if a manual update has been made (after canceling the previous one)
-    if (manual) {
+    if (cancel) {
       if (timer != null) {
         timer?.cancel();
       }
@@ -111,8 +102,8 @@ class _MyHomePageState extends State<MyHomePage> {
         timer = _launchTimer();
       });
     }
-    int ret = await Provider.of<Track>(context, listen: false)
-        .fetchCurrentTrack(manual);
+    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
+    int ret = await cm.fetchCurrentTrack(manual);
 
     if (manual && ret < 1) {
       String msg = 'No update available';
@@ -134,6 +125,9 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     Scaffold scaffold = Scaffold(
       key: scaffoldKey,
+      drawer: Drawer(
+        child: _buildRadioListView(),
+      ),
       appBar: AppBar(
         title: Text(widget.title),
       ),
@@ -142,7 +136,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _fetchCurrentTrack(manual: true);
+          _fetchCurrentTrack(cancel: true, manual: true);
         },
         tooltip: 'sync',
         child: const Icon(Icons.sync),
@@ -150,6 +144,23 @@ class _MyHomePageState extends State<MyHomePage> {
       bottomSheet: _buildBottomSheet(),
     );
     return scaffold;
+  }
+
+  Widget _buildRadioListView() {
+    final channelManager = Provider.of<ChannelManager>(context, listen: false);
+    return ListView.separated(
+      itemCount: channelManager.channels.length,
+      itemBuilder: (context, index) {
+        return ListTile(
+            title: Text(channelManager.channels[index].radio),
+            onTap: () {
+              channelManager.changeChannel(index);
+              _fetchCurrentTrack(cancel: true);
+              Navigator.pop(context);
+            });
+      },
+      separatorBuilder: (context, index) => const Divider(),
+    );
   }
 
   Widget _buildBottomSheet() {
@@ -172,11 +183,11 @@ class _MyHomePageState extends State<MyHomePage> {
             color: Colors.grey[800],
             child: Row(
               children: [
-                Consumer<Track>(
-                  builder: (context, ct, child) {
+                Consumer<ChannelManager>(
+                  builder: (context, cm, child) {
                     return Image(
-                      image:
-                          CachedNetworkImageProvider(ct.currentShow.imageUrl),
+                      image: CachedNetworkImageProvider(
+                          cm.currentChannel.imageUrl),
                       height: bottomSheetSize,
                       width: bottomSheetSize,
                     );
@@ -222,14 +233,16 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Container(
               padding: const EdgeInsets.only(
                   top: 10, right: 15, left: 15, bottom: 5),
-              child: Consumer<Track>(builder: (context, ct, child) {
+              child: Consumer<ChannelManager>(builder: (context, cm, child) {
                 double imgSize = 400;
-                if (ct.imageUrl.isEmpty) {
+                if (cm.currentChannel.currentTrack.imageUrl.isEmpty) {
                   return Image.asset(defaultImage,
                       height: imgSize, width: imgSize);
                 } else {
                   return CachedNetworkImage(
-                      imageUrl: ct.imageUrl, height: imgSize, width: imgSize);
+                      imageUrl: cm.currentChannel.currentTrack.imageUrl,
+                      height: imgSize,
+                      width: imgSize);
                 }
               }),
             ),
@@ -254,13 +267,15 @@ class _MyHomePageState extends State<MyHomePage> {
         //mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Consumer<Track>(builder: (context, ct, child) {
+          Consumer<ChannelManager>(builder: (context, cm, child) {
             double imgSize = 400;
-            if (ct.imageUrl.isEmpty) {
+            if (cm.currentChannel.currentTrack.imageUrl.isEmpty) {
               return Image.asset(defaultImage, height: imgSize, width: imgSize);
             } else {
               return CachedNetworkImage(
-                  imageUrl: ct.imageUrl, height: imgSize, width: imgSize);
+                  imageUrl: cm.currentChannel.currentTrack.imageUrl,
+                  height: imgSize,
+                  width: imgSize);
             }
           }),
           const SizedBox(width: 15),
@@ -279,8 +294,10 @@ class _MyHomePageState extends State<MyHomePage> {
             isSmallScreen ? MainAxisAlignment.start : MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Consumer<Track>(builder: (context, ct, child) {
-            String dd = ct.diffusionDate.split('T')[1].substring(0, 8);
+          Consumer<ChannelManager>(builder: (context, cm, child) {
+            String dd = cm.currentChannel.currentTrack.diffusionDate
+                .split('T')[1]
+                .substring(0, 8);
             return RichText(
                 text: TextSpan(
                     text: dd.substring(0, 5),
@@ -292,13 +309,16 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <TextSpan>[
                   TextSpan(
                       text: dd.substring(5, 8),
-                      style: const TextStyle(fontSize: 20))
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.normal))
                 ]));
           }),
-          Consumer<Track>(builder: (context, ct, child) {
+          Consumer<ChannelManager>(builder: (context, cm, child) {
             String artist;
-            artist =
-                ct.artist.split('/').map((e) => toTitleCase(e)).join(' /\n');
+            artist = cm.currentChannel.currentTrack.artist
+                .split('/')
+                .map((e) => toTitleCase(e))
+                .join(' /\n');
             return Flexible(
                 child: Text(artist,
                     overflow: TextOverflow.fade,
@@ -307,16 +327,17 @@ class _MyHomePageState extends State<MyHomePage> {
                         fontSize: isSmallScreen ? 30 : 55,
                         fontWeight: FontWeight.bold)));
           }),
-          Consumer<Track>(builder: (context, ct, child) {
-            return Text(toTitleCase(ct.title),
+          Consumer<ChannelManager>(builder: (context, cm, child) {
+            return Text(toTitleCase(cm.currentChannel.currentTrack.title),
                 overflow: TextOverflow.fade,
                 style: TextStyle(
                     fontSize: isSmallScreen ? 20 : 35,
                     fontWeight: FontWeight.normal));
           }),
-          Consumer<Track>(builder: (context, ct, child) {
-            if (ct.album.isNotEmpty && ct.album != 'Album') {
-              return Text(ct.album,
+          Consumer<ChannelManager>(builder: (context, cm, child) {
+            if (cm.currentChannel.currentTrack.album.isNotEmpty &&
+                cm.currentChannel.currentTrack.album != 'Album') {
+              return Text(cm.currentChannel.currentTrack.album,
                   overflow: TextOverflow.fade,
                   style: TextStyle(
                       fontSize: isSmallScreen ? 20 : 35,
@@ -329,9 +350,9 @@ class _MyHomePageState extends State<MyHomePage> {
               );
             }
           }),
-          Consumer<Track>(builder: (context, ct, child) {
+          Consumer<ChannelManager>(builder: (context, cm, child) {
             return Text(
-                '${ct.duration.replaceFirst(RegExp(r'^0'), '').replaceFirst(':', 'min ')}s',
+                '${cm.currentChannel.currentTrack.duration.replaceFirst(RegExp(r'^0'), '').replaceFirst(':', 'min ')}s',
                 style: TextStyle(
                     fontSize: isSmallScreen ? 15 : 20,
                     color: Colors.deepOrange));
@@ -340,7 +361,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildCurrentShowText() {
-    return Consumer<Track>(builder: (context, ct, child) {
+    return Consumer<ChannelManager>(builder: (context, cm, child) {
       return RichText(
           text: TextSpan(
               text:
@@ -348,15 +369,15 @@ class _MyHomePageState extends State<MyHomePage> {
               style: DefaultTextStyle.of(context).style,
               children: <TextSpan>[
             TextSpan(
-              text: ct.currentShow.title,
+              text: cm.currentChannel.title,
               style: const TextStyle(
                   fontWeight: FontWeight
                       .w700, // bold is too heavy and cause blur/smudge
                   color: Colors.white),
             ),
             TextSpan(
-              text: ct.currentShow.author.isNotEmpty
-                  ? ' - ${ct.currentShow.author}'
+              text: cm.currentChannel.author.isNotEmpty
+                  ? ' - ${cm.currentChannel.author}'
                   : '',
               style: const TextStyle(
                 color: Colors.white,
@@ -364,8 +385,8 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             TextSpan(
-              text: ct.currentShow.airingTime.isNotEmpty
-                  ? '\n${ct.currentShow.airingTime}'
+              text: cm.currentChannel.airingTime.isNotEmpty
+                  ? '\n${cm.currentChannel.airingTime}'
                   : '',
               style: const TextStyle(
                 color: Colors.white,

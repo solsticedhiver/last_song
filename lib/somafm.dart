@@ -2,11 +2,11 @@ import 'package:web_scraper/web_scraper.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
-import 'track.dart';
+import 'helpers.dart';
 import 'bandcamp.dart';
 
-class SomaFmTrack extends Track {
-  static const channels = {
+class SomaFm extends Channel {
+  static const subchannels = {
     "groovesalad": {"name": "Groove Salad", "image": "groovesalad120.png"},
     "gsclassic": {"name": "Groove Salad Classic", "image": "gsclassic120.jpg"},
     "synphaera": {"name": "Synphaera Radio", "image": "synphaera120.jpg"},
@@ -63,24 +63,40 @@ class SomaFmTrack extends Track {
     },
   };
 
+  SomaFm(String subchannel) {
+    radio = 'Soma FM';
+    String? scn = SomaFm.subchannels[subchannel]?['name'];
+    if (scn != null) {
+      title = scn;
+    }
+    String? sci = SomaFm.subchannels[subchannel]?['image'];
+    if (sci != null) {
+      imageUrl = 'https://somafm.com/img/$sci';
+    }
+    this.subchannel = subchannel;
+    author = 'Rusty Hodge';
+    airingTime = '';
+  }
+
   @override
   Future<int> fetchCurrentTrack([bool manual = false]) async {
     int ret = 0;
-    Track track = await SomaFmTrack.getLastTrack(currentShow.channel);
-    if (track.title != title && track.artist != artist) {
-      updateFrom(track);
+    Track track = await SomaFm.getLastTrack(subchannel);
+    if (track.title != currentTrack.title &&
+        track.artist != currentTrack.artist) {
+      currentTrack.updateFrom(track);
       // search for an image cover
       ResponseBandcamp resp =
           await searchBandcamp('${track.title} ${track.artist}', 't');
       if (resp.imageUrl.isNotEmpty) {
-        imageUrl = resp.imageUrl;
+        currentTrack.imageUrl = resp.imageUrl;
         if (resp.duration.isNotEmpty) {
-          duration = resp.duration;
+          currentTrack.duration = resp.duration;
         }
       } else {
         resp = await searchBandcamp('${track.album} ${track.artist}', 'a');
         if (resp.imageUrl.isNotEmpty) {
-          imageUrl = resp.imageUrl;
+          currentTrack.imageUrl = resp.imageUrl;
         }
       }
       notifyListeners();
@@ -89,8 +105,8 @@ class SomaFmTrack extends Track {
     return ret;
   }
 
-  static Future<Track> getLastTrack(String channel) async {
-    List<Track> recentTracks = await SomaFmTrack.getRecentTrack(channel);
+  static Future<Track> getLastTrack(String subchannel) async {
+    List<Track> recentTracks = await SomaFm.getRecentTrack(subchannel);
     if (recentTracks.isNotEmpty) {
       return recentTracks.elementAt(0);
     } else {
@@ -98,7 +114,7 @@ class SomaFmTrack extends Track {
     }
   }
 
-  static Future<List<Track>> getRecentTrack(String channel) async {
+  static Future<List<Track>> getRecentTrack(String subchannel) async {
     // get timezone and current date of San Francisco
     tz.initializeTimeZones();
     tz.Location sanFrancisco = tz.getLocation('America/Los_Angeles');
@@ -110,7 +126,7 @@ class SomaFmTrack extends Track {
     WebScraper webScraper = WebScraper('https://somafm.com');
 
     List<Track> ret = <Track>[];
-    String page = '/recent/$channel.html';
+    String page = '/recent/$subchannel.html';
     if (await webScraper.loadWebPage(page)) {
       List<Map<String, dynamic>> elements =
           webScraper.getElement('#playinc table tr td', ['colspan']);
@@ -130,15 +146,13 @@ class SomaFmTrack extends Track {
             DateTime diffusionDate =
                 DateTime.parse('${currentDate}T${columns[0]} $timeZone');
             Track track = Track(
-                diffusionDate:
-                    diffusionDate.toLocal().toString().replaceFirst(' ', 'T'),
-                artist: columns[1],
-                title: columns[2],
-                album: columns[3],
-                radio: 'Soma FM');
+              diffusionDate:
+                  diffusionDate.toLocal().toString().replaceFirst(' ', 'T'),
+              artist: columns[1],
+              title: columns[2],
+              album: columns[3],
+            );
             ret.add(track);
-            //print(
-            //     '${track.diffusionDate} ${track.title} - ${track.artist} [${track.album}]');
           }
           columns.clear();
         }
