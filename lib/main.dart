@@ -199,6 +199,7 @@ class _MyHomePageState extends State<MyHomePage> {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Expanded(
+            flex: 2,
             child: Container(
               padding: const EdgeInsets.only(
                   top: 10, right: 15, left: 15, bottom: 5),

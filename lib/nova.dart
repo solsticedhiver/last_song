@@ -69,14 +69,9 @@ class NovaTrack extends Track {
         ret = updateFromJson(jsonDecode(resp.body));
         // try to get an image cover if there is none
         if (id != -1 && imageUrl.isEmpty) {
-          String newImageUrl = await searchBandcamp('$artist $title', 't');
-          if (newImageUrl.isNotEmpty) {
-            imageUrl = newImageUrl;
-          } else {
-            newImageUrl = await searchBandcamp('$artist $title', 'a');
-            if (newImageUrl.isNotEmpty) {
-              imageUrl = newImageUrl;
-            }
+          ResponseBandcamp resp = await searchBandcamp('$artist $title', 't');
+          if (resp.imageUrl.isNotEmpty) {
+            imageUrl = resp.imageUrl;
           }
         }
         // update validity variable

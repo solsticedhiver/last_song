@@ -70,15 +70,17 @@ class SomaFmTrack extends Track {
     if (track.title != title && track.artist != artist) {
       updateFrom(track);
       // search for an image cover
-      String newImageUrl =
+      ResponseBandcamp resp =
           await searchBandcamp('${track.title} ${track.artist}', 't');
-      if (newImageUrl.isNotEmpty) {
-        imageUrl = newImageUrl;
+      if (resp.imageUrl.isNotEmpty) {
+        imageUrl = resp.imageUrl;
+        if (resp.duration.isNotEmpty) {
+          duration = resp.duration;
+        }
       } else {
-        newImageUrl =
-            await searchBandcamp('${track.album} ${track.artist}', 'a');
-        if (newImageUrl.isNotEmpty) {
-          imageUrl = newImageUrl;
+        resp = await searchBandcamp('${track.album} ${track.artist}', 'a');
+        if (resp.imageUrl.isNotEmpty) {
+          imageUrl = resp.imageUrl;
         }
       }
       notifyListeners();
