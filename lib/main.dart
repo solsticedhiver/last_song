@@ -120,8 +120,9 @@ class _MyHomePageState extends State<MyHomePage> {
       BuildContext? skcc = scaffoldKey.currentContext;
       ScaffoldState? skcs = scaffoldKey.currentState;
       if (skcs != null && skcc != null) {
-        ScaffoldMessenger.of(skcc).hideCurrentSnackBar();
-        ScaffoldMessenger.of(skcc).showSnackBar(SnackBar(
+        ScaffoldMessengerState sms = ScaffoldMessenger.of(skcc);
+        sms.hideCurrentSnackBar();
+        sms.showSnackBar(SnackBar(
           content: Text(msg),
           behavior: SnackBarBehavior.floating,
         ));
