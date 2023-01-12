@@ -215,6 +215,7 @@ class _MyHomePageState extends State<MyHomePage> {
       padding: EdgeInsets.only(bottom: bottomSheetSize),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        textDirection: TextDirection.ltr,
         children: <Widget>[
           Expanded(
             flex: 2,
@@ -322,7 +323,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       fontWeight: FontWeight.normal,
                       fontStyle: FontStyle.italic));
             } else {
-              return Container();
+              return const SizedBox(
+                height: 0,
+                width: 0,
+              );
             }
           }),
           Consumer<Track>(builder: (context, ct, child) {
