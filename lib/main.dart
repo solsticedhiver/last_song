@@ -184,17 +184,23 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildCurrentTrackWidget() {
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-      if (constraints.maxWidth > 1000) {
-        return _buildCurrentTrackWidgetLargeScreen();
+      double bSS;
+      if (constraints.maxHeight > 700) {
+        bSS = bottomSheetSizeLargeScreen;
       } else {
-        return _buildCurrentTrackWidgetSmallScreen();
+        bSS = bottomSheetSizeSmallScreen;
+      }
+      if (constraints.maxWidth > 1000) {
+        return _buildCurrentTrackWidgetLargeScreen(bSS);
+      } else {
+        return _buildCurrentTrackWidgetSmallScreen(bSS);
       }
     });
   }
 
-  Widget _buildCurrentTrackWidgetSmallScreen() {
+  Widget _buildCurrentTrackWidgetSmallScreen(double bottomSheetSize) {
     return Container(
-      padding: const EdgeInsets.only(bottom: bottomSheetSizeSmallScreen),
+      padding: EdgeInsets.only(bottom: bottomSheetSize),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -228,9 +234,9 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildCurrentTrackWidgetLargeScreen() {
+  Widget _buildCurrentTrackWidgetLargeScreen(double bottomSheetSize) {
     return Container(
-      padding: const EdgeInsets.only(bottom: bottomSheetSizeLargeScreen),
+      padding: EdgeInsets.only(bottom: bottomSheetSize),
       child: Row(
         //mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
