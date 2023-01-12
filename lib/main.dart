@@ -217,7 +217,7 @@ class _MyHomePageState extends State<MyHomePage> {
         mainAxisSize: MainAxisSize.min,
         textDirection: TextDirection.ltr,
         children: <Widget>[
-          Expanded(
+          Flexible(
             flex: 2,
             child: Container(
               padding: const EdgeInsets.only(
