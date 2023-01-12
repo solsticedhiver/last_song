@@ -99,7 +99,18 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  void _fetchCurrentTrack([bool manual = false]) async {
+  Timer? timer;
+
+  void _fetchCurrentTrack({bool manual = false}) async {
+    // reschedule a new timer if a manual update has been made (after canceling the previous one)
+    if (manual) {
+      if (timer != null) {
+        timer?.cancel();
+      }
+      setState(() {
+        timer = _launchTimer();
+      });
+    }
     int ret = await Provider.of<Track>(context, listen: false)
         .fetchCurrentTrack(manual);
 
@@ -130,7 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _fetchCurrentTrack(true);
+          _fetchCurrentTrack(manual: true);
         },
         tooltip: 'sync',
         child: const Icon(Icons.sync),
@@ -364,7 +375,14 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     _fetchCurrentTrack();
-    Timer.periodic(
+    setState(() {
+      timer = _launchTimer();
+    });
+  }
+
+  Timer _launchTimer() {
+    // schedule a check of current track for an update, every 30s
+    return Timer.periodic(
         const Duration(seconds: 30), (timer) => _fetchCurrentTrack());
   }
 }
