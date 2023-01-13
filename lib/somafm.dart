@@ -7,59 +7,71 @@ import 'bandcamp.dart';
 
 class SomaFm extends Channel {
   static const subchannels = {
-    "groovesalad": {"name": "Groove Salad", "image": "groovesalad120.png"},
-    "gsclassic": {"name": "Groove Salad Classic", "image": "gsclassic120.jpg"},
-    "synphaera": {"name": "Synphaera Radio", "image": "synphaera120.jpg"},
-    "dronezone": {"name": "Drone Zone", "image": "dronezone120.jpg"},
-    "darkzone": {"name": "The Dark Zone", "image": "darkzone-120.jpg"},
-    "metal": {"name": "Metal Detector", "image": "metal120.png"},
-    "illstreet": {"name": "Illinois Street Lounge", "image": "illstreet.jpg"},
-    "suburbsofgoa": {"name": "Suburbs of Goa", "image": "sog120.jpg"},
-    "bootliquor": {"name": "Boot Liquor", "image": "bootliquor120.jpg"},
-    "7soul": {"name": "Seven Inch Soul", "image": "7soul120.png"},
-    "seventies": {"name": "Left Coast 70s", "image": "seventies120.jpg"},
-    "u80s": {"name": "Underground 80s", "image": "u80s-120.png"},
-    "defcon": {"name": "DEF CON Radio", "image": "defcon120.png"},
-    "fluid": {"name": "Fluid", "image": "fluid120.jpg"},
-    "lush": {"name": "Lush", "image": "lush120.jpg"},
-    "poptron": {"name": "PopTron", "image": "poptron120.png"},
-    "covers": {"name": "Covers", "image": "covers120.jpg"},
-    "cliqhop": {"name": "cliqhop idm", "image": "cliqhop120.png"},
-    "dubstep": {"name": "Dub Step Beyond", "image": "dubstep120.png"},
-    "beatblender": {"name": "Beat Blender", "image": "blender120.png"},
-    "deepspaceone": {"name": "Deep Space One", "image": "deepspaceone120.gif"},
-    "spacestation": {"name": "Space Station Soma", "image": "sss.jpg"},
-    "n5md": {"name": "n5MD Radio", "image": "n5md120.png"},
-    "vaporwaves": {"name": "Vaporwaves", "image": "vaporwaves120.jpg"},
-    "secretagent": {"name": "Secret Agent", "image": "secretagent120.jpg"},
-    "reggae": {"name": "Heavyweight Reggae", "image": "reggae120.png"},
-    "thetrip": {"name": "The Trip", "image": "thetrip120.jpg"},
+    "groovesalad": {"name": "Groove Salad", "image": "/img/groovesalad120.png"},
+    "gsclassic": {
+      "name": "Groove Salad Classic",
+      "image": "/img3/gsclassic120.jpg"
+    },
+    "synphaera": {"name": "Synphaera Radio", "image": "/img3/synphaera120.jpg"},
+    "dronezone": {"name": "Drone Zone", "image": "/img/dronezone120.jpg"},
+    "darkzone": {"name": "The Dark Zone", "image": "/img/darkzone-120.jpg"},
+    "metal": {"name": "Metal Detector", "image": "/img3/metal120.png"},
+    "illstreet": {
+      "name": "Illinois Street Lounge",
+      "image": "/img/illstreet.jpg"
+    },
+    "suburbsofgoa": {"name": "Suburbs of Goa", "image": "/img/sog120.jpg"},
+    "bootliquor": {"name": "Boot Liquor", "image": "/img/bootliquor120.jpg"},
+    "7soul": {"name": "Seven Inch Soul", "image": "/img/7soul120.png"},
+    "seventies": {"name": "Left Coast 70s", "image": "/img/seventies120.jpg"},
+    "u80s": {"name": "Underground 80s", "image": "/img/u80s-120.png"},
+    "defcon": {"name": "DEF CON Radio", "image": "/img/defcon120.png"},
+    "fluid": {"name": "Fluid", "image": "/img/fluid120.jpg"},
+    "lush": {"name": "Lush", "image": "/img/lush120.jpg"},
+    "poptron": {"name": "PopTron", "image": "/img/poptron120.png"},
+    "covers": {"name": "Covers", "image": "/img/covers120.jpg"},
+    "cliqhop": {"name": "cliqhop idm", "image": "/img/cliqhop120.png"},
+    "dubstep": {"name": "Dub Step Beyond", "image": "/img/dubstep120.png"},
+    "beatblender": {"name": "Beat Blender", "image": "/img/blender120.png"},
+    "deepspaceone": {
+      "name": "Deep Space One",
+      "image": "/img/deepspaceone120.gif"
+    },
+    "spacestation": {"name": "Space Station Soma", "image": "/img/sss.jpg"},
+    "n5md": {"name": "n5MD Radio", "image": "/img/n5md120.png"},
+    "vaporwaves": {"name": "Vaporwaves", "image": "/img/vaporwaves120.jpg"},
+    "secretagent": {"name": "Secret Agent", "image": "/img/secretagent120.jpg"},
+    "reggae": {"name": "Heavyweight Reggae", "image": "/img3/reggae120.png"},
+    "thetrip": {"name": "The Trip", "image": "/img/thetrip120.jpg"},
     "sonicuniverse": {
       "name": "Sonic Universe",
-      "image": "sonicuniverse120.jpg"
+      "image": "/img/sonicuniverse120.jpg"
     },
     "missioncontrol": {
       "name": "Mission Control",
-      "image": "missioncontrol120.jpg"
+      "image": "/img/missioncontrol120.jpg"
     },
-    "indiepop": {"name": "Indie Pop Rocks!", "image": "indychick.jpg"},
-    "digitalis": {"name": "Digitalis", "image": "digitalis120.png"},
-    "folkfwd": {"name": "Folk Forward", "image": "folkfwd120.jpg"},
-    "thistle": {"name": "ThistleRadio", "image": "thistle120.png"},
-    "brfm": {"name": "Black Rock FM", "image": "1023brc.jpg"},
-    "sf1033": {"name": "SF 10-33", "image": "sf1033120.png"},
-    "scanner": {"name": "SF Police Scanner", "image": "sf1033120.png"},
-    "live": {"name": "SomaFM Live", "image": "SomaFMDJSquare120.jpg"},
-    "xmasinfrisko": {"name": "Xmas in Frisko", "image": "xmasinfrisco120.jpg"},
+    "indiepop": {"name": "Indie Pop Rocks!", "image": "/img/indychick.jpg"},
+    "digitalis": {"name": "Digitalis", "image": "/img/digitalis120.png"},
+    "folkfwd": {"name": "Folk Forward", "image": "/img/folkfwd120.jpg"},
+    "thistle": {"name": "ThistleRadio", "image": "/img/thistle120.png"},
+    "brfm": {"name": "Black Rock FM", "image": "/img/1023brc.jpg"},
+    "sf1033": {"name": "SF 10-33", "image": "/img/sf1033120.png"},
+    "scanner": {"name": "SF Police Scanner", "image": "/img/sf1033120.png"},
+    "live": {"name": "SomaFM Live", "image": "/img/SomaFMDJSquare120.jpg"},
+    "xmasinfrisko": {
+      "name": "Xmas in Frisko",
+      "image": "/img/xmasinfrisco120.jpg"
+    },
     "christmas": {
       "name": "Christmas Lounge",
-      "image": "christmaslounge120.png"
+      "image": "/img/christmaslounge120.png"
     },
-    "xmasrocks": {"name": "Christmas Rocks!", "image": "xmasrocks120.png"},
-    "jollysoul": {"name": "Jolly Ol' Soul", "image": "jollysoul120.png"},
+    "xmasrocks": {"name": "Christmas Rocks!", "image": "/img/xmasrocks120.png"},
+    "jollysoul": {"name": "Jolly Ol' Soul", "image": "/img/jollysoul120.png"},
     "specials": {
       "name": "Department Store Christmas",
-      "image": "deptstorexmas120.jpg"
+      "image": "/img3/deptstorexmas120.jpg"
     },
   };
 
@@ -71,7 +83,7 @@ class SomaFm extends Channel {
     }
     String? sci = SomaFm.subchannels[subchannel]?['image'];
     if (sci != null) {
-      imageUrl = 'https://somafm.com/img/$sci';
+      imageUrl = 'https://somafm.com$sci';
     }
     this.subchannel = subchannel;
     author = 'Rusty Hodge';
