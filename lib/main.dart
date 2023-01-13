@@ -91,8 +91,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Timer? timer;
 
   void _fetchCurrentTrack({bool cancel = false, bool manual = false}) async {
-    print(
-        '${DateTime.now().toString().substring(11, 19)}: _fetchCurrentTrack(manual:$manual)');
+    //print(
+    //    '${DateTime.now().toString().substring(11, 19)}: _fetchCurrentTrack(manual:$manual)');
     // reschedule a new timer if a manual update has been made (after canceling the previous one)
     if (cancel) {
       if (timer != null) {
@@ -151,8 +151,13 @@ class _MyHomePageState extends State<MyHomePage> {
     return ListView.separated(
       itemCount: channelManager.channels.length,
       itemBuilder: (context, index) {
+        String text = channelManager.channels[index].radio;
+        String subchannel = channelManager.channels[index].subchannel;
+        if (subchannel.isNotEmpty) {
+          text = '$text / ${SomaFm.subchannels[subchannel]?["name"]}';
+        }
         return ListTile(
-            title: Text(channelManager.channels[index].radio),
+            title: Text(text),
             onTap: () {
               channelManager.changeChannel(index);
               _fetchCurrentTrack(cancel: true);
