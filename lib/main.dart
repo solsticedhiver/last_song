@@ -1,13 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:args/args.dart';
 
 import 'helpers.dart';
 import 'somafm.dart';
-import 'nova.dart';
 
 const String defaultImage = 'assets/black-record-vinyl-640x640.png';
 const double bottomSheetSizeLargeScreen = 75;
@@ -16,34 +13,6 @@ const double bottomSheetSizeSmallScreen = 55;
 GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
 void main(List<String> args) {
-  var parser = ArgParser();
-  parser.addFlag('help',
-      abbr: 'h', help: "display this help", negatable: false);
-  parser.addOption('somafm', help: "Soma FM channel to follow");
-  String subchannel = '';
-
-  try {
-    var results = parser.parse(args);
-    if (results['help']) {
-      print('Usage:\n${parser.usage}');
-      exit(1);
-    }
-    if (results['somafm'] != null) {
-      subchannel = results['somafm'];
-    }
-    if (subchannel != '' && !SomaFm.subchannels.containsKey(subchannel)) {
-      print(
-          'Error: unknown channel code. Here is the list of known channel code:');
-      SomaFm.subchannels.forEach((key, value) {
-        print('${value["name"]}: $key');
-      });
-      exit(1);
-    }
-  } on FormatException {
-    print('Error: unknown option');
-    exit(1);
-  }
-
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider<ChannelManager>(
