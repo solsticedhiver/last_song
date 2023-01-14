@@ -43,6 +43,7 @@ class MyApp extends StatelessWidget {
         return MyHomePage(
             title: "Last played song on ${channel.currentChannel.radio}");
       }),
+      //debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -62,8 +63,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void _fetchCurrentTrack({bool cancel = false, bool manual = false}) async {
     //print(
     //    '${DateTime.now().toString().substring(11, 19)}: _fetchCurrentTrack(manual:$manual)');
-    // reschedule a new timer if a manual update has been made (after canceling the previous one)
     if (cancel) {
+      // reschedule a new timer if requested and cancel the previous one
       if (timer != null) {
         timer?.cancel();
       }
@@ -99,6 +100,18 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       appBar: AppBar(
         title: Text(widget.title),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.read_more),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => _buildLastSongListRoute(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Center(
         child: _buildCurrentTrackWidget(),
@@ -133,7 +146,9 @@ class _MyHomePageState extends State<MyHomePage> {
               Navigator.pop(context);
             });
       },
-      separatorBuilder: (context, index) => const Divider(),
+      separatorBuilder: (context, index) => const Divider(
+        height: 5, // do we need to do this ?
+      ),
     );
   }
 
@@ -369,6 +384,21 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ]));
     });
+  }
+
+  Widget _buildLastSongListRoute() {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Recently played songs'),
+      ),
+      body: Center(
+        child: ListView.builder(
+          itemBuilder: ((context, index) {
+            return const Text('');
+          }),
+        ),
+      ),
+    );
   }
 
   @override
