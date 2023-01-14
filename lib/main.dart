@@ -99,10 +99,11 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.deepOrange),
-              child: Flexible(
-                child: Text('Last Song',
+            DrawerHeader(
+              decoration: const BoxDecoration(color: Colors.deepOrange),
+              child: Container(
+                constraints: const BoxConstraints.expand(),
+                child: const Text('Last Song',
                     style: TextStyle(color: Colors.white, fontSize: 25)),
               ),
             ),
