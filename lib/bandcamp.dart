@@ -65,6 +65,7 @@ Future<String> lookForTrackDuration(String url) async {
       if (e['attributes']['type'] == 'application/ld+json') {
         final jd = json
             .decode(e['title'])['duration']; // coded like P00H10M11S for 10:11
+        if (jd == null) break;
         duration = '${jd.substring(4, 6)}:${jd.substring(7, 9)}';
         break;
       }
