@@ -96,7 +96,21 @@ class _MyHomePageState extends State<MyHomePage> {
     Scaffold scaffold = Scaffold(
       key: scaffoldKey,
       drawer: Drawer(
-        child: _buildRadioListView(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Colors.deepOrange),
+              child: Expanded(
+                child: Text('Last Song',
+                    style: TextStyle(color: Colors.white, fontSize: 25)),
+              ),
+            ),
+            Expanded(
+              child: _buildRadioListView(),
+            ),
+          ],
+        ),
       ),
       appBar: AppBar(
         title: Text(widget.title),
@@ -319,6 +333,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Consumer<ChannelManager>(builder: (context, cm, child) {
             return Text(toTitleCase(cm.currentChannel.currentTrack.title),
                 overflow: TextOverflow.fade,
+                softWrap: true,
                 style: TextStyle(
                     fontSize: isSmallScreen ? 20 : 35,
                     fontWeight: FontWeight.normal));
@@ -328,6 +343,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 cm.currentChannel.currentTrack.album != 'Album') {
               return Text(cm.currentChannel.currentTrack.album,
                   overflow: TextOverflow.fade,
+                  softWrap: true,
                   style: TextStyle(
                       fontSize: isSmallScreen ? 20 : 35,
                       fontWeight: FontWeight.normal,
@@ -448,10 +464,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       fontSize: 20, fontWeight: FontWeight.bold)),
               Text(toTitleCase(track.title),
                   overflow: TextOverflow.fade,
+                  softWrap: true,
                   style: const TextStyle(
                       fontSize: 15, fontWeight: FontWeight.normal)),
               Text(track.album,
                   overflow: TextOverflow.fade,
+                  softWrap: true,
                   style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.normal,
