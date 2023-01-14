@@ -387,14 +387,18 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildLastSongListRoute() {
+    final recentTracks = Provider.of<ChannelManager>(context, listen: false)
+        .currentChannel
+        .recentTracks;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Recently played songs'),
       ),
       body: Center(
         child: ListView.builder(
+          itemCount: recentTracks.length,
           itemBuilder: ((context, index) {
-            return const Text('');
+            return Text(recentTracks[index].toString());
           }),
         ),
       ),
