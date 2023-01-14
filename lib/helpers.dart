@@ -22,7 +22,9 @@ class ChannelManager extends ChangeNotifier {
   }
 
   void initialize() {
-    addChannel(Nova());
+    for (var s in Nova.subchannels.keys) {
+      addChannel(Nova(s));
+    }
     for (var s in SomaFm.subchannels.keys) {
       addChannel(SomaFm(s));
     }
@@ -38,7 +40,7 @@ class ChannelManager extends ChangeNotifier {
 class Channel extends ChangeNotifier {
   late String radio;
   late String imageUrl;
-  late String title;
+  late String show;
   late String subchannel;
   late String author;
   late String airingTime;
@@ -48,7 +50,7 @@ class Channel extends ChangeNotifier {
   Channel({
     this.radio = 'Radio',
     this.imageUrl = '',
-    this.title = 'Show',
+    this.show = 'Show',
     this.subchannel = 'Subchannel',
     this.author = 'Author',
     this.airingTime = '00:00 - 00:00',
@@ -58,7 +60,7 @@ class Channel extends ChangeNotifier {
 
   @override
   String toString() {
-    return 'Channel(radio: $radio, title:$title, subchannel:$subchannel, author:$author, airingTime:$airingTime)';
+    return 'Channel(radio: $radio, show:$show, subchannel:$subchannel, author:$author, airingTime:$airingTime)';
   }
 
   Future<int> fetchCurrentTrack([bool manual = false]) async {

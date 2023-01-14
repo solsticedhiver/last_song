@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import 'helpers.dart';
 import 'somafm.dart';
+import 'nova.dart';
 
 const String defaultImage = 'assets/black-record-vinyl-640x640.png';
 const double bottomSheetSizeLargeScreen = 75;
@@ -148,10 +149,20 @@ class _MyHomePageState extends State<MyHomePage> {
     return ListView.separated(
       itemCount: channelManager.channels.length,
       itemBuilder: (context, index) {
-        String text = channelManager.channels[index].radio;
-        String subchannel = channelManager.channels[index].subchannel;
+        Channel channel = channelManager.channels[index];
+        String text = channel.radio;
+        String subchannel = channel.subchannel;
+        String? name;
+        switch (channel.runtimeType.toString()) {
+          case 'Nova':
+            name = Nova.subchannels[subchannel]?['name'];
+            break;
+          case 'SomaFm':
+            name = SomaFm.subchannels[subchannel]?['name'];
+            break;
+        }
         if (subchannel.isNotEmpty) {
-          text = '$text / ${SomaFm.subchannels[subchannel]?["name"]}';
+          text = '$text / $name';
         }
         return ListTile(
             title: Text(text),
@@ -375,7 +386,7 @@ class _MyHomePageState extends State<MyHomePage> {
               style: DefaultTextStyle.of(context).style,
               children: <TextSpan>[
             TextSpan(
-              text: cm.currentChannel.title,
+              text: cm.currentChannel.show,
               style: const TextStyle(
                   fontWeight: FontWeight
                       .w700, // bold is too heavy and cause blur/smudge
@@ -457,6 +468,7 @@ class _MyHomePageState extends State<MyHomePage> {
           const SizedBox(width: 20), // TODO: remove this !
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(toTitleCase(track.artist),
                   overflow: TextOverflow.fade,

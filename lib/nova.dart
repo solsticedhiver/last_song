@@ -8,19 +8,32 @@ import 'package:http/http.dart' as http;
 import 'package:html_unescape/html_unescape.dart';
 import 'package:web_scraper/web_scraper.dart';
 
-const String radioNova = 'https://www.nova.fr/wp-json/radios/radio-nova';
+const String radioNova = 'https://www.nova.fr/wp-json/radios/';
 const String defaultShowImageUrl =
     'https://www.nova.fr/wp-content/uploads/sites/2/2022/12/Radio-Nova-en-direct.png';
 
 class Nova extends Channel {
+  static const subchannels = {
+    "radio-nova": {"name": "Radio Nova", "id": "910"},
+    "nouvo-nova": {"name": "Nouvo Nova", "id": "79676"},
+    "nova-la-nuit": {"name": "Nova la Nuit", "id": "916"},
+    "nova-classics": {"name": "Nova Classics", "id": "913"},
+    "nova-danse": {"name": "Nova Danse", "id": "560"},
+  };
   // datetime until which the last update request is valid according to cache-control(max-age) header, age and date
   static DateTime validity =
       DateTime.now().subtract(const Duration(minutes: 1));
 
-  Nova() {
+  Nova(String subchannel) {
     radio = 'Radio Nova';
-    subchannel = '';
+    this.subchannel = subchannel;
+    String? sn = Nova.subchannels[subchannel]?['name'];
+    if (sn != null) {
+      show = sn;
+    }
     imageUrl = defaultShowImageUrl;
+    author = '';
+    airingTime = '';
   }
 
   int updateFromJson(Map<String, dynamic> json) {
@@ -50,10 +63,9 @@ class Nova extends Channel {
     }
     final cs = json['currentShow'];
     if (cs != null) {
-      title = cs['title'];
+      show = cs['title'];
       author = HtmlUnescape().convert(cs['author']);
       airingTime = '${cs["start_time"]} - ${cs["end_time"]}';
-      subchannel = '';
     }
     final radio = json['radio'];
     if (radio != null) {
@@ -70,7 +82,7 @@ class Nova extends Channel {
     // update if cache is old
     if (DateTime.now().compareTo(validity) >= 0) {
       try {
-        resp = await http.get(Uri.parse(radioNova));
+        resp = await http.get(Uri.parse('$radioNova$subchannel'));
       } catch (e) {
         return 0;
       }
@@ -133,8 +145,9 @@ class Nova extends Channel {
     // 20 minutes from now
     String startTime = DateTime.now().toString().substring(11, 16);
     // action=loadmore_programs&date=&time=18%3A08&page=1&radio=910
+    String? radioId = Nova.subchannels[subchannel]?["id"];
     String rawData =
-        'action=loadmore_programs&date=&time=$startTime&page=1&radio=910';
+        'action=loadmore_programs&date=&time=$startTime&page=1&radio=$radioId';
 
     http.Request req = http.Request('POST', Uri.parse(url));
     req.body = Uri.encodeFull(rawData);
@@ -147,6 +160,7 @@ class Nova extends Channel {
 
     if (resp.statusCode == 200) {
       if (webScraper.loadFromString(resp.body)) {
+        // first pass only collect title and diffusionDate
         List<Map<String, dynamic>> elements =
             webScraper.getElement('div.wwtt_right p', ['class']);
         //print(elements);
@@ -170,6 +184,7 @@ class Nova extends Channel {
         elements = webScraper.getElement('div.wwtt_right h2', []);
         //print(elements);
         int indx = 0;
+        // add artist
         for (var e in elements) {
           ret[indx].artist = e['title'];
           indx++;

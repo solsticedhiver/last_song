@@ -79,7 +79,7 @@ class SomaFm extends Channel {
     radio = 'Soma FM';
     String? scn = SomaFm.subchannels[subchannel]?['name'];
     if (scn != null) {
-      title = scn;
+      show = scn;
     }
     String? sci = SomaFm.subchannels[subchannel]?['image'];
     if (sci != null) {
