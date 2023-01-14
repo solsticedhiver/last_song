@@ -387,20 +387,70 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildLastSongListRoute() {
-    final recentTracks = Provider.of<ChannelManager>(context, listen: false)
-        .currentChannel
-        .recentTracks;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Recently played songs'),
-      ),
-      body: Center(
-        child: ListView.builder(
-          itemCount: recentTracks.length,
-          itemBuilder: ((context, index) {
-            return Text(recentTracks[index].toString());
-          }),
-        ),
+    return Consumer<ChannelManager>(
+      builder: (context, cm, child) {
+        final recentTracks = cm.currentChannel.recentTracks;
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Recently played songs'),
+          ),
+          body: Center(
+            child: ListView.builder(
+              itemCount: recentTracks.length,
+              prototypeItem: _buildListItemSong(recentTracks[0]),
+              itemBuilder: ((context, index) {
+                return _buildListItemSong(recentTracks[index]);
+              }),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildListItemSong(Track track) {
+    String dd = track.diffusionDate.split('T')[1].substring(0, 8);
+    return Center(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(width: 15), // TODO: remove this !
+          RichText(
+              text: TextSpan(
+                  text: dd.substring(0, 5),
+                  style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.deepOrange),
+                  children: <TextSpan>[
+                TextSpan(
+                    text: dd.substring(5, 8),
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.normal))
+              ])),
+          const SizedBox(width: 20), // TODO: remove this !
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(track.artist,
+                  overflow: TextOverflow.fade,
+                  softWrap: true,
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(toTitleCase(track.title),
+                  overflow: TextOverflow.fade,
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.normal)),
+              Text(track.album,
+                  overflow: TextOverflow.fade,
+                  style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.normal,
+                      fontStyle: FontStyle.italic)),
+              const SizedBox(height: 15), // TODO: remove this !
+            ],
+          )
+        ],
       ),
     );
   }
