@@ -150,14 +150,19 @@ class _MyHomePageState extends State<MyHomePage> {
       itemCount: channelManager.channels.length,
       itemBuilder: (context, index) {
         Channel channel = channelManager.channels[index];
-        String text = channel.radio;
+        String radio = channel.radio;
         String subchannel = channel.subchannel;
         String? name = channel.subchannels[subchannel]?['name'];
-        if (subchannel.isNotEmpty) {
-          text = '$text / $name';
-        }
+        //if (subchannel.isNotEmpty) {
+        //  text = '$text / $name';
+        //}
         return ListTile(
-            title: Text(text),
+            //tileColor: index % 2 == 0 ? Colors.grey[350] : null,
+            //dense: true,
+            subtitle: name != null ? Text(radio) : null,
+            title: name != null ? Text(name) : Text(radio),
+            trailing:
+                Image(image: CachedNetworkImageProvider(channel.imageUrl)),
             onTap: () {
               channelManager.changeChannel(index);
               _fetchCurrentTrack(cancel: true);
