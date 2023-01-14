@@ -101,7 +101,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             const DrawerHeader(
               decoration: BoxDecoration(color: Colors.deepOrange),
-              child: Expanded(
+              child: Flexible(
                 child: Text('Last Song',
                     style: TextStyle(color: Colors.white, fontSize: 25)),
               ),
@@ -457,7 +457,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(track.artist,
+              Text(toTitleCase(track.artist),
                   overflow: TextOverflow.fade,
                   softWrap: true,
                   style: const TextStyle(
@@ -467,7 +467,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   softWrap: true,
                   style: const TextStyle(
                       fontSize: 15, fontWeight: FontWeight.normal)),
-              Text(track.album,
+              Text(track.album != 'Album' ? track.album : '---',
                   overflow: TextOverflow.fade,
                   softWrap: true,
                   style: const TextStyle(

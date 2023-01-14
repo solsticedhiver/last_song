@@ -6,6 +6,7 @@ import 'helpers.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:html_unescape/html_unescape.dart';
+import 'package:web_scraper/web_scraper.dart';
 
 const String radioNova = 'https://www.nova.fr/wp-json/radios/radio-nova';
 const String defaultShowImageUrl =
@@ -117,6 +118,7 @@ class Nova extends Channel {
     } else {
       ret = 0;
     }
+    recentTracks = await getRecentTracks();
     notifyListeners();
 
     return ret;
@@ -124,6 +126,57 @@ class Nova extends Channel {
 
   @override
   Future<List<Track>> getRecentTracks() async {
-    return <Track>[];
+    String url = 'https://www.nova.fr/wp-admin/admin-ajax.php';
+    WebScraper webScraper = WebScraper();
+    List<Track> ret = <Track>[];
+
+    // 20 minutes from now
+    String startTime = DateTime.now().toString().substring(11, 16);
+    // action=loadmore_programs&date=&time=18%3A08&page=1&radio=910
+    String rawData =
+        'action=loadmore_programs&date=&time=$startTime&page=1&radio=910';
+
+    http.Request req = http.Request('POST', Uri.parse(url));
+    req.body = Uri.encodeFull(rawData);
+    req.headers.addAll({
+      'x-requested-with': 'XMLHttpRequest',
+      'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+    });
+    http.StreamedResponse streamedResponse = await req.send();
+    final resp = await http.Response.fromStream(streamedResponse);
+
+    if (resp.statusCode == 200) {
+      if (webScraper.loadFromString(resp.body)) {
+        List<Map<String, dynamic>> elements =
+            webScraper.getElement('div.wwtt_right p', ['class']);
+        //print(elements);
+        String dd = '', title = '';
+        for (var e in elements) {
+          //print(e);
+          if (e['attributes']['class'] != null &&
+              e['attributes']['class'].split(' ').contains('time')) {
+            dd = '2000-01-01T${e["title"]}:00';
+          } else {
+            title = e['title'];
+          }
+          if (dd != '' && title != '') {
+            Track track = Track(diffusionDate: dd, title: title);
+            //print(track);
+            ret.add(track);
+            dd = '';
+            title = '';
+          }
+        }
+        elements = webScraper.getElement('div.wwtt_right h2', []);
+        //print(elements);
+        int indx = 0;
+        for (var e in elements) {
+          ret[indx].artist = e['title'];
+          indx++;
+        }
+      }
+    }
+    //print(ret);
+    return ret;
   }
 }
