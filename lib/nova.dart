@@ -13,13 +13,18 @@ const String defaultShowImageUrl =
     'https://www.nova.fr/wp-content/uploads/sites/2/2022/12/Radio-Nova-en-direct.png';
 
 class Nova extends Channel {
-  static const subchannels = {
+  static const _subchannels = {
     "radio-nova": {"name": "Radio Nova", "id": "910"},
     "nouvo-nova": {"name": "Nouvo Nova", "id": "79676"},
     "nova-la-nuit": {"name": "Nova la Nuit", "id": "916"},
     "nova-classics": {"name": "Nova Classics", "id": "913"},
     "nova-danse": {"name": "Nova Danse", "id": "560"},
   };
+  @override
+  Map<String, dynamic> get subchannels => _subchannels;
+
+  static Map<String, dynamic> get getSubchannels => _subchannels;
+
   // datetime until which the last update request is valid according to cache-control(max-age) header, age and date
   static DateTime validity =
       DateTime.now().subtract(const Duration(minutes: 1));
@@ -27,7 +32,7 @@ class Nova extends Channel {
   Nova(String subchannel) {
     radio = 'Radio Nova';
     this.subchannel = subchannel;
-    String? sn = Nova.subchannels[subchannel]?['name'];
+    String? sn = subchannels[subchannel]?['name'];
     if (sn != null) {
       show = sn;
     }
@@ -145,7 +150,7 @@ class Nova extends Channel {
     // 20 minutes from now
     String startTime = DateTime.now().toString().substring(11, 16);
     // action=loadmore_programs&date=&time=18%3A08&page=1&radio=910
-    String? radioId = Nova.subchannels[subchannel]?["id"];
+    String? radioId = subchannels[subchannel]?["id"];
     String rawData =
         'action=loadmore_programs&date=&time=$startTime&page=1&radio=$radioId';
 

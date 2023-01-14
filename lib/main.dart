@@ -152,15 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
         Channel channel = channelManager.channels[index];
         String text = channel.radio;
         String subchannel = channel.subchannel;
-        String? name;
-        switch (channel.runtimeType.toString()) {
-          case 'Nova':
-            name = Nova.subchannels[subchannel]?['name'];
-            break;
-          case 'SomaFm':
-            name = SomaFm.subchannels[subchannel]?['name'];
-            break;
-        }
+        String? name = channel.subchannels[subchannel]?['name'];
         if (subchannel.isNotEmpty) {
           text = '$text / $name';
         }

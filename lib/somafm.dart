@@ -6,7 +6,7 @@ import 'helpers.dart';
 import 'bandcamp.dart';
 
 class SomaFm extends Channel {
-  static const subchannels = {
+  static const _subchannels = {
     "groovesalad": {"name": "Groove Salad", "image": "/img/groovesalad120.png"},
     "gsclassic": {
       "name": "Groove Salad Classic",
@@ -74,14 +74,18 @@ class SomaFm extends Channel {
       "image": "/img3/deptstorexmas120.jpg"
     },
   };
+  @override
+  Map<String, dynamic> get subchannels => _subchannels;
+
+  static Map<String, dynamic> get getSubchannels => _subchannels;
 
   SomaFm(String subchannel) {
     radio = 'Soma FM';
-    String? scn = SomaFm.subchannels[subchannel]?['name'];
+    String? scn = subchannels[subchannel]?['name'];
     if (scn != null) {
       show = scn;
     }
-    String? sci = SomaFm.subchannels[subchannel]?['image'];
+    String? sci = subchannels[subchannel]?['image'];
     if (sci != null) {
       imageUrl = 'https://somafm.com$sci';
     }

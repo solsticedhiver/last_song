@@ -22,10 +22,10 @@ class ChannelManager extends ChangeNotifier {
   }
 
   void initialize() {
-    for (var s in Nova.subchannels.keys) {
+    for (var s in Nova.getSubchannels.keys) {
       addChannel(Nova(s));
     }
-    for (var s in SomaFm.subchannels.keys) {
+    for (var s in SomaFm.getSubchannels.keys) {
       addChannel(SomaFm(s));
     }
   }
@@ -46,6 +46,8 @@ class Channel extends ChangeNotifier {
   late String airingTime;
   late Track currentTrack;
   List<Track> recentTracks = <Track>[];
+
+  Map<String, dynamic> get subchannels => throw UnimplementedError();
 
   Channel({
     this.radio = 'Radio',
