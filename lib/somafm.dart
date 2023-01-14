@@ -95,7 +95,7 @@ class SomaFm extends Channel {
     int ret = 0;
     Track track;
 
-    recentTracks = await SomaFm.getRecentTracks(subchannel);
+    recentTracks = await getRecentTracks();
     if (recentTracks.isNotEmpty) {
       track = recentTracks.elementAt(0);
     } else {
@@ -125,7 +125,8 @@ class SomaFm extends Channel {
     return ret;
   }
 
-  static Future<List<Track>> getRecentTracks(String subchannel) async {
+  @override
+  Future<List<Track>> getRecentTracks() async {
     // get timezone and current date of San Francisco
     tz.initializeTimeZones();
     tz.Location sanFrancisco = tz.getLocation('America/Los_Angeles');

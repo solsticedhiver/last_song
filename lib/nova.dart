@@ -121,4 +121,9 @@ class Nova extends Channel {
 
     return ret;
   }
+
+  @override
+  Future<List<Track>> getRecentTracks() async {
+    return <Track>[];
+  }
 }
