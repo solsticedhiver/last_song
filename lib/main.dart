@@ -417,7 +417,9 @@ class _MyHomePageState extends State<MyHomePage> {
       );
     }
     String dd = track.diffusionDate.split('T')[1].substring(0, 8);
-    return Center(
+    // TODO: wrap it in a Card, or not?
+    return Container(
+      padding: const EdgeInsets.only(top: 5, bottom: 5),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -454,7 +456,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       fontSize: 15,
                       fontWeight: FontWeight.normal,
                       fontStyle: FontStyle.italic)),
-              const SizedBox(height: 15), // TODO: remove this !
             ],
           )
         ],
