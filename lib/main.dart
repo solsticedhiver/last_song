@@ -397,7 +397,8 @@ class _MyHomePageState extends State<MyHomePage> {
           body: Center(
             child: ListView.builder(
               itemCount: recentTracks.length,
-              prototypeItem: _buildListItemSong(recentTracks[0]),
+              prototypeItem: _buildListItemSong(
+                  recentTracks.isNotEmpty ? recentTracks.first : null),
               itemBuilder: ((context, index) {
                 return _buildListItemSong(recentTracks[index]);
               }),
@@ -408,7 +409,13 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildListItemSong(Track track) {
+  Widget _buildListItemSong(Track? track) {
+    if (track == null) {
+      return const SizedBox(
+        height: 0,
+        width: 0,
+      );
+    }
     String dd = track.diffusionDate.split('T')[1].substring(0, 8);
     return Center(
       child: Row(
