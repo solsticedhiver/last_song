@@ -161,8 +161,12 @@ class _MyHomePageState extends State<MyHomePage> {
             //dense: true,
             subtitle: name != null ? Text(radio) : null,
             title: name != null ? Text(name) : Text(radio),
-            trailing:
-                Image(image: CachedNetworkImageProvider(channel.imageUrl)),
+            leading: SizedBox(
+                width: 48,
+                height: 48,
+                child:
+                    Image(image: CachedNetworkImageProvider(channel.imageUrl))),
+            trailing: const Icon(Icons.favorite),
             onTap: () {
               channelManager.changeChannel(index);
               _fetchCurrentTrack(cancel: true);
