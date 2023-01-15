@@ -9,16 +9,34 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:web_scraper/web_scraper.dart';
 
 const String radioNova = 'https://www.nova.fr/wp-json/radios/';
-const String defaultShowImageUrl =
-    'https://www.nova.fr/wp-content/uploads/sites/2/2022/12/Radio-Nova-en-direct.png';
 
 class Nova extends Channel {
   static const _subchannels = {
-    "radio-nova": {"name": "Radio Nova", "id": "910"},
-    "nouvo-nova": {"name": "Nouvo Nova", "id": "79676"},
-    "nova-la-nuit": {"name": "Nova la Nuit", "id": "916"},
-    "nova-classics": {"name": "Nova Classics", "id": "913"},
-    "nova-danse": {"name": "Nova Danse", "id": "560"},
+    "radio-nova": {
+      "name": "Radio Nova",
+      "id": "910",
+      "image": "/2/2022/12/Radio-Nova-en-direct.png"
+    },
+    "nouvo-nova": {
+      "name": "Nouvo Nova",
+      "id": "79676",
+      "image": "/2/2022/11/Web-radio--Nouvo-Nova.png"
+    },
+    "nova-la-nuit": {
+      "name": "Nova la Nuit",
+      "id": "916",
+      "image": "/2/2022/11/Web-radio--Nova-la-Nuit.png"
+    },
+    "nova-classics": {
+      "name": "Nova Classics",
+      "id": "913",
+      "image": "/2/2020/10/Web-radio--Nova-Classics.png"
+    },
+    "nova-danse": {
+      "name": "Nova Danse",
+      "id": "560",
+      "image": "/2/2020/09/Web-radio--Nova-Danse.png"
+    },
   };
   @override
   Map<String, dynamic> get subchannels => _subchannels;
@@ -36,7 +54,8 @@ class Nova extends Channel {
     if (sn != null) {
       show = sn;
     }
-    imageUrl = defaultShowImageUrl;
+    imageUrl =
+        "https://www.nova.fr/wp-content/uploads/sites${subchannels[subchannel]['image']}";
     author = '';
     airingTime = '';
   }
