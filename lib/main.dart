@@ -436,7 +436,8 @@ class _MyHomePageState extends State<MyHomePage> {
             alignment: Alignment.topCenter,
             child: recentTracks.isNotEmpty
                 //? _buildListItemSong(recentTracks)
-                ? _buildDataTableSong(recentTracks)
+                ? SingleChildScrollView(
+                    child: _buildDataTableSong(recentTracks))
                 : const Text('Nothing to show here'),
           ),
         );
