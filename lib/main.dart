@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'helpers.dart';
-import 'somafm.dart';
-import 'nova.dart';
 
 const String defaultImage = 'assets/black-record-vinyl-640x640.png';
 const double bottomSheetSizeLargeScreen = 75;
@@ -453,6 +451,15 @@ class _MyHomePageState extends State<MyHomePage> {
       if (constraints.maxWidth > 1000) {
         isSmallScreen = false;
       } else {
+        isSmallScreen = true;
+      }
+      int sum = 0;
+      final rt =
+          recentTracks.map((e) => e.album == 'Album' ? 0 : 1).forEach((e) {
+        sum += e;
+      });
+      // remove last column (Album) if none is defined
+      if (sum == 0) {
         isSmallScreen = true;
       }
       List<DataColumn> columns = <DataColumn>[
