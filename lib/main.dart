@@ -120,7 +120,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.read_more),
+            icon: const Icon(Icons.history),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -434,7 +434,8 @@ class _MyHomePageState extends State<MyHomePage> {
           appBar: AppBar(
             title: const Text('Recently played songs'),
           ),
-          body: Center(
+          body: Container(
+            alignment: Alignment.topCenter,
             child: recentTracks.isNotEmpty
                 //? _buildListItemSong(recentTracks)
                 ? _buildDataTableSong(recentTracks)
