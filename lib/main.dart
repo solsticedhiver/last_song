@@ -436,13 +436,8 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           body: Center(
             child: recentTracks.isNotEmpty
-                ? ListView.builder(
-                    itemCount: recentTracks.length,
-                    prototypeItem: _buildListItemSong(recentTracks.first),
-                    itemBuilder: ((context, index) {
-                      return _buildListItemSong(recentTracks[index]);
-                    }),
-                  )
+                //? _buildListItemSong(recentTracks)
+                ? _buildDataTableSong(recentTracks)
                 : const Text('Nothing to show here'),
           ),
         );
@@ -450,55 +445,138 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildListItemSong(Track track) {
-    String dd = track.diffusionDate.split('T')[1].substring(0, 8);
+  Widget _buildDataTableSong(List<Track> recentTracks) {
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+      bool isSmallScreen;
+      if (constraints.maxWidth > 1000) {
+        isSmallScreen = false;
+      } else {
+        isSmallScreen = true;
+      }
+      List<DataColumn> columns = <DataColumn>[
+        const DataColumn(
+          label: Expanded(
+            child: Text(
+              'Time',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.deepOrange),
+            ),
+          ),
+        ),
+        const DataColumn(
+          label: Expanded(
+            child: Text(
+              'Artist',
+              style: TextStyle(
+                  fontStyle: FontStyle.normal, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+        const DataColumn(
+          label: Expanded(
+            child: Text(
+              'Title',
+              style: TextStyle(
+                  fontStyle: FontStyle.normal, fontWeight: FontWeight.normal),
+            ),
+          ),
+        ),
+      ];
+      if (!isSmallScreen) {
+        columns.add(
+          const DataColumn(
+            label: Expanded(
+              child: Text(
+                'Album',
+                style: TextStyle(
+                    fontStyle: FontStyle.italic, fontWeight: FontWeight.normal),
+              ),
+            ),
+          ),
+        );
+      }
+      final rows = <DataRow>[];
+      for (var track in recentTracks) {
+        String dd = track.diffusionDate.split('T')[1].substring(0, 8);
+        List<DataCell> cells = [
+          DataCell(Text(dd,
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.deepOrange))),
+          DataCell(Text(toTitleCase(track.artist),
+              style: const TextStyle(fontWeight: FontWeight.bold))),
+          DataCell(Text(toTitleCase(track.title))),
+        ];
+        // add album only is screen is large enough
+        if (!isSmallScreen) {
+          cells.add(DataCell(Text(
+              track.album != 'Album' ? '${track.album}' : '---',
+              style: const TextStyle(fontStyle: FontStyle.italic))));
+        }
+        rows.add(DataRow(cells: cells));
+      }
+      return DataTable(
+          headingRowColor: MaterialStateProperty.resolveWith<Color?>(
+              (Set<MaterialState> states) {
+            return Theme.of(context).colorScheme.primary.withOpacity(0.08);
+          }),
+          columns: columns,
+          rows: rows);
+    });
+  }
+
+  Widget _buildListItemSong(List<Track> recentTracks) {
     // TODO: wrap it in a Card, or not?
-    return Container(
-      padding: const EdgeInsets.only(top: 5, bottom: 5),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(width: 15), // TODO: remove this !
-          RichText(
-              text: TextSpan(
-                  text: dd.substring(0, 5),
-                  style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.deepOrange),
-                  children: <TextSpan>[
-                TextSpan(
-                    text: dd.substring(5, 8),
-                    style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.normal))
-              ])),
-          const SizedBox(width: 20), // TODO: remove this !
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(toTitleCase(track.artist),
+    return ListView.separated(
+        itemCount: recentTracks.length,
+        //prototypeItem: _buildListItemSong(recentTracks.first),
+        separatorBuilder: (context, index) {
+          return const Divider();
+        },
+        itemBuilder: (context, index) {
+          Track track = recentTracks[index];
+          String dd = track.diffusionDate.split('T')[1].substring(0, 8);
+          return ListTile(
+              leading: RichText(
+                  text: TextSpan(
+                      text: dd.substring(0, 5),
+                      style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.deepOrange),
+                      children: <TextSpan>[
+                    TextSpan(
+                        text: dd.substring(5, 8),
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.normal))
+                  ])),
+              isThreeLine: true,
+              title: Text(toTitleCase(track.artist),
                   overflow: TextOverflow.fade,
                   softWrap: true,
                   style: const TextStyle(
                       fontSize: 20, fontWeight: FontWeight.bold)),
-              Text(toTitleCase(track.title),
-                  overflow: TextOverflow.fade,
-                  softWrap: true,
+              subtitle: RichText(
+                text: TextSpan(
+                  text: toTitleCase(track.title),
                   style: const TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.normal)),
-              Text(track.album != 'Album' ? track.album : '---',
-                  overflow: TextOverflow.fade,
-                  softWrap: true,
-                  style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.normal,
-                      fontStyle: FontStyle.italic)),
-            ],
-          )
-        ],
-      ),
-    );
+                    fontSize: 15,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.black,
+                  ),
+                  children: [
+                    TextSpan(
+                        text: track.album != 'Album'
+                            ? '\n${track.album}'
+                            : '\n---',
+                        style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.normal,
+                            fontStyle: FontStyle.italic)),
+                  ],
+                ),
+              ));
+        });
   }
 
   @override
