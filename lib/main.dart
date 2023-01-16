@@ -166,7 +166,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 height: 48,
                 child:
                     Image(image: CachedNetworkImageProvider(channel.imageUrl))),
-            trailing: const Icon(Icons.favorite),
+            trailing: IconButton(
+              icon: const Icon(Icons.favorite),
+              onPressed: () {},
+            ),
             onTap: () {
               channelManager.changeChannel(index);
               _fetchCurrentTrack(cancel: true);
