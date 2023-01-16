@@ -99,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(color: Colors.deepOrange),
+              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
               child: Container(
                 child: const Text('Last Song',
                     style: TextStyle(color: Colors.white, fontSize: 25)),
@@ -330,7 +330,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         fontSize: isSmallScreen ? 25 : 40,
                         fontWeight:
                             isSmallScreen ? FontWeight.bold : FontWeight.normal,
-                        color: Colors.deepOrange),
+                        color: Theme.of(context).primaryColor),
                     children: <TextSpan>[
                   TextSpan(
                       text: dd.substring(5, 8),
@@ -382,7 +382,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 '${cm.currentChannel.currentTrack.duration.replaceFirst(RegExp(r'^0'), '').replaceFirst(':', 'min ')}s',
                 style: TextStyle(
                     fontSize: isSmallScreen ? 15 : 20,
-                    color: Colors.deepOrange));
+                    color: Theme.of(context).primaryColor));
           }),
         ]);
   }
@@ -464,12 +464,13 @@ class _MyHomePageState extends State<MyHomePage> {
         isSmallScreen = true;
       }
       List<DataColumn> columns = <DataColumn>[
-        const DataColumn(
+        DataColumn(
           label: Expanded(
             child: Text(
               'Time',
               style: TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.deepOrange),
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor),
             ),
           ),
         ),
@@ -510,8 +511,9 @@ class _MyHomePageState extends State<MyHomePage> {
         String dd = track.diffusionDate.split('T')[1].substring(0, 8);
         List<DataCell> cells = [
           DataCell(Text(dd,
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.deepOrange))),
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor))),
           DataCell(Text(toTitleCase(track.artist),
               style: const TextStyle(fontWeight: FontWeight.bold))),
           DataCell(Text(toTitleCase(track.title))),
@@ -549,10 +551,10 @@ class _MyHomePageState extends State<MyHomePage> {
               leading: RichText(
                   text: TextSpan(
                       text: dd.substring(0, 5),
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.normal,
-                          color: Colors.deepOrange),
+                          color: Theme.of(context).primaryColor),
                       children: <TextSpan>[
                     TextSpan(
                         text: dd.substring(5, 8),
