@@ -470,6 +470,7 @@ class _MyHomePageState extends State<MyHomePage> {
               'Time',
               style: TextStyle(
                   fontWeight: FontWeight.bold,
+                  fontSize: 20,
                   color: Theme.of(context).primaryColor),
             ),
           ),
@@ -479,7 +480,9 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Text(
               'Artist',
               style: TextStyle(
-                  fontStyle: FontStyle.normal, fontWeight: FontWeight.bold),
+                  fontStyle: FontStyle.normal,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20),
             ),
           ),
         ),
@@ -488,7 +491,9 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Text(
               'Title',
               style: TextStyle(
-                  fontStyle: FontStyle.normal, fontWeight: FontWeight.normal),
+                  fontStyle: FontStyle.normal,
+                  fontWeight: FontWeight.normal,
+                  fontSize: 20),
             ),
           ),
         ),
@@ -500,7 +505,9 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text(
                 'Album',
                 style: TextStyle(
-                    fontStyle: FontStyle.italic, fontWeight: FontWeight.normal),
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.normal,
+                    fontSize: 20),
               ),
             ),
           ),
@@ -529,7 +536,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return DataTable(
           headingRowColor: MaterialStateProperty.resolveWith<Color?>(
               (Set<MaterialState> states) {
-            return Theme.of(context).colorScheme.primary.withOpacity(0.08);
+            return Theme.of(context).secondaryHeaderColor;
           }),
           columns: columns,
           rows: rows);
