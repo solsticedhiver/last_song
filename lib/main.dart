@@ -103,11 +103,13 @@ class _MyHomePageState extends State<MyHomePage> {
             DrawerHeader(
               decoration: const BoxDecoration(color: Colors.deepOrange),
               child: Container(
-                constraints: const BoxConstraints.expand(),
                 child: const Text('Last Song',
                     style: TextStyle(color: Colors.white, fontSize: 25)),
               ),
             ),
+            Container(
+                padding: const EdgeInsets.all(10),
+                child: const Text('Radio channels')),
             Expanded(
               child: _buildRadioListView(),
             ),
@@ -433,27 +435,22 @@ class _MyHomePageState extends State<MyHomePage> {
             title: const Text('Recently played songs'),
           ),
           body: Center(
-            child: ListView.builder(
-              itemCount: recentTracks.length,
-              prototypeItem: _buildListItemSong(
-                  recentTracks.isNotEmpty ? recentTracks.first : null),
-              itemBuilder: ((context, index) {
-                return _buildListItemSong(recentTracks[index]);
-              }),
-            ),
+            child: recentTracks.isNotEmpty
+                ? ListView.builder(
+                    itemCount: recentTracks.length,
+                    prototypeItem: _buildListItemSong(recentTracks.first),
+                    itemBuilder: ((context, index) {
+                      return _buildListItemSong(recentTracks[index]);
+                    }),
+                  )
+                : const Text('Nothing to show here'),
           ),
         );
       },
     );
   }
 
-  Widget _buildListItemSong(Track? track) {
-    if (track == null) {
-      return const SizedBox(
-        height: 0,
-        width: 0,
-      );
-    }
+  Widget _buildListItemSong(Track track) {
     String dd = track.diffusionDate.split('T')[1].substring(0, 8);
     // TODO: wrap it in a Card, or not?
     return Container(
