@@ -150,7 +150,6 @@ class _MyHomePageState extends State<MyHomePage> {
       itemCount: channelManager.channels.length,
       itemBuilder: (context, index) {
         Channel channel = channelManager.channels[index];
-        String radio = channel.radio;
         String subchannel = channel.subchannel;
         String? name = channel.subchannels[subchannel]?['name'];
         //if (subchannel.isNotEmpty) {
@@ -159,16 +158,23 @@ class _MyHomePageState extends State<MyHomePage> {
         return ListTile(
             //tileColor: index % 2 == 0 ? Colors.grey[350] : null,
             //dense: true,
-            subtitle: name != null ? Text(radio) : null,
-            title: name != null ? Text(name) : Text(radio),
+            subtitle: name != null ? Text(channel.radio) : null,
+            title: name != null ? Text(name) : Text(channel.radio),
             leading: SizedBox(
                 width: 48,
                 height: 48,
                 child:
                     Image(image: CachedNetworkImageProvider(channel.imageUrl))),
             trailing: IconButton(
-              icon: const Icon(Icons.favorite),
-              onPressed: () {},
+              icon: Icon(Icons.favorite,
+                  color: channel.isFavorite
+                      ? Colors.red
+                      : ListTileTheme.of(context).iconColor),
+              onPressed: () {
+                setState(() {
+                  channel.isFavorite = !channel.isFavorite;
+                });
+              },
             ),
             onTap: () {
               channelManager.changeChannel(index);

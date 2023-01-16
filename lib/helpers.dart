@@ -45,6 +45,7 @@ class Channel extends ChangeNotifier {
   late String author;
   late String airingTime;
   late Track currentTrack;
+  bool isFavorite = false;
   List<Track> recentTracks = <Track>[];
 
   Map<String, dynamic> get subchannels => throw UnimplementedError();
@@ -56,6 +57,7 @@ class Channel extends ChangeNotifier {
     this.subchannel = 'Subchannel',
     this.author = 'Author',
     this.airingTime = '00:00 - 00:00',
+    this.isFavorite = false,
   }) {
     currentTrack = Track();
   }
