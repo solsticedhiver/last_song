@@ -100,9 +100,19 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             DrawerHeader(
               decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-              child: Container(
-                child: const Text('Last Song',
-                    style: TextStyle(color: Colors.white, fontSize: 25)),
+              child: Row(
+                children: [
+                  Image.asset(
+                    'assets/black-record-vinyl-excl-point-64x64.png',
+                    height: 64,
+                    width: 64,
+                  ),
+                  SizedBox(
+                    width: 15,
+                  ),
+                  Text('Last Song',
+                      style: TextStyle(color: Colors.white, fontSize: 25)),
+                ],
               ),
             ),
             Container(
