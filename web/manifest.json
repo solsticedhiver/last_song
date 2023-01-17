@@ -1,6 +1,6 @@
 {
-    "name": "nova_title",
-    "short_name": "nova_title",
+    "name": "last_song",
+    "short_name": "last_song",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.nova_title">
+    package="com.example.last_song">
    <application
-        android:label="nova_title"
+        android:label="last_song"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -1,4 +1,4 @@
-# nova_title
+# last_song
 
 Get last track played on Nova radio or any Soma FM channels
 

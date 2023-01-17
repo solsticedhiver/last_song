@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "nova_title" "\0"
+            VALUE "FileDescription", "last_song" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "nova_title" "\0"
+            VALUE "InternalName", "last_song" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2023 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "nova_title.exe" "\0"
-            VALUE "ProductName", "nova_title" "\0"
+            VALUE "OriginalFilename", "last_song.exe" "\0"
+            VALUE "ProductName", "last_song" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
