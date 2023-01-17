@@ -94,36 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     Scaffold scaffold = Scaffold(
       key: scaffoldKey,
-      drawer: Drawer(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-              child: Row(
-                children: [
-                  Image.asset(
-                    'assets/black-record-vinyl-excl-point-64x64.png',
-                    height: 64,
-                    width: 64,
-                  ),
-                  SizedBox(
-                    width: 15,
-                  ),
-                  Text('Last Song',
-                      style: TextStyle(color: Colors.white, fontSize: 25)),
-                ],
-              ),
-            ),
-            Container(
-                padding: const EdgeInsets.all(10),
-                child: const Text('Radio channels')),
-            Expanded(
-              child: _buildRadioListView(),
-            ),
-          ],
-        ),
-      ),
+      drawer: _buildDrawer(),
       appBar: AppBar(
         title: Text(widget.title),
         actions: <Widget>[
@@ -152,6 +123,39 @@ class _MyHomePageState extends State<MyHomePage> {
       bottomSheet: _buildBottomSheet(),
     );
     return scaffold;
+  }
+
+  Widget _buildDrawer() {
+    return Drawer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+            child: Row(
+              children: [
+                Image.asset(
+                  'assets/black-record-vinyl-excl-point-64x64.png',
+                  height: 64,
+                  width: 64,
+                ),
+                SizedBox(
+                  width: 15,
+                ),
+                Text('Last Song',
+                    style: TextStyle(color: Colors.white, fontSize: 25)),
+              ],
+            ),
+          ),
+          Container(
+              padding: const EdgeInsets.all(10),
+              child: const Text('Radio channels')),
+          Expanded(
+            child: _buildRadioListView(),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildRadioListView() {
