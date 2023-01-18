@@ -58,6 +58,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Timer? timer;
+  final List<int> _favorites = <int>[];
 
   void _fetchCurrentTrack({bool cancel = false, bool manual = false}) async {
     //print(
@@ -98,6 +99,16 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
         actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.radio),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => _buildFavoriteRoute(),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () {
@@ -181,12 +192,16 @@ class _MyHomePageState extends State<MyHomePage> {
                     Image(image: CachedNetworkImageProvider(channel.imageUrl))),
             trailing: IconButton(
               icon: Icon(Icons.favorite,
-                  color: channel.isFavorite
+                  color: _favorites.contains(index)
                       ? Colors.red
                       : ListTileTheme.of(context).iconColor),
               onPressed: () {
                 setState(() {
-                  channel.isFavorite = !channel.isFavorite;
+                  if (_favorites.contains(index)) {
+                    _favorites.remove(index);
+                  } else {
+                    _favorites.add(index);
+                  }
                 });
               },
             ),
@@ -609,6 +624,60 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ));
         });
+  }
+
+  Widget _buildFavoriteList() {
+    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
+    return ReorderableListView.builder(
+      itemCount: _favorites.length,
+      itemBuilder: (context, index) {
+        if (_favorites.isEmpty) {
+          return const SizedBox(
+            height: 0,
+            width: 0,
+          );
+        }
+        final f = cm.channels[_favorites[index]];
+        return ListTile(
+            key: Key('$index'),
+            leading: Image(image: CachedNetworkImageProvider(f.imageUrl)),
+            title: Text(f.subchannels[f.subchannel]['name']),
+            subtitle: Text(f.radio),
+            onTap: () {
+              final cm = Provider.of<ChannelManager>(context, listen: false);
+              cm.changeChannel(_favorites[index]);
+              _fetchCurrentTrack(cancel: true);
+              Navigator.pop(context);
+            });
+      },
+      onReorder: (oldIndex, newIndex) {
+        setState(() {
+          if (oldIndex < newIndex) {
+            newIndex -= 1;
+          }
+          int val = _favorites.removeAt(oldIndex);
+          _favorites.insert(newIndex, val);
+        });
+      },
+    );
+  }
+
+  Widget _buildFavoriteRoute() {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Favorites'),
+      ),
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          if (constraints.maxWidth > 1000) {
+            return _buildFavoriteList();
+            //return _buildFavoriteGrid();
+          } else {
+            return _buildFavoriteList();
+          }
+        },
+      ),
+    );
   }
 
   @override

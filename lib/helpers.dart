@@ -5,19 +5,19 @@ import 'somafm.dart';
 
 class ChannelManager extends ChangeNotifier {
   final channels = <Channel>[];
-  Channel _currentChannel = Channel();
+  int _currentChannel = -1;
 
-  Channel get currentChannel => _currentChannel;
+  Channel get currentChannel => channels[_currentChannel];
 
   void changeChannel(int index) {
-    _currentChannel = channels[index];
+    _currentChannel = index;
     notifyListeners();
   }
 
   void addChannel(Channel channel) {
     channels.add(channel);
     if (channels.length == 1) {
-      _currentChannel = channels[0];
+      _currentChannel = 0;
     }
   }
 
@@ -31,7 +31,7 @@ class ChannelManager extends ChangeNotifier {
   }
 
   Future<int> fetchCurrentTrack([bool manual = false]) async {
-    int ret = await _currentChannel.fetchCurrentTrack(manual);
+    int ret = await currentChannel.fetchCurrentTrack(manual);
     notifyListeners();
     return ret;
   }
@@ -45,7 +45,7 @@ class Channel extends ChangeNotifier {
   late String author;
   late String airingTime;
   late Track currentTrack;
-  bool isFavorite = false;
+  //bool isFavorite = false;
   List<Track> recentTracks = <Track>[];
 
   Map<String, dynamic> get subchannels => throw UnimplementedError();
@@ -57,7 +57,7 @@ class Channel extends ChangeNotifier {
     this.subchannel = 'Subchannel',
     this.author = 'Author',
     this.airingTime = '00:00 - 00:00',
-    this.isFavorite = false,
+    //this.isFavorite = false,
   }) {
     currentTrack = Track();
   }
