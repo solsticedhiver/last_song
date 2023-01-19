@@ -59,6 +59,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   Timer? timer;
   final List<int> _favorites = <int>[];
+  final List<List<int>> _channelsByType = <List<int>>[];
 
   void _fetchCurrentTrack({bool cancel = false, bool manual = false}) async {
     //print(
@@ -163,10 +164,87 @@ class _MyHomePageState extends State<MyHomePage> {
               padding: const EdgeInsets.all(10),
               child: const Text('Radio channels')),
           Expanded(
-            child: _buildRadioListView(),
+            //child: _buildRadioListView(),
+            child: _buildRadioListWithExpansionTile(),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildRadioListWithExpansionTile() {
+    final cm = Provider.of<ChannelManager>(context, listen: false);
+    // initialize _channelsByType
+    if (_channelsByType.isEmpty) {
+      final Map<String, dynamic> networks = {};
+      int index;
+      for (var c in cm.channels) {
+        index = cm.channels.indexOf(c);
+        String type = c.runtimeType.toString();
+        if (networks.keys.contains(type)) {
+          networks[type].add(index);
+        } else {
+          networks[type] = [index];
+        }
+      }
+      for (var c in networks.values) {
+        _channelsByType.add(c);
+      }
+    }
+
+    List<Widget> children = [];
+    for (var t in _channelsByType) {
+      final l = ListView.builder(
+        shrinkWrap: true,
+        physics: const ClampingScrollPhysics(),
+        itemCount: t.length,
+        prototypeItem:
+            _buildRadioListItemInExpansionTile(cm.channels[t[0]], 0, cm, t),
+        itemBuilder: (context, index) {
+          Channel c = cm.channels[t[index]];
+          return _buildRadioListItemInExpansionTile(c, index, cm, t);
+        },
+      );
+
+      children.add(
+          ExpansionTile(title: Text(cm.channels[t[0]].radio), children: [l]));
+    }
+    return ListView(
+      primary: true,
+      children: children,
+    );
+  }
+
+  Widget _buildRadioListItemInExpansionTile(
+      Channel c, int index, ChannelManager cm, List<int> t) {
+    return ListTile(
+      key: Key('$index'),
+      title: Text(c.subchannels[c.subchannel]['name']),
+      subtitle: Text(c.radio),
+      leading: SizedBox(
+          width: 48,
+          height: 48,
+          child: Image(image: CachedNetworkImageProvider(c.imageUrl))),
+      trailing: IconButton(
+        icon: Icon(Icons.favorite,
+            color: _favorites.contains(t[index])
+                ? Colors.red
+                : ListTileTheme.of(context).iconColor),
+        onPressed: () {
+          setState(() {
+            if (_favorites.contains(t[index])) {
+              _favorites.remove(t[index]);
+            } else {
+              _favorites.add(t[index]);
+            }
+          });
+        },
+      ),
+      onTap: () {
+        cm.changeChannel(t[index]);
+        _fetchCurrentTrack(cancel: true);
+        Navigator.pop(context);
+      },
     );
   }
 
@@ -463,7 +541,9 @@ class _MyHomePageState extends State<MyHomePage> {
             title: const Text('Recently played songs'),
           ),
           body: Container(
-            alignment: Alignment.topCenter,
+            alignment: recentTracks.isNotEmpty
+                ? Alignment.topCenter
+                : Alignment.center,
             child: recentTracks.isNotEmpty
                 //? _buildListItemSong(recentTracks)
                 ? SingleChildScrollView(
