@@ -80,8 +80,8 @@ class Nova extends Channel {
             // add 10 minutes
             .add(const Duration(minutes: 10))
             // but subtract track length
-            .subtract(
-                Duration(minutes: int.parse(ds[0]), seconds: int.parse(ds[1])))
+            //.subtract(
+            //    Duration(minutes: int.parse(ds[0]), seconds: int.parse(ds[1])))
             .toIso8601String();
       }
     }
@@ -198,7 +198,11 @@ class Nova extends Channel {
             title = e['title'];
           }
           if (dd != '' && title != '') {
-            Track track = Track(diffusionDate: dd, title: title);
+            // add 10 minutes
+            String diffusionDate = DateTime.parse(dd)
+                .add(const Duration(minutes: 10))
+                .toIso8601String();
+            Track track = Track(diffusionDate: diffusionDate, title: title);
             //print(track);
             ret.add(track);
             dd = '';
