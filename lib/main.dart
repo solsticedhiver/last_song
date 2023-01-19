@@ -100,7 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.radio),
+            icon: const Icon(Icons.favorite),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -483,13 +483,9 @@ class _MyHomePageState extends State<MyHomePage> {
       } else {
         isSmallScreen = true;
       }
-      int sum = 0;
-      final rt =
-          recentTracks.map((e) => e.album == 'Album' ? 0 : 1).forEach((e) {
-        sum += e;
-      });
+      final int empties = recentTracks.where((e) => e.album == 'Album').length;
       // remove last column (Album) if none is defined
-      if (sum == 0) {
+      if (empties == recentTracks.length) {
         isSmallScreen = true;
       }
       List<DataColumn> columns = <DataColumn>[
