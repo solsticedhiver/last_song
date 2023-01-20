@@ -180,43 +180,49 @@ class Nova extends Channel {
       'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
     });
     http.StreamedResponse streamedResponse = await req.send();
-    final resp = await http.Response.fromStream(streamedResponse);
+    final http.Response resp;
+    try {
+      resp = await http.Response.fromStream(streamedResponse);
+    } catch (e) {
+      return ret;
+    }
 
-    if (resp.statusCode == 200) {
-      if (webScraper.loadFromString(resp.body)) {
-        // first pass only collect title and diffusionDate
-        List<Map<String, dynamic>> elements =
-            webScraper.getElement('div.wwtt_right p', ['class']);
-        //print(elements);
-        String dd = '', title = '';
-        for (var e in elements) {
-          //print(e);
-          if (e['attributes']['class'] != null &&
-              e['attributes']['class'].split(' ').contains('time')) {
-            dd = '2000-01-01T${e["title"]}:00';
-          } else {
-            title = e['title'];
-          }
-          if (dd != '' && title != '') {
-            // add 10 minutes
-            String diffusionDate = DateTime.parse(dd)
-                .add(const Duration(minutes: 10))
-                .toIso8601String();
-            Track track = Track(diffusionDate: diffusionDate, title: title);
-            //print(track);
-            ret.add(track);
-            dd = '';
-            title = '';
-          }
+    if (resp.statusCode != 200) {
+      return ret;
+    }
+    if (webScraper.loadFromString(resp.body)) {
+      // first pass only collect title and diffusionDate
+      List<Map<String, dynamic>> elements =
+          webScraper.getElement('div.wwtt_right p', ['class']);
+      //print(elements);
+      String dd = '', title = '';
+      for (var e in elements) {
+        //print(e);
+        if (e['attributes']['class'] != null &&
+            e['attributes']['class'].split(' ').contains('time')) {
+          dd = '2000-01-01T${e["title"]}:00';
+        } else {
+          title = e['title'];
         }
-        elements = webScraper.getElement('div.wwtt_right h2', []);
-        //print(elements);
-        int indx = 0;
-        // add artist
-        for (var e in elements) {
-          ret[indx].artist = e['title'];
-          indx++;
+        if (dd != '' && title != '') {
+          // add 10 minutes
+          String diffusionDate = DateTime.parse(dd)
+              .add(const Duration(minutes: 10))
+              .toIso8601String();
+          Track track = Track(diffusionDate: diffusionDate, title: title);
+          //print(track);
+          ret.add(track);
+          dd = '';
+          title = '';
         }
+      }
+      elements = webScraper.getElement('div.wwtt_right h2', []);
+      //print(elements);
+      int indx = 0;
+      // add artist
+      for (var e in elements) {
+        ret[indx].artist = e['title'];
+        indx++;
       }
     }
     //print(ret);
