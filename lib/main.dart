@@ -102,6 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.favorite),
+            tooltip: 'Favorites',
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -112,6 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           IconButton(
             icon: const Icon(Icons.history),
+            tooltip: 'Track history',
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -129,7 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: () {
           _fetchCurrentTrack(cancel: true, manual: true);
         },
-        tooltip: 'sync',
+        tooltip: 'Update current track',
         child: const Icon(Icons.sync),
       ),
       bottomSheet: _buildBottomSheet(),
