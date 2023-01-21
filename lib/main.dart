@@ -399,7 +399,9 @@ class _MyHomePageState extends State<MyHomePage> {
       double bottomSheetSize, BoxConstraints constraints) {
     double imgSize = 400;
     double gap = 30;
+    // on very large screen
     if (constraints.maxHeight > 900 && constraints.maxWidth > 1500) {
+      // increase image size
       imgSize = 700;
       gap = 45;
     }
