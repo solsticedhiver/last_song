@@ -22,6 +22,7 @@ Future<ResponseBandcamp> searchBandcamp(String s, String type) async {
     'fan_id': null
   });
 
+  // the official API is not free, so using the result of elastic search
   http.Request req = http.Request(
       'POST',
       Uri.parse(

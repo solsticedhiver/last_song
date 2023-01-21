@@ -4,6 +4,7 @@ import 'package:timezone/data/latest.dart' as tz;
 
 import 'helpers.dart';
 import 'bandcamp.dart';
+import 'discogs.dart';
 
 class SomaFm extends Channel {
   static const _subchannels = {
@@ -110,17 +111,31 @@ class SomaFm extends Channel {
         track.artist != currentTrack.artist) {
       currentTrack.updateFrom(track);
       // search for an image cover
-      ResponseBandcamp resp =
-          await searchBandcamp('${track.title} ${track.artist}', 't');
+      ResponseBandcamp resp = await searchBandcamp(
+          '${track.title} ${track.album} ${track.artist}', 't');
       if (resp.imageUrl.isNotEmpty) {
         currentTrack.imageUrl = resp.imageUrl;
         if (resp.duration.isNotEmpty) {
           currentTrack.duration = resp.duration;
         }
       } else {
-        resp = await searchBandcamp('${track.album} ${track.artist}', 'a');
+        resp = await searchBandcamp('${track.title} ${track.artist}', 't');
         if (resp.imageUrl.isNotEmpty) {
           currentTrack.imageUrl = resp.imageUrl;
+        } else {
+          resp = await searchBandcamp('${track.album} ${track.artist}', 'a');
+          if (resp.imageUrl.isNotEmpty) {
+            currentTrack.imageUrl = resp.imageUrl;
+          } else {
+            // try with discogs
+            ResponseDiscogs resp = await searchDiscogs({
+              'artist': track.artist,
+              'q': track.album,
+            });
+            if (resp.imageUrl.isNotEmpty) {
+              currentTrack.imageUrl = resp.imageUrl;
+            }
+          }
         }
       }
       notifyListeners();
