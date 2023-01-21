@@ -347,7 +347,7 @@ class _MyHomePageState extends State<MyHomePage> {
         bSS = bottomSheetSizeSmallScreen;
       }
       if (constraints.maxWidth > 1000) {
-        return _buildCurrentTrackWidgetLargeScreen(bSS);
+        return _buildCurrentTrackWidgetLargeScreen(bSS, constraints);
       } else {
         return _buildCurrentTrackWidgetSmallScreen(bSS);
       }
@@ -393,7 +393,12 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildCurrentTrackWidgetLargeScreen(double bottomSheetSize) {
+  Widget _buildCurrentTrackWidgetLargeScreen(
+      double bottomSheetSize, BoxConstraints constraints) {
+    double imgSize = 400;
+    if (constraints.maxHeight > 900 && constraints.maxWidth > 1500) {
+      imgSize = 700;
+    }
     return Container(
       padding: EdgeInsets.only(bottom: bottomSheetSize),
       child: Row(
@@ -401,14 +406,20 @@ class _MyHomePageState extends State<MyHomePage> {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Consumer<ChannelManager>(builder: (context, cm, child) {
-            double imgSize = 400;
             if (cm.currentChannel.currentTrack.imageUrl.isEmpty) {
-              return Image.asset(defaultImage, height: imgSize, width: imgSize);
+              return Image.asset(
+                defaultImage,
+                height: imgSize,
+                width: imgSize,
+                fit: BoxFit.fill,
+              );
             } else {
               return CachedNetworkImage(
-                  imageUrl: cm.currentChannel.currentTrack.imageUrl,
-                  height: imgSize,
-                  width: imgSize);
+                imageUrl: cm.currentChannel.currentTrack.imageUrl,
+                height: imgSize,
+                width: imgSize,
+                fit: BoxFit.fill,
+              );
             }
           }),
           const SizedBox(width: 15),
