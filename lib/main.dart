@@ -398,8 +398,10 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildCurrentTrackWidgetLargeScreen(
       double bottomSheetSize, BoxConstraints constraints) {
     double imgSize = 400;
+    double gap = 30;
     if (constraints.maxHeight > 900 && constraints.maxWidth > 1500) {
       imgSize = 700;
+      gap = 45;
     }
     return Container(
       padding: EdgeInsets.only(bottom: bottomSheetSize),
@@ -424,7 +426,7 @@ class _MyHomePageState extends State<MyHomePage> {
               );
             }
           }),
-          const SizedBox(width: 15),
+          SizedBox(width: gap),
           Flexible(
             flex: 0,
             child: _buildCurrentTrackText(),
