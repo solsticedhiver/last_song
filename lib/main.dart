@@ -250,6 +250,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+/*
   Widget _buildRadioListView() {
     final channelManager = Provider.of<ChannelManager>(context, listen: false);
     return ListView.separated(
@@ -297,6 +298,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
+*/
 
   Widget _buildBottomSheet() {
     return LayoutBuilder(
@@ -650,8 +652,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ];
         // add album only is screen is large enough
         if (!isSmallScreen) {
-          cells.add(DataCell(Text(
-              track.album != 'Album' ? '${track.album}' : '---',
+          cells.add(DataCell(Text(track.album != 'Album' ? track.album : '---',
               style: const TextStyle(fontStyle: FontStyle.italic))));
         }
         rows.add(DataRow(cells: cells));
@@ -666,6 +667,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+/*
   Widget _buildListItemSong(List<Track> recentTracks) {
     // TODO: wrap it in a Card, or not?
     return ListView.separated(
@@ -719,7 +721,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ));
         });
   }
-
+*/
   Widget _buildFavoriteList() {
     ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
     return ReorderableListView.builder(

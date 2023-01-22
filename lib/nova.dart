@@ -74,7 +74,7 @@ class Nova extends Channel {
         currentTrack.imageUrl = ct['image'] is String ? ct['image'] : '';
         currentTrack.diffusionDate = ct['diffusion_date'];
         currentTrack.duration = ct['duration'];
-        final ds = currentTrack.duration.split(':');
+        //final ds = currentTrack.duration.split(':');
         // WTF: why does the datetime always late for around 10 minutes??
         currentTrack.diffusionDate = DateTime.parse(currentTrack.diffusionDate)
             // add 10 minutes
