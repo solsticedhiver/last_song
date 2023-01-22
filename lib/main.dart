@@ -60,6 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Timer? timer;
   final List<int> _favorites = <int>[];
   final List<List<int>> _channelsByType = <List<int>>[];
+  final List<bool> _drawerExpansionPanelListState = <bool>[false, false];
 
   void _fetchCurrentTrack({bool cancel = false, bool manual = false}) async {
     //print(
@@ -83,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ScaffoldState? skcs = scaffoldKey.currentState;
       if (skcs != null && skcc != null) {
         ScaffoldMessengerState sms = ScaffoldMessenger.of(skcc);
-        sms.hideCurrentSnackBar();
+        sms.clearSnackBars();
         sms.showSnackBar(SnackBar(
           content: Text(msg),
           behavior: SnackBarBehavior.floating,
@@ -162,19 +163,20 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
           ),
-          Container(
-              padding: const EdgeInsets.all(10),
-              child: const Text('Radio channels')),
+          const ListTile(
+              title: Text('Radio channels',
+                  style: TextStyle(fontStyle: FontStyle.italic))),
           Expanded(
+            flex: 1,
             //child: _buildRadioListView(),
-            child: _buildRadioListWithExpansionTile(),
+            child: _buildRadioExpansionPanelList(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRadioListWithExpansionTile() {
+  Widget _buildRadioExpansionPanelList() {
     final cm = Provider.of<ChannelManager>(context, listen: false);
     // initialize _channelsByType
     if (_channelsByType.isEmpty) {
@@ -194,30 +196,40 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
 
-    List<Widget> children = [];
+    List<ExpansionPanel> children = [];
     for (var t in _channelsByType) {
       final l = ListView.builder(
         shrinkWrap: true,
         physics: const ClampingScrollPhysics(),
         itemCount: t.length,
         prototypeItem:
-            _buildRadioListItemInExpansionTile(cm.channels[t[0]], 0, cm, t),
+            _buildRadioListExpansionPanel(cm.channels[t[0]], 0, cm, t),
         itemBuilder: (context, index) {
           Channel c = cm.channels[t[index]];
-          return _buildRadioListItemInExpansionTile(c, index, cm, t);
+          return _buildRadioListExpansionPanel(c, index, cm, t);
         },
       );
 
-      children.add(
-          ExpansionTile(title: Text(cm.channels[t[0]].radio), children: [l]));
+      children.add(ExpansionPanel(
+        headerBuilder: (context, isExpanded) {
+          return ListTile(title: Text(cm.channels[t[0]].radio));
+        },
+        body: l,
+        isExpanded: _drawerExpansionPanelListState[_channelsByType.indexOf(t)],
+      ));
     }
-    return ListView(
-      primary: true,
+    return SingleChildScrollView(
+        child: ExpansionPanelList(
+      expansionCallback: (panelIndex, isExpanded) {
+        setState(() {
+          _drawerExpansionPanelListState[panelIndex] = !isExpanded;
+        });
+      },
       children: children,
-    );
+    ));
   }
 
-  Widget _buildRadioListItemInExpansionTile(
+  Widget _buildRadioListExpansionPanel(
       Channel c, int index, ChannelManager cm, List<int> t) {
     return ListTile(
       key: Key('$index'),
