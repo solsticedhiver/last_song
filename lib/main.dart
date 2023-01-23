@@ -748,36 +748,43 @@ class _MyHomePageState extends State<MyHomePage> {
 */
   Widget _buildFavoriteGrid() {
     ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
-    return GridView.count(
-      crossAxisCount: 3,
-      children: _favorites.map((e) {
-        final f = cm.channels[e];
-        return InkWell(
-          child: Card(
-            child: Column(
-              children: [
-                Expanded(
-                    child: Container(
-                        padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
-                        child: CachedNetworkImage(
-                            imageUrl: f.imageUrlBig, fit: BoxFit.fitHeight))),
-                ListTile(
-                  title:
-                      Center(child: Text(f.subchannels[f.subchannel]['name'])),
-                  subtitle: Center(child: Text(f.radio)),
-                ),
-              ],
-            ),
-          ),
-          onTap: () {
-            final cm = Provider.of<ChannelManager>(context, listen: false);
-            cm.changeChannel(e);
-            _fetchCurrentTrack(cancel: true);
-            Navigator.pop(context);
-          },
-        );
-      }).toList(),
-    );
+    return Center(
+        child: SizedBox(
+            width:
+                1200, // 400px image * 3, could be a liitle bigger but why care ?
+            child: GridView.count(
+              crossAxisCount: 3,
+              children: _favorites.map((e) {
+                final f = cm.channels[e];
+                return InkWell(
+                  child: Card(
+                    child: Column(
+                      children: [
+                        Expanded(
+                            child: Container(
+                                padding:
+                                    const EdgeInsets.fromLTRB(15, 15, 15, 0),
+                                child: CachedNetworkImage(
+                                    imageUrl: f.imageUrlBig,
+                                    fit: BoxFit.fitHeight))),
+                        ListTile(
+                          title: Center(
+                              child: Text(f.subchannels[f.subchannel]['name'])),
+                          subtitle: Center(child: Text(f.radio)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  onTap: () {
+                    final cm =
+                        Provider.of<ChannelManager>(context, listen: false);
+                    cm.changeChannel(e);
+                    _fetchCurrentTrack(cancel: true);
+                    Navigator.pop(context);
+                  },
+                );
+              }).toList(),
+            )));
   }
 
   Widget _buildFavoriteList() {
