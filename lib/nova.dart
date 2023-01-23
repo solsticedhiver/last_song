@@ -108,7 +108,9 @@ class Nova extends Channel {
     if (DateTime.now().compareTo(validity) >= 0) {
       try {
         resp = await http.get(Uri.parse('$radioNova$subchannel'));
+        //print(resp.statusCode);
       } catch (e) {
+        print(e);
         return 0;
       }
 
@@ -184,7 +186,9 @@ class Nova extends Channel {
     final http.Response resp;
     try {
       resp = await http.Response.fromStream(streamedResponse);
+      //print(resp.statusCode);
     } catch (e) {
+      print(e);
       return ret;
     }
 

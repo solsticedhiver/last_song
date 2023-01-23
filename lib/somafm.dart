@@ -309,7 +309,13 @@ class SomaFm extends Channel {
 
     List<Track> ret = <Track>[];
     String page = '/recent/$subchannel.html';
-    if (await webScraper.loadWebPage(page)) {
+    bool isLoaded = false;
+    try {
+      isLoaded = await webScraper.loadWebPage(page);
+    } on WebScraperException catch (e) {
+      print(e.errorMessage());
+    }
+    if (isLoaded) {
       List<Map<String, dynamic>> elements =
           webScraper.getElement('#playinc table tr td', ['colspan']);
       //print(elements);

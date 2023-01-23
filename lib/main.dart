@@ -139,7 +139,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: _buildCurrentTrackWidget(constraints),
                     )))),
             onRefresh: () async {
-              print('onRefresh');
               return _fetchCurrentTrack(cancel: true, manual: true);
             });
       }),
