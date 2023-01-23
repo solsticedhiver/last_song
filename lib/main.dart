@@ -62,7 +62,8 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<List<int>> _channelsByType = <List<int>>[];
   final List<bool> _drawerExpansionPanelListState = <bool>[false, false];
 
-  void _fetchCurrentTrack({bool cancel = false, bool manual = false}) async {
+  Future<void> _fetchCurrentTrack(
+      {bool cancel = false, bool manual = false}) async {
     //print(
     //    '${DateTime.now().toString().substring(11, 19)}: _fetchCurrentTrack(manual:$manual)');
     if (cancel) {
@@ -125,9 +126,23 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      body: Center(
-        child: _buildCurrentTrackWidget(),
-      ),
+      body: LayoutBuilder(builder: (context, constraints) {
+        return RefreshIndicator(
+            child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: IntrinsicHeight(
+                        child: Center(
+                      child: _buildCurrentTrackWidget(constraints),
+                    )))),
+            onRefresh: () async {
+              print('onRefresh');
+              return _fetchCurrentTrack(cancel: true, manual: true);
+            });
+      }),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           _fetchCurrentTrack(cancel: true, manual: true);
@@ -353,21 +368,18 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildCurrentTrackWidget() {
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-      double bSS;
-      if (constraints.maxHeight > 700) {
-        bSS = bottomSheetSizeLargeScreen;
-      } else {
-        bSS = bottomSheetSizeSmallScreen;
-      }
-      if (constraints.maxWidth > 1000) {
-        return _buildCurrentTrackWidgetLargeScreen(bSS, constraints);
-      } else {
-        return _buildCurrentTrackWidgetSmallScreen(bSS);
-      }
-    });
+  Widget _buildCurrentTrackWidget(BoxConstraints constraints) {
+    double bSS;
+    if (constraints.maxHeight > 700) {
+      bSS = bottomSheetSizeLargeScreen;
+    } else {
+      bSS = bottomSheetSizeSmallScreen;
+    }
+    if (constraints.maxWidth > 1000) {
+      return _buildCurrentTrackWidgetLargeScreen(bSS, constraints);
+    } else {
+      return _buildCurrentTrackWidgetSmallScreen(bSS);
+    }
   }
 
   Widget _buildCurrentTrackWidgetSmallScreen(double bottomSheetSize) {
