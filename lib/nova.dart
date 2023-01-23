@@ -66,10 +66,9 @@ class Nova extends Channel {
 
     final ct = json['currentTrack'];
     if (ct != null) {
-      int oldId = currentTrack.id;
-      currentTrack.id = int.parse(ct['id']);
-      if (oldId != currentTrack.id) {
+      if (currentTrack.title != ct['title']) {
         ret += 1;
+        currentTrack.id = int.parse(ct['id']);
         currentTrack.artist = ct['artist'];
         currentTrack.title = ct['title'];
         currentTrack.imageUrl = ct['image'] is String ? ct['image'] : '';
@@ -117,7 +116,7 @@ class Nova extends Channel {
       if (resp.statusCode == 200) {
         ret = updateFromJson(jsonDecode(resp.body));
         // try to get an image cover if there is none
-        if (currentTrack.id != -1 && currentTrack.imageUrl.isEmpty) {
+        if (currentTrack.artist != 'Artist' && currentTrack.imageUrl.isEmpty) {
           ResponseBandcamp resp = await searchBandcamp(
               '${currentTrack.artist} ${currentTrack.title}', 't');
           if (resp.imageUrl.isNotEmpty) {
@@ -158,6 +157,14 @@ class Nova extends Channel {
       ret = 0;
     }
     recentTracks = await getRecentTracks();
+    // if ajax call returned nothing but last track list is more up to date
+    Track lastTrack = recentTracks[0];
+    final DateTime ltd = DateTime.parse(lastTrack.diffusionDate);
+    final DateTime cd = DateTime.parse(currentTrack.diffusionDate);
+    if (cd.compareTo(ltd) == -1) {
+      print('Late update');
+      currentTrack.updateFrom(lastTrack);
+    }
     notifyListeners();
 
     return ret;
@@ -201,6 +208,7 @@ class Nova extends Channel {
           webScraper.getElement('div.wwtt_right p', ['class']);
       //print(elements);
       String dd = '', title = '';
+      // first pass to get diffusion date and title
       for (var e in elements) {
         //print(e);
         if (e['attributes']['class'] != null &&
@@ -221,12 +229,23 @@ class Nova extends Channel {
           title = '';
         }
       }
+      // second pass to get the artist name
       elements = webScraper.getElement('div.wwtt_right h2', []);
       //print(elements);
       int indx = 0;
       // add artist
       for (var e in elements) {
         ret[indx].artist = e['title'];
+        indx++;
+      }
+      // third pass to get image
+      elements = webScraper.getElement('div.img_wwtt img', ['src']);
+      //print(elements);
+      indx = 0;
+      // add image
+      for (var e in elements) {
+        //print(e);
+        ret[indx].imageUrl = e['attributes']['src'];
         indx++;
       }
     }
