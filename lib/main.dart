@@ -734,6 +734,40 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 */
+  Widget _buildFavoriteGrid() {
+    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
+    return GridView.count(
+      crossAxisCount: 3,
+      children: _favorites.map((e) {
+        final f = cm.channels[e];
+        return InkWell(
+          child: Card(
+            child: Column(
+              children: [
+                Expanded(
+                    child: Container(
+                        padding: const EdgeInsets.fromLTRB(15, 15, 15, 0),
+                        child: CachedNetworkImage(
+                            imageUrl: f.imageUrlBig, fit: BoxFit.fitHeight))),
+                ListTile(
+                  title:
+                      Center(child: Text(f.subchannels[f.subchannel]['name'])),
+                  subtitle: Center(child: Text(f.radio)),
+                ),
+              ],
+            ),
+          ),
+          onTap: () {
+            final cm = Provider.of<ChannelManager>(context, listen: false);
+            cm.changeChannel(e);
+            _fetchCurrentTrack(cancel: true);
+            Navigator.pop(context);
+          },
+        );
+      }).toList(),
+    );
+  }
+
   Widget _buildFavoriteList() {
     ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
     return ReorderableListView.builder(
@@ -777,9 +811,9 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-          if (constraints.maxWidth > 1000) {
-            return _buildFavoriteList();
-            //return _buildFavoriteGrid();
+          if (constraints.maxWidth > 700) {
+            //return _buildFavoriteList();
+            return _buildFavoriteGrid();
           } else {
             return _buildFavoriteList();
           }

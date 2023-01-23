@@ -56,6 +56,7 @@ class Nova extends Channel {
     }
     imageUrl =
         "https://www.nova.fr/wp-content/uploads/sites${subchannels[subchannel]['image']}";
+    imageUrlBig = imageUrl;
     author = '';
     airingTime = '';
   }

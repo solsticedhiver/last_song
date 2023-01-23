@@ -40,6 +40,7 @@ class ChannelManager extends ChangeNotifier {
 class Channel extends ChangeNotifier {
   late String radio;
   late String imageUrl;
+  late String imageUrlBig;
   late String show;
   late String subchannel;
   late String author;
@@ -53,6 +54,7 @@ class Channel extends ChangeNotifier {
   Channel({
     this.radio = 'Radio',
     this.imageUrl = '',
+    this.imageUrlBig = '',
     this.show = 'Show',
     this.subchannel = 'Subchannel',
     this.author = 'Author',
