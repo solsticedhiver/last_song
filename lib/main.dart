@@ -60,7 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Timer? timer;
   final List<int> _favorites = <int>[];
   final List<List<int>> _channelsByType = <List<int>>[];
-  final List<bool> _drawerExpansionPanelListState = <bool>[false, false];
+  final List<bool> _drawerExpansionPanelListState = <bool>[false, false, false];
 
   Future<void> _fetchCurrentTrack(
       {bool cancel = false, bool manual = false}) async {
@@ -252,7 +252,9 @@ class _MyHomePageState extends State<MyHomePage> {
       leading: SizedBox(
           width: 48,
           height: 48,
-          child: Image(image: CachedNetworkImageProvider(c.imageUrl))),
+          child: c.imageUrl.startsWith('assets')
+              ? Image.asset(c.imageUrl)
+              : Image(image: CachedNetworkImageProvider(c.imageUrl))),
       trailing: IconButton(
         icon: Icon(Icons.favorite,
             color: _favorites.contains(t[index])
@@ -348,12 +350,14 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 Consumer<ChannelManager>(
                   builder: (context, cm, child) {
-                    return Image(
-                      image: CachedNetworkImageProvider(
-                          cm.currentChannel.imageUrl),
-                      height: bottomSheetSize,
-                      width: bottomSheetSize,
-                    );
+                    return cm.currentChannel.imageUrl.startsWith('assets')
+                        ? Image.asset(cm.currentChannel.imageUrl)
+                        : Image(
+                            image: CachedNetworkImageProvider(
+                                cm.currentChannel.imageUrl),
+                            height: bottomSheetSize,
+                            width: bottomSheetSize,
+                          );
                   },
                 ),
                 const SizedBox(
@@ -763,9 +767,11 @@ class _MyHomePageState extends State<MyHomePage> {
                             child: Container(
                                 padding:
                                     const EdgeInsets.fromLTRB(15, 15, 15, 0),
-                                child: CachedNetworkImage(
-                                    imageUrl: f.imageUrlBig,
-                                    fit: BoxFit.fitHeight))),
+                                child: f.imageUrlBig.startsWith('assets')
+                                    ? Image.asset(f.imageUrlBig)
+                                    : CachedNetworkImage(
+                                        imageUrl: f.imageUrlBig,
+                                        fit: BoxFit.fitHeight))),
                         ListTile(
                           title: Center(
                               child: Text(f.subchannels[f.subchannel]['name'])),

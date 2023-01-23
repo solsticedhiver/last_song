@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 
 import 'nova.dart';
 import 'somafm.dart';
+import 'bbcone.dart';
 
 class ChannelManager extends ChangeNotifier {
   final channels = <Channel>[];
@@ -27,6 +28,9 @@ class ChannelManager extends ChangeNotifier {
     }
     for (var s in SomaFm.getSubchannels.keys) {
       addChannel(SomaFm(s));
+    }
+    for (var s in RadioOne.getSubchannels.keys) {
+      addChannel(RadioOne(s));
     }
   }
 
