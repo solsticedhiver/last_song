@@ -25,17 +25,15 @@ import 'dart:convert';
 import 'bandcamp.dart';
 import 'helpers.dart';
 
-import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
-import 'package:html_unescape/html_unescape.dart';
-import 'package:web_scraper/web_scraper.dart';
 
 const String bbcRadioOne =
-    'https://rms.api.bbc.co.uk/v2/services/bbc_radio_one/segments/latest?experience=domestic&offset=0&limit=10';
+    'https://rms.api.bbc.co.uk/v2/services/bbc_radio_one/tracks/latest/playable?limit=10';
+//'https://rms.api.bbc.co.uk/v2/services/bbc_radio_one/segments/latest?experience=domestic&offset=0&limit=10';
 
 class RadioOne extends Channel {
   static const _subchannels = {
-    "radio-one": {"name": "BBC Radio 1"}
+    "bbc_radio_one": {"name": "BBC Radio 1"}
   };
   @override
   Map<String, dynamic> get subchannels => _subchannels;
@@ -65,7 +63,7 @@ class RadioOne extends Channel {
         currentTrack.artist = ct['titles']['primary'];
         currentTrack.title = ct['titles']['secondary'];
         currentTrack.imageUrl = ct['image_url'];
-        //currentTrack.diffusionDate = ct['offset']['start']; // TODO: do somethng with it
+        //currentTrack.diffusionDate = ct['offset']['start']; // TODO: do something with it
         //currentTrack.duration = ct['offset']['end'];
       }
     }
@@ -80,7 +78,9 @@ class RadioOne extends Channel {
     if (recentTracks.isNotEmpty) {
       currentTrack.updateFrom(recentTracks[0]);
     }
-    if (currentTrack.imageUrl == '') {
+    if (currentTrack.imageUrl == '' &&
+        currentTrack.artist != 'Artist' &&
+        currentTrack.title != 'Title') {
       ResponseBandcamp sb = await searchBandcamp(
           '${currentTrack.artist} ${currentTrack.title}', 't');
       if (sb.imageUrl != '') {
@@ -131,3 +131,9 @@ class RadioOne extends Channel {
     return ret;
   }
 }
+
+// https://rms.api.bbc.co.uk/docs/swagger.json#/definitions/ErrorResponse
+
+// curl -X 'GET'   'https://rms.api.bbc.co.uk/v2/broadcasts/latest?service=bbc_radio_one&on_air=now'   -H 'accept: application/json'   -H 'X-API-Key: 3A5LU4tQWvWW3lpgF5OT4IWUoyLaju9z'|jq .
+
+// curl -X 'GET'   'https://rms.api.bbc.co.uk/v2/broadcasts/latest?service=bbc_radio_one&on_air=previous&previous=120'   -H 'accept: application/json'   -H 'X-API-Key: 3A5LU4tQWvWW3lpgF5OT4IWUoyLaju9z'|jq .
