@@ -30,6 +30,8 @@ import 'package:http/http.dart' as http;
 const String bbcRadioOne =
     'https://rms.api.bbc.co.uk/v2/services/bbc_radio_one/tracks/latest/playable?limit=10';
 //'https://rms.api.bbc.co.uk/v2/services/bbc_radio_one/segments/latest?experience=domestic&offset=0&limit=10';
+const String bbcCurrentShow =
+    'https://rms.api.bbc.co.uk/v2/broadcasts/latest?service=SERVICE&on_air=now';
 
 class RadioOne extends Channel {
   static const _subchannels = {
@@ -41,7 +43,7 @@ class RadioOne extends Channel {
   static Map<String, dynamic> get getSubchannels => _subchannels;
 
   RadioOne(String subchannel) {
-    radio = 'BBC';
+    radio = 'BBC Radio';
     this.subchannel = subchannel;
     String? sn = subchannels[subchannel]?['name'];
     if (sn != null) {
@@ -90,6 +92,7 @@ class RadioOne extends Channel {
         currentTrack.duration = sb.duration;
       }
     }
+    getCurrentShow();
     notifyListeners();
 
     return ret;
@@ -130,8 +133,35 @@ class RadioOne extends Channel {
     //print(ret);
     return ret;
   }
-}
 
+  void getCurrentShow() async {
+    final http.Response resp;
+    try {
+      resp = await http
+          .get(Uri.parse(bbcCurrentShow.replaceFirst('SERVICE', subchannel)));
+      //print(resp.statusCode);
+    } catch (e) {
+      print(e);
+      return;
+    }
+
+    if (resp.statusCode == 200) {
+      Map<String, dynamic> rj = json.decode(utf8.decode(resp.bodyBytes));
+      final broadcast = rj['data'][0];
+      final programme = broadcast['programme'];
+      // which one to pick between titles/primary, titles/secondary, titles/primary_title, titles/entity_title ?
+      show = programme['titles']['secondary'];
+      author = programme['titles']['primary'];
+      final start = DateTime.parse(broadcast['start']).toLocal();
+      final end = DateTime.parse(broadcast['end']).toLocal();
+      airingTime =
+          '${start.toString().substring(11, 16)} - ${end.toString().substring(11, 16)}';
+      imageUrlBig =
+          programme['images'][0]['url'].replaceFirst('{recipe}', '400x400');
+      imageUrl = imageUrlBig;
+    }
+  }
+}
 // https://rms.api.bbc.co.uk/docs/swagger.json#/definitions/ErrorResponse
 
 // curl -X 'GET'   'https://rms.api.bbc.co.uk/v2/broadcasts/latest?service=bbc_radio_one&on_air=now'   -H 'accept: application/json'   -H 'X-API-Key: 3A5LU4tQWvWW3lpgF5OT4IWUoyLaju9z'|jq .
