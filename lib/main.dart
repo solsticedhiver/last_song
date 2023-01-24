@@ -417,6 +417,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           Flexible(
             flex: 1,
+            //fit: FlexFit.tight,
             child: Container(
               padding:
                   const EdgeInsets.only(top: 5, bottom: 5, right: 10, left: 10),
@@ -548,39 +549,41 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildCurrentShowText() {
     return Consumer<ChannelManager>(builder: (context, cm, child) {
       return RichText(
+          softWrap: false,
+          overflow: TextOverflow.ellipsis,
           text: TextSpan(
               text:
                   '', // empty just to define the default style of the whole RichText
               style: DefaultTextStyle.of(context).style,
               children: <TextSpan>[
-            TextSpan(
-              text: cm.currentChannel.show.name != 'Show'
-                  ? cm.currentChannel.show.name
-                  : cm.currentChannel.subchannel.title,
-              style: const TextStyle(
-                  fontWeight: FontWeight
-                      .w700, // bold is too heavy and cause blur/smudge
-                  color: Colors.white),
-            ),
-            TextSpan(
-              text: cm.currentChannel.show.author.isNotEmpty
-                  ? ' - ${cm.currentChannel.show.author}'
-                  : '',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w300, // same idea as above
-              ),
-            ),
-            TextSpan(
-              text: cm.currentChannel.show.airingTime.isNotEmpty
-                  ? '\n${cm.currentChannel.show.airingTime}'
-                  : '',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w300,
-              ),
-            ),
-          ]));
+                TextSpan(
+                  text: cm.currentChannel.show.name != 'Show'
+                      ? cm.currentChannel.show.name
+                      : cm.currentChannel.subchannel.title,
+                  style: const TextStyle(
+                      fontWeight: FontWeight
+                          .w700, // bold is too heavy and cause blur/smudge
+                      color: Colors.white),
+                ),
+                TextSpan(
+                  text: cm.currentChannel.show.author.isNotEmpty
+                      ? ' - ${cm.currentChannel.show.author}'
+                      : '',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w300, // same idea as above
+                  ),
+                ),
+                TextSpan(
+                  text: cm.currentChannel.show.airingTime.isNotEmpty
+                      ? '\n${cm.currentChannel.show.airingTime}'
+                      : '',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w300,
+                  ),
+                ),
+              ]));
     });
   }
 
