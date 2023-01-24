@@ -58,6 +58,8 @@ class Show {
   late String name;
   late String airingTime;
   late String imageUrl;
+  DateTime? start;
+  DateTime? end;
   Show(
       {this.author = 'Author',
       this.name = 'Show',

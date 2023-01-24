@@ -775,13 +775,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                     const EdgeInsets.fromLTRB(15, 15, 15, 0),
                                 child: f.subchannel.bigImageUrl
                                         .startsWith('assets')
-                                    ? Image.asset(f.subchannel.bigImageUrl)
+                                    ? Image.asset(f.subchannel.bigImageUrl,
+                                        fit: BoxFit.fitHeight)
                                     : CachedNetworkImage(
                                         imageUrl: f.subchannel.bigImageUrl,
                                         fit: BoxFit.fitHeight))),
                         ListTile(
                           title: Center(
-                              child: Text(f.subchannels[f.subchannel]['name'])),
+                              child: Text(f.subchannels[f.subchannel.codename]
+                                  ['name'])),
                           subtitle: Center(child: Text(f.radio)),
                         ),
                       ],
@@ -813,9 +815,11 @@ class _MyHomePageState extends State<MyHomePage> {
         final f = cm.channels[_favorites[index]];
         return ListTile(
             key: Key('$index'),
-            leading:
-                Image(image: CachedNetworkImageProvider(f.subchannel.imageUrl)),
-            title: Text(f.subchannels[f.subchannel]['name']),
+            leading: f.subchannel.imageUrl.startsWith('assets')
+                ? Image.asset(f.subchannel.imageUrl)
+                : Image(
+                    image: CachedNetworkImageProvider(f.subchannel.imageUrl)),
+            title: Text(f.subchannels[f.subchannel.codename]['name']),
             subtitle: Text(f.radio),
             onTap: () {
               final cm = Provider.of<ChannelManager>(context, listen: false);
@@ -843,6 +847,10 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
+          if (_favorites.isEmpty) {
+            return Center(
+                child: Container(child: const Text('Nothing to show here')));
+          }
           if (constraints.maxWidth > 700) {
             //return _buildFavoriteList();
             return _buildFavoriteGrid();

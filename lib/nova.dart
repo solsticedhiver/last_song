@@ -55,6 +55,7 @@ class Nova extends Channel {
     }
     this.subchannel.imageUrl =
         "https://www.nova.fr/wp-content/uploads/sites${subchannels[subchannel]['image']}";
+    this.subchannel.bigImageUrl = this.subchannel.imageUrl;
   }
 
   int updateFromJson(Map<String, dynamic> json) {

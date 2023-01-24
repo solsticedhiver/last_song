@@ -28,8 +28,8 @@ import 'helpers.dart';
 import 'package:http/http.dart' as http;
 
 const String bbcRadioOne =
-    'https://rms.api.bbc.co.uk/v2/services/bbc_radio_one/tracks/latest/playable?limit=10';
-//'https://rms.api.bbc.co.uk/v2/services/bbc_radio_one/segments/latest?experience=domestic&offset=0&limit=10';
+//    'https://rms.api.bbc.co.uk/v2/services/bbc_radio_one/tracks/latest/playable?limit=10';
+    'https://rms.api.bbc.co.uk/v2/services/bbc_radio_one/segments/latest?experience=domestic&offset=0&limit=10';
 const String bbcCurrentShow =
     'https://rms.api.bbc.co.uk/v2/broadcasts/latest?service=SERVICE&on_air=now';
 
@@ -53,26 +53,11 @@ class RadioOne extends Channel {
     this.subchannel.bigImageUrl = this.subchannel.imageUrl;
   }
 
-  int updateFromJson(Map<String, dynamic> json) {
-    int ret = 0;
-
-    final ct = json['data'];
-    if (ct != null) {
-      if (currentTrack.title != ct['titles']['secondary']) {
-        ret += 1;
-        currentTrack.artist = ct['titles']['primary'];
-        currentTrack.title = ct['titles']['secondary'];
-        currentTrack.imageUrl = ct['image_url'];
-        //currentTrack.diffusionDate = ct['offset']['start']; // TODO: do something with it
-        //currentTrack.duration = ct['offset']['end'];
-      }
-    }
-    return ret;
-  }
-
   @override
   Future<int> fetchCurrentTrack([bool manual = false]) async {
     int ret = 0;
+
+    int _ = await getCurrentShow();
 
     recentTracks = await getRecentTracks();
     if (recentTracks.isNotEmpty) {
@@ -90,7 +75,6 @@ class RadioOne extends Channel {
         currentTrack.duration = sb.duration;
       }
     }
-    getCurrentShow();
     notifyListeners();
 
     return ret;
@@ -125,6 +109,16 @@ class RadioOne extends Channel {
         } else {
           track.imageUrl = track.imageUrl.replaceFirst('{recipe}', '400x400');
         }
+
+        if (show.start != null) {
+          DateTime dd =
+              show.start!.add(Duration(seconds: segment['offset']['start']));
+          if (DateTime.now().compareTo(dd) == 1) {
+            track.diffusionDate = dd.toIso8601String();
+          }
+        }
+        int duration = segment['offset']['end'] - segment['offset']['start'];
+        track.duration = '${duration ~/ 60}:${duration % 60}';
         ret.add(track);
       }
     }
@@ -132,16 +126,18 @@ class RadioOne extends Channel {
     return ret;
   }
 
-  void getCurrentShow() async {
+  Future<int> getCurrentShow() async {
     final http.Response resp;
+    int ret = 0;
     try {
       resp = await http.get(Uri.parse(
           bbcCurrentShow.replaceFirst('SERVICE', subchannel.codename)));
       //print(resp.statusCode);
     } catch (e) {
       print(e);
-      return;
+      return ret;
     }
+    ret = 1;
 
     if (resp.statusCode == 200) {
       Map<String, dynamic> rj = json.decode(utf8.decode(resp.bodyBytes));
@@ -150,13 +146,14 @@ class RadioOne extends Channel {
       // which one to pick between titles/primary, titles/secondary, titles/primary_title, titles/entity_title ?
       show.name = programme['titles']['secondary'];
       show.author = programme['titles']['primary'];
-      final start = DateTime.parse(broadcast['start']).toLocal();
-      final end = DateTime.parse(broadcast['end']).toLocal();
+      show.start = DateTime.parse(broadcast['start']).toLocal();
+      show.end = DateTime.parse(broadcast['end']).toLocal();
       show.airingTime =
-          '${start.toString().substring(11, 16)} - ${end.toString().substring(11, 16)}';
+          '${show.start.toString().substring(11, 16)} - ${show.end.toString().substring(11, 16)}';
       show.imageUrl =
           programme['images'][0]['url'].replaceFirst('{recipe}', '400x400');
     }
+    return ret;
   }
 }
 // https://rms.api.bbc.co.uk/docs/swagger.json#/definitions/ErrorResponse
