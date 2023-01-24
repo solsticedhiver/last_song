@@ -56,6 +56,7 @@ class SubChannel {
 class Show {
   late String author;
   late String name;
+  late String description;
   late String airingTime;
   late String imageUrl;
   DateTime? start;
@@ -63,6 +64,7 @@ class Show {
   Show(
       {this.author = 'Author',
       this.name = 'Show',
+      this.description = '',
       this.airingTime = '00:00 - 00:00',
       this.imageUrl = ''});
 }

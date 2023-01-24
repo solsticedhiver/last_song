@@ -341,38 +341,75 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildBottomSheetWidget(double bottomSheetSize) {
-    return BottomSheet(
-      enableDrag: false,
-      builder: (context) {
-        return Container(
-            height: bottomSheetSize,
-            color: Colors.grey[800],
-            child: Row(
-              children: [
-                Consumer<ChannelManager>(
-                  builder: (context, cm, child) {
-                    String image = cm.currentChannel.show.imageUrl;
-                    if (image == '') {
-                      image = cm.currentChannel.subchannel.imageUrl;
-                    }
-                    return image.startsWith('assets')
-                        ? Image.asset(image)
-                        : Image(
-                            image: CachedNetworkImageProvider(image),
-                            height: bottomSheetSize,
-                            width: bottomSheetSize,
-                          );
-                  },
+    return Consumer<ChannelManager>(builder: (context, cm, child) {
+      String image = cm.currentChannel.show.imageUrl;
+      if (image == '') {
+        image = cm.currentChannel.subchannel.imageUrl;
+      }
+
+      return BottomSheet(
+        enableDrag: false,
+        builder: (context) {
+          return InkWell(
+              onTap: () async {
+                return _buildCurrentShowDialog(context, cm);
+              },
+              child: Container(
+                  height: bottomSheetSize,
+                  color: Colors.grey[800],
+                  child: Row(
+                    children: [
+                      image.startsWith('assets')
+                          ? Image.asset(image)
+                          : Image(
+                              image: CachedNetworkImageProvider(image),
+                              height: bottomSheetSize,
+                              width: bottomSheetSize,
+                            ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      _buildCurrentShowText(),
+                    ],
+                  )));
+        },
+        onClosing: () {},
+      );
+    });
+  }
+
+  Future<void> _buildCurrentShowDialog(
+      BuildContext context, ChannelManager cm) {
+    final imageUrl = cm.currentChannel.show.imageUrl;
+    return showDialog<void>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            icon: SizedBox(
+                height: 400,
+                width: 400,
+                child: imageUrl.startsWith('assets')
+                    ? Image.asset(imageUrl)
+                    : CachedNetworkImage(imageUrl: imageUrl)),
+            title: Text(cm.currentChannel.show.name),
+            content: Text(
+              cm.currentChannel.show.description,
+              overflow: TextOverflow.clip,
+              softWrap: true,
+            ),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
                 ),
-                const SizedBox(
-                  width: 15,
-                ),
-                _buildCurrentShowText(),
-              ],
-            ));
-      },
-      onClosing: () {},
-    );
+                child: const Text('Dismiss'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
   }
 
   Widget _buildCurrentTrackWidget(BoxConstraints constraints) {
@@ -505,7 +542,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 .join(' /\n');
             return Flexible(
                 child: Text(artist,
-                    overflow: TextOverflow.fade,
+                    overflow: TextOverflow.clip,
                     softWrap: true,
                     style: TextStyle(
                         fontSize: isSmallScreen ? 30 : 55,
@@ -513,7 +550,7 @@ class _MyHomePageState extends State<MyHomePage> {
           }),
           Consumer<ChannelManager>(builder: (context, cm, child) {
             return Text(toTitleCase(cm.currentChannel.currentTrack.title),
-                overflow: TextOverflow.fade,
+                overflow: TextOverflow.clip,
                 softWrap: true,
                 style: TextStyle(
                     fontSize: isSmallScreen ? 20 : 35,
@@ -523,7 +560,7 @@ class _MyHomePageState extends State<MyHomePage> {
             if (cm.currentChannel.currentTrack.album.isNotEmpty &&
                 cm.currentChannel.currentTrack.album != 'Album') {
               return Text(cm.currentChannel.currentTrack.album,
-                  overflow: TextOverflow.fade,
+                  overflow: TextOverflow.clip,
                   softWrap: true,
                   style: TextStyle(
                       fontSize: isSmallScreen ? 20 : 35,
@@ -550,7 +587,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Consumer<ChannelManager>(builder: (context, cm, child) {
       return RichText(
           softWrap: false,
-          overflow: TextOverflow.ellipsis,
+          overflow: TextOverflow.clip,
           text: TextSpan(
               text:
                   '', // empty just to define the default style of the whole RichText

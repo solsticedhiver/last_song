@@ -152,6 +152,7 @@ class RadioOne extends Channel {
           '${show.start.toString().substring(11, 16)} - ${show.end.toString().substring(11, 16)}';
       show.imageUrl =
           programme['images'][0]['url'].replaceFirst('{recipe}', '400x400');
+      show.description = programme['synopses']['long'];
     }
     return ret;
   }
