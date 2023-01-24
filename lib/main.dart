@@ -247,14 +247,15 @@ class _MyHomePageState extends State<MyHomePage> {
       Channel c, int index, ChannelManager cm, List<int> t) {
     return ListTile(
       key: Key('$index'),
-      title: Text(c.subchannels[c.subchannel]['name']),
+      title: Text(c.subchannels[c.subchannel.codename]['name']),
       subtitle: Text(c.radio),
       leading: SizedBox(
           width: 48,
           height: 48,
-          child: c.imageUrl.startsWith('assets')
-              ? Image.asset(c.imageUrl)
-              : Image(image: CachedNetworkImageProvider(c.imageUrl))),
+          child: c.subchannel.imageUrl.startsWith('assets')
+              ? Image.asset(c.subchannel.imageUrl)
+              : Image(
+                  image: CachedNetworkImageProvider(c.subchannel.imageUrl))),
       trailing: IconButton(
         icon: Icon(Icons.favorite,
             color: _favorites.contains(t[index])
@@ -350,11 +351,14 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 Consumer<ChannelManager>(
                   builder: (context, cm, child) {
-                    return cm.currentChannel.imageUrl.startsWith('assets')
-                        ? Image.asset(cm.currentChannel.imageUrl)
+                    String image = cm.currentChannel.show.imageUrl;
+                    if (image == '') {
+                      image = cm.currentChannel.subchannel.imageUrl;
+                    }
+                    return image.startsWith('assets')
+                        ? Image.asset(image)
                         : Image(
-                            image: CachedNetworkImageProvider(
-                                cm.currentChannel.imageUrl),
+                            image: CachedNetworkImageProvider(image),
                             height: bottomSheetSize,
                             width: bottomSheetSize,
                           );
@@ -550,15 +554,17 @@ class _MyHomePageState extends State<MyHomePage> {
               style: DefaultTextStyle.of(context).style,
               children: <TextSpan>[
             TextSpan(
-              text: cm.currentChannel.show,
+              text: cm.currentChannel.show.name != 'Show'
+                  ? cm.currentChannel.show.name
+                  : cm.currentChannel.subchannel.title,
               style: const TextStyle(
                   fontWeight: FontWeight
                       .w700, // bold is too heavy and cause blur/smudge
                   color: Colors.white),
             ),
             TextSpan(
-              text: cm.currentChannel.author.isNotEmpty
-                  ? ' - ${cm.currentChannel.author}'
+              text: cm.currentChannel.show.author.isNotEmpty
+                  ? ' - ${cm.currentChannel.show.author}'
                   : '',
               style: const TextStyle(
                 color: Colors.white,
@@ -566,8 +572,8 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             TextSpan(
-              text: cm.currentChannel.airingTime.isNotEmpty
-                  ? '\n${cm.currentChannel.airingTime}'
+              text: cm.currentChannel.show.airingTime.isNotEmpty
+                  ? '\n${cm.currentChannel.show.airingTime}'
                   : '',
               style: const TextStyle(
                 color: Colors.white,
@@ -767,10 +773,11 @@ class _MyHomePageState extends State<MyHomePage> {
                             child: Container(
                                 padding:
                                     const EdgeInsets.fromLTRB(15, 15, 15, 0),
-                                child: f.imageUrlBig.startsWith('assets')
-                                    ? Image.asset(f.imageUrlBig)
+                                child: f.subchannel.bigImageUrl
+                                        .startsWith('assets')
+                                    ? Image.asset(f.subchannel.bigImageUrl)
                                     : CachedNetworkImage(
-                                        imageUrl: f.imageUrlBig,
+                                        imageUrl: f.subchannel.bigImageUrl,
                                         fit: BoxFit.fitHeight))),
                         ListTile(
                           title: Center(
@@ -806,7 +813,8 @@ class _MyHomePageState extends State<MyHomePage> {
         final f = cm.channels[_favorites[index]];
         return ListTile(
             key: Key('$index'),
-            leading: Image(image: CachedNetworkImageProvider(f.imageUrl)),
+            leading:
+                Image(image: CachedNetworkImageProvider(f.subchannel.imageUrl)),
             title: Text(f.subchannels[f.subchannel]['name']),
             subtitle: Text(f.radio),
             onTap: () {

@@ -44,15 +44,13 @@ class RadioOne extends Channel {
 
   RadioOne(String subchannel) {
     radio = 'BBC Radio';
-    this.subchannel = subchannel;
+    this.subchannel = SubChannel(codename: subchannel);
     String? sn = subchannels[subchannel]?['name'];
     if (sn != null) {
-      show = sn;
+      this.subchannel.title = sn;
     }
-    imageUrl = 'assets/radioone.png';
-    imageUrlBig = imageUrl;
-    author = '';
-    airingTime = '';
+    this.subchannel.imageUrl = 'assets/radioone.png';
+    this.subchannel.bigImageUrl = this.subchannel.imageUrl;
   }
 
   int updateFromJson(Map<String, dynamic> json) {
@@ -137,8 +135,8 @@ class RadioOne extends Channel {
   void getCurrentShow() async {
     final http.Response resp;
     try {
-      resp = await http
-          .get(Uri.parse(bbcCurrentShow.replaceFirst('SERVICE', subchannel)));
+      resp = await http.get(Uri.parse(
+          bbcCurrentShow.replaceFirst('SERVICE', subchannel.codename)));
       //print(resp.statusCode);
     } catch (e) {
       print(e);
@@ -150,15 +148,14 @@ class RadioOne extends Channel {
       final broadcast = rj['data'][0];
       final programme = broadcast['programme'];
       // which one to pick between titles/primary, titles/secondary, titles/primary_title, titles/entity_title ?
-      show = programme['titles']['secondary'];
-      author = programme['titles']['primary'];
+      show.name = programme['titles']['secondary'];
+      show.author = programme['titles']['primary'];
       final start = DateTime.parse(broadcast['start']).toLocal();
       final end = DateTime.parse(broadcast['end']).toLocal();
-      airingTime =
+      show.airingTime =
           '${start.toString().substring(11, 16)} - ${end.toString().substring(11, 16)}';
-      imageUrlBig =
+      show.imageUrl =
           programme['images'][0]['url'].replaceFirst('{recipe}', '400x400');
-      imageUrl = imageUrlBig;
     }
   }
 }

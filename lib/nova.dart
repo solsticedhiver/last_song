@@ -47,18 +47,14 @@ class Nova extends Channel {
   static DateTime validity =
       DateTime.now().subtract(const Duration(minutes: 1));
 
-  Nova(String subchannel) {
-    radio = 'Radio Nova';
-    this.subchannel = subchannel;
+  Nova(String subchannel) : super(radio: 'Radio Nova') {
+    this.subchannel = SubChannel(codename: subchannel);
     String? sn = subchannels[subchannel]?['name'];
     if (sn != null) {
-      show = sn;
+      this.subchannel.title = sn;
     }
-    imageUrl =
+    this.subchannel.imageUrl =
         "https://www.nova.fr/wp-content/uploads/sites${subchannels[subchannel]['image']}";
-    imageUrlBig = imageUrl;
-    author = '';
-    airingTime = '';
   }
 
   int updateFromJson(Map<String, dynamic> json) {
@@ -87,13 +83,13 @@ class Nova extends Channel {
     }
     final cs = json['currentShow'];
     if (cs != null) {
-      show = cs['title'];
-      author = HtmlUnescape().convert(cs['author']);
-      airingTime = '${cs["start_time"]} - ${cs["end_time"]}';
+      show.name = cs['title'];
+      show.author = HtmlUnescape().convert(cs['author']);
+      show.airingTime = '${cs["start_time"]} - ${cs["end_time"]}';
     }
     final radio = json['radio'];
     if (radio != null) {
-      imageUrl = radio['thumbnail'];
+      show.imageUrl = radio['thumbnail'];
     }
     return ret;
   }
@@ -106,7 +102,7 @@ class Nova extends Channel {
     // update if cache is old
     if (DateTime.now().compareTo(validity) >= 0) {
       try {
-        resp = await http.get(Uri.parse('$radioNova$subchannel'));
+        resp = await http.get(Uri.parse('$radioNova${subchannel.codename}'));
         //print(resp.statusCode);
       } catch (e) {
         print(e);
@@ -158,12 +154,14 @@ class Nova extends Channel {
     }
     recentTracks = await getRecentTracks();
     // if ajax call returned nothing but last track list is more up to date
-    Track lastTrack = recentTracks[0];
-    final DateTime ltd = DateTime.parse(lastTrack.diffusionDate);
-    final DateTime cd = DateTime.parse(currentTrack.diffusionDate);
-    if (cd.compareTo(ltd) == -1) {
-      print('Late update');
-      currentTrack.updateFrom(lastTrack);
+    if (recentTracks.isNotEmpty) {
+      Track lastTrack = recentTracks[0];
+      final DateTime ltd = DateTime.parse(lastTrack.diffusionDate);
+      final DateTime cd = DateTime.parse(currentTrack.diffusionDate);
+      if (cd.compareTo(ltd) == -1) {
+        print('Late update');
+        currentTrack.updateFrom(lastTrack);
+      }
     }
     notifyListeners();
 
@@ -179,7 +177,7 @@ class Nova extends Channel {
     // 20 minutes from now
     String startTime = DateTime.now().toString().substring(11, 16);
     // action=loadmore_programs&date=&time=18%3A08&page=1&radio=910
-    String? radioId = subchannels[subchannel]?["id"];
+    String? radioId = subchannels[subchannel.codename]?["id"];
     String rawData =
         'action=loadmore_programs&date=&time=$startTime&page=1&radio=$radioId';
 

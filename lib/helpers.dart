@@ -41,14 +41,34 @@ class ChannelManager extends ChangeNotifier {
   }
 }
 
+class SubChannel {
+  late String codename;
+  late String title;
+  late String imageUrl;
+  late String bigImageUrl;
+  SubChannel(
+      {this.codename = 'subchannel',
+      this.title = 'Subchannel',
+      this.imageUrl = '',
+      this.bigImageUrl = ''});
+}
+
+class Show {
+  late String author;
+  late String name;
+  late String airingTime;
+  late String imageUrl;
+  Show(
+      {this.author = 'Author',
+      this.name = 'Show',
+      this.airingTime = '00:00 - 00:00',
+      this.imageUrl = ''});
+}
+
 class Channel extends ChangeNotifier {
   late String radio;
-  late String imageUrl;
-  late String imageUrlBig;
-  late String show;
-  late String subchannel;
-  late String author;
-  late String airingTime;
+  late Show show;
+  late SubChannel subchannel;
   late Track currentTrack;
   //bool isFavorite = false;
   List<Track> recentTracks = <Track>[];
@@ -57,20 +77,11 @@ class Channel extends ChangeNotifier {
 
   Channel({
     this.radio = 'Radio',
-    this.imageUrl = '',
-    this.imageUrlBig = '',
-    this.show = 'Show',
-    this.subchannel = 'Subchannel',
-    this.author = 'Author',
-    this.airingTime = '00:00 - 00:00',
     //this.isFavorite = false,
   }) {
     currentTrack = Track();
-  }
-
-  @override
-  String toString() {
-    return 'Channel(radio: $radio, show:$show, subchannel:$subchannel, author:$author, airingTime:$airingTime)';
+    show = Show();
+    subchannel = SubChannel();
   }
 
   Future<int> fetchCurrentTrack([bool manual = false]) async {

@@ -227,23 +227,22 @@ class SomaFm extends Channel {
 
   static Map<String, dynamic> get getSubchannels => _subchannels;
 
-  SomaFm(String subchannel) {
-    radio = 'Soma FM';
+  SomaFm(String subchannel) : super(radio: 'Some FM') {
     String? scn = subchannels[subchannel]?['name'];
     if (scn != null) {
-      show = scn;
+      this.subchannel.title = scn;
     }
     String? sci = subchannels[subchannel]?['image'];
     if (sci != null) {
-      imageUrl = 'https://somafm.com$sci';
+      this.subchannel.imageUrl = 'https://somafm.com$sci';
     }
     String? scb = subchannels[subchannel]?['big'];
     if (scb != null) {
-      imageUrlBig = 'https://somafm.com$scb';
+      this.subchannel.bigImageUrl = 'https://somafm.com$scb';
     }
-    this.subchannel = subchannel;
-    author = 'Rusty Hodge';
-    airingTime = '';
+    this.subchannel.codename = subchannel;
+    show.author = 'Rusty Hodge';
+    show.airingTime = '';
   }
 
   @override
@@ -308,7 +307,7 @@ class SomaFm extends Channel {
     WebScraper webScraper = WebScraper('https://somafm.com');
 
     List<Track> ret = <Track>[];
-    String page = '/recent/$subchannel.html';
+    String page = '/recent/${subchannel.codename}.html';
     bool isLoaded = false;
     try {
       isLoaded = await webScraper.loadWebPage(page);
