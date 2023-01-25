@@ -286,7 +286,7 @@ class SomaFm extends Channel {
 
   static Map<String, dynamic> get getSubchannels => _subchannels;
 
-  SomaFm(String subchannel) : super(radio: 'Some FM') {
+  SomaFm(String subchannel) : super(radio: 'Soma FM') {
     String? scn = subchannels[subchannel]?['name'];
     if (scn != null) {
       this.subchannel.title = scn;

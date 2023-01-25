@@ -639,7 +639,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: recentTracks.isNotEmpty
                 //? _buildListItemSong(recentTracks)
                 ? SingleChildScrollView(
-                    child: _buildDataTableSong(recentTracks))
+                    child: _buildDataTableSong(recentTracks, cm))
                 : const Text('Nothing to show here'),
           ),
         );
@@ -647,7 +647,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildDataTableSong(List<Track> recentTracks) {
+  Widget _buildDataTableSong(List<Track> recentTracks, ChannelManager cm) {
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
       bool isSmallScreen;
@@ -730,13 +730,24 @@ class _MyHomePageState extends State<MyHomePage> {
         }
         rows.add(DataRow(cells: cells));
       }
-      return DataTable(
-          headingRowColor: MaterialStateProperty.resolveWith<Color?>(
-              (Set<MaterialState> states) {
-            return Theme.of(context).secondaryHeaderColor;
-          }),
-          columns: columns,
-          rows: rows);
+      return Column(
+        children: [
+          Center(
+              child: Container(
+                  padding: const EdgeInsets.all(15),
+                  child: Text(
+                      '${cm.currentChannel.radio} / ${cm.currentChannel.show.name}',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 20)))),
+          DataTable(
+              headingRowColor: MaterialStateProperty.resolveWith<Color?>(
+                  (Set<MaterialState> states) {
+                return Theme.of(context).secondaryHeaderColor;
+              }),
+              columns: columns,
+              rows: rows),
+        ],
+      );
     });
   }
 
