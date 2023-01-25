@@ -115,6 +115,9 @@ class RadioOne extends Channel {
               show.start!.add(Duration(seconds: segment['offset']['start']));
           if (DateTime.now().compareTo(dd) == 1) {
             track.diffusionDate = dd.toIso8601String();
+          } else {
+            // this means it comes from the previous show
+            // TODO: fetch it, and get the start time ?
           }
         }
         int duration = segment['offset']['end'] - segment['offset']['start'];
