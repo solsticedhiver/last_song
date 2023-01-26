@@ -49,7 +49,7 @@ class RadioOne extends Channel {
     if (sn != null) {
       this.subchannel.title = sn;
     }
-    this.subchannel.imageUrl = 'assets/radioone.png';
+    this.subchannel.imageUrl = 'assets/img/radioone.png';
     this.subchannel.bigImageUrl = this.subchannel.imageUrl;
   }
 

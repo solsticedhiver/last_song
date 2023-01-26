@@ -1,17 +1,26 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'helpers.dart';
 
-const String defaultImage = 'assets/black-record-vinyl-640x640.png';
+const String defaultImage = 'assets/img/black-record-vinyl-640x640.png';
 const double bottomSheetSizeLargeScreen = 75;
 const double bottomSheetSizeSmallScreen = 55;
 
 GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
-void main(List<String> args) {
+void main(List<String> args) async {
+  // snippet to load Let's Encrypt new certificate (for older device like android 7)
+  WidgetsFlutterBinding.ensureInitialized();
+  ByteData data =
+      await PlatformAssetBundle().load('assets/ca/lets-encrypt-r3.pem');
+  SecurityContext.defaultContext
+      .setTrustedCertificatesBytes(data.buffer.asUint8List());
+
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider<ChannelManager>(
@@ -164,7 +173,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Column(
               children: [
                 Image.asset(
-                  'assets/black-record-vinyl-excl-point-64x64.png',
+                  'assets/img/black-record-vinyl-excl-point-64x64.png',
                   height: 64,
                   width: 64,
                 ),
