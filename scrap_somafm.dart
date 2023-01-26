@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:web_scraper/web_scraper.dart';
 import 'dart:convert';
 
@@ -14,16 +16,15 @@ void main() async {
   }
   Map<String, dynamic> res = {};
   List<String> first = [];
-    List<Map<String, dynamic>> elements;
+  List<Map<String, dynamic>> elements;
   if (isLoaded) {
     print('Step #1');
     elements =
         webScraper.getElement('#featured_channels li.cbshort > a', ['href']);
     //print(elements);
     for (var e in elements) {
-     String code = e['attributes']['href'].replaceAll('/', '');
-        first.add(code);
-
+      String code = e['attributes']['href'].replaceAll('/', '');
+      first.add(code);
     }
     print('done');
     print('Step #2');
@@ -37,8 +38,7 @@ void main() async {
     }
     print('done');
     print('Step #3');
-    elements =
-        webScraper.getElement('#featured_channels li.cbshort > p', ['']);
+    elements = webScraper.getElement('#featured_channels li.cbshort > p', ['']);
     indx = 0;
     for (var e in elements) {
       res[first[indx]]['descr'] = e['title'];
@@ -46,8 +46,8 @@ void main() async {
     }
     print('done');
     print('Step #4');
-    elements =
-        webScraper.getElement('#featured_channels li.cbshort > a > img', ['src']);
+    elements = webScraper
+        .getElement('#featured_channels li.cbshort > a > img', ['src']);
     indx = 0;
     for (var e in elements) {
       res[first[indx]]['img'] = e['attributes']['src'];
@@ -63,10 +63,8 @@ void main() async {
       print(e.errorMessage());
     }
     if (isLoaded) {
-      elements =
-          webScraper.getElement('#channellogo > img', ['src']);
+      elements = webScraper.getElement('#channellogo > img', ['src']);
       res[k]['big'] = elements[0]['attributes']['src'];
-      
     } else {
       print('error');
     }
@@ -76,7 +74,6 @@ void main() async {
   //for (var k in res.keys) {
   //  print('"$k": {\n  "name": "${res[k]['name']}",\n  "image": "${res[k]['img']}",\n  "big": "${res[k]['big']}",\n  "descr": "${res[k]['descr']}",\n},');
   //}
-  var encoder = new JsonEncoder.withIndent('  ');
+  const encoder = JsonEncoder.withIndent('  ');
   print(encoder.convert(res));
 }
-

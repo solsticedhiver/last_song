@@ -385,12 +385,10 @@ class _MyHomePageState extends State<MyHomePage> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            icon: SizedBox(
-                height: 400,
-                width: 400,
-                child: imageUrl.startsWith('assets')
-                    ? Image.asset(imageUrl)
-                    : CachedNetworkImage(imageUrl: imageUrl)),
+            icon: imageUrl.startsWith('assets')
+                ? Image.asset(imageUrl, height: 400, width: 400)
+                : CachedNetworkImage(
+                    imageUrl: imageUrl, height: 400, width: 400),
             title: Text(cm.currentChannel.show.name),
             content: Text(
               cm.currentChannel.show.description,
@@ -899,8 +897,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           if (_favorites.isEmpty) {
-            return Center(
-                child: Container(child: const Text('Nothing to show here')));
+            return const Center(child: Text('Nothing to show here'));
           }
           if (constraints.maxWidth > 700) {
             //return _buildFavoriteList();
