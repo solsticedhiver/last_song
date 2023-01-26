@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -14,12 +15,18 @@ const double bottomSheetSizeSmallScreen = 55;
 GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
 void main(List<String> args) async {
-  // snippet to load Let's Encrypt new certificate (for older device like android 7)
   WidgetsFlutterBinding.ensureInitialized();
-  ByteData data =
-      await PlatformAssetBundle().load('assets/ca/lets-encrypt-r3.pem');
-  SecurityContext.defaultContext
-      .setTrustedCertificatesBytes(data.buffer.asUint8List());
+  try {
+    // check we can reach some let's encrypt certificate based website
+    final http.Response _ =
+        await http.get(Uri.parse('https://valid-isrgrootx1.letsencrypt.org/'));
+  } on HandshakeException {
+    // load Let's Encrypt new certificate if this has failed
+    ByteData data =
+        await PlatformAssetBundle().load('assets/ca/lets-encrypt-r3.pem');
+    SecurityContext.defaultContext
+        .setTrustedCertificatesBytes(data.buffer.asUint8List());
+  }
 
   runApp(MultiProvider(
     providers: [
