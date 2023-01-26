@@ -89,10 +89,9 @@ Future<ResponseDiscogs> searchDiscogs(Map<String, String> search) async {
   http.StreamedResponse streamedResponse = await req.send();
   final resp = await http.Response.fromStream(streamedResponse);
 
-  //print(resp.statusCode);
-  Map<String, dynamic> reply = jsonDecode(resp.body);
-
   if (resp.statusCode == 200) {
+    Map<String, dynamic> reply = jsonDecode(resp.body);
+    //print(reply);
     final results = reply['results'];
     for (var res in results) {
       //print(res['title']);
@@ -103,7 +102,8 @@ Future<ResponseDiscogs> searchDiscogs(Map<String, String> search) async {
       }
     }
   } else {
-    //print(reply['message']);
+    print(resp.statusCode);
+    print(resp.body);
   }
   return ResponseDiscogs(imageUrl, duration);
 }
