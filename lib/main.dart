@@ -552,7 +552,7 @@ class _MyHomePageState extends State<MyHomePage> {
             String artist;
             artist = cm.currentChannel.currentTrack.artist
                 .split('/')
-                .map((e) => toTitleCase(e))
+                .map((e) => e.toTitleCase())
                 .join(' /\n');
             return Flexible(
                 child: Text(artist,
@@ -563,7 +563,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         fontWeight: FontWeight.bold)));
           }),
           Consumer<ChannelManager>(builder: (context, cm, child) {
-            return Text(toTitleCase(cm.currentChannel.currentTrack.title),
+            return Text(cm.currentChannel.currentTrack.title.toTitleCase(),
                 overflow: TextOverflow.clip,
                 softWrap: true,
                 style: TextStyle(
@@ -733,9 +733,9 @@ class _MyHomePageState extends State<MyHomePage> {
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).primaryColor))),
-          DataCell(Text(toTitleCase(track.artist),
+          DataCell(Text(track.artist.toTitleCase(),
               style: const TextStyle(fontWeight: FontWeight.bold))),
-          DataCell(Text(toTitleCase(track.title))),
+          DataCell(Text(track.title.toTitleCase())),
         ];
         // add album only is screen is large enough
         if (!isSmallScreen) {
@@ -942,22 +942,24 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-// https://gist.github.com/filiph/d4e0c0a9efb0f869f984317372f5bee8?permalink_comment_id=3486118#gistcomment-3486118
-String toTitleCase(String name) {
-  final stringBuffer = StringBuffer();
+extension ChangeCaseString on String {
+  // https://gist.github.com/filiph/d4e0c0a9efb0f869f984317372f5bee8?permalink_comment_id=3486118#gistcomment-3486118
+  String toTitleCase() {
+    final stringBuffer = StringBuffer();
 
-  var capitalizeNext = true;
-  for (final letter in name.toLowerCase().codeUnits) {
-    // UTF-16: A-Z => 65-90, a-z => 97-122.
-    if (capitalizeNext && letter >= 97 && letter <= 122) {
-      stringBuffer.writeCharCode(letter - 32);
-      capitalizeNext = false;
-    } else {
-      // UTF-16: 32 == space, 46 == period
-      if (letter == 32 || letter == 46) capitalizeNext = true;
-      stringBuffer.writeCharCode(letter);
+    var capitalizeNext = true;
+    for (final letter in toLowerCase().codeUnits) {
+      // UTF-16: A-Z => 65-90, a-z => 97-122.
+      if (capitalizeNext && letter >= 97 && letter <= 122) {
+        stringBuffer.writeCharCode(letter - 32);
+        capitalizeNext = false;
+      } else {
+        // UTF-16: 32 == space, 46 == period
+        if (letter == 32 || letter == 46) capitalizeNext = true;
+        stringBuffer.writeCharCode(letter);
+      }
     }
-  }
 
-  return stringBuffer.toString();
+    return stringBuffer.toString();
+  }
 }
