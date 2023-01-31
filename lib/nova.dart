@@ -161,7 +161,7 @@ class Nova extends Channel {
       final DateTime ltd = DateTime.parse(lastTrack.diffusionDate);
       final DateTime cd = DateTime.parse(currentTrack.diffusionDate);
       if (cd.compareTo(ltd) == -1) {
-        print('Late update');
+        //print('Late update');
         currentTrack.updateFrom(lastTrack);
       }
     }
