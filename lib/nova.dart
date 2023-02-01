@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
+
 import 'bandcamp.dart';
 import 'helpers.dart';
 
@@ -107,7 +109,7 @@ class Nova extends Channel {
         resp = await http.get(Uri.parse('$radioNova${subchannel.codename}'));
         //print(resp.statusCode);
       } catch (e) {
-        print(e);
+        debugPrint('debug: $e');
         return 0;
       }
 
@@ -195,7 +197,7 @@ class Nova extends Channel {
       resp = await http.Response.fromStream(streamedResponse);
       //print(resp.statusCode);
     } catch (e) {
-      print(e);
+      debugPrint('debug: $e');
       return ret;
     }
 

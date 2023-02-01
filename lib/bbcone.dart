@@ -22,6 +22,8 @@ curl 'https://rms.api.bbc.co.uk/v2/services/bbc_radio_one/segments/latest?experi
 
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+
 import 'bandcamp.dart';
 import 'helpers.dart';
 
@@ -89,7 +91,7 @@ class RadioOne extends Channel {
       resp = await http.get(Uri.parse(bbcRadioOne));
       //print(resp.statusCode);
     } catch (e) {
-      print(e);
+      debugPrint('debug: $e');
       return ret;
     }
 
@@ -137,7 +139,7 @@ class RadioOne extends Channel {
           bbcCurrentShow.replaceFirst('SERVICE', subchannel.codename)));
       //print(resp.statusCode);
     } catch (e) {
-      print(e);
+      debugPrint('debug: $e');
       return ret;
     }
     ret = 1;

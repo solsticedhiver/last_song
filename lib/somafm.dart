@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:web_scraper/web_scraper.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
@@ -374,7 +375,7 @@ class SomaFm extends Channel {
     try {
       isLoaded = await webScraper.loadWebPage(page);
     } on WebScraperException catch (e) {
-      print(e.errorMessage());
+      debugPrint('debug: ${e.errorMessage()}');
     }
     if (isLoaded) {
       List<Map<String, dynamic>> elements =

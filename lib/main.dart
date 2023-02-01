@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers.dart';
 
@@ -107,6 +108,39 @@ class _MyHomePageState extends State<MyHomePage> {
           behavior: SnackBarBehavior.floating,
         ));
       }
+    }
+  }
+
+  void _saveFavorites() async {
+    final cm = Provider.of<ChannelManager>(context, listen: false);
+    final prefs = await SharedPreferences.getInstance();
+
+    prefs.setStringList('favorites',
+        _favorites.map((e) => cm.channels[e].subchannel.codename).toList());
+  }
+
+  void _loadFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final fs = prefs.getStringList('favorites');
+    List<int> tmpFavorites = [];
+
+    if (fs != null) {
+      final cm = Provider.of<ChannelManager>(context, listen: false);
+      for (var f in fs) {
+        bool found = false;
+        int indx = 0;
+        while (indx < cm.channels.length && !found) {
+          if (cm.channels[indx].subchannel.codename == f) {
+            found = true;
+          } else {
+            indx++;
+          }
+        }
+        if (found) {
+          tmpFavorites.add(indx);
+        }
+      }
+      _favorites.addAll(tmpFavorites);
     }
   }
 
@@ -284,6 +318,7 @@ class _MyHomePageState extends State<MyHomePage> {
             } else {
               _favorites.add(t[index]);
             }
+            _saveFavorites();
           });
         },
       ),
@@ -933,6 +968,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       timer = _launchTimer();
     });
+    _loadFavorites();
   }
 
   Timer _launchTimer() {

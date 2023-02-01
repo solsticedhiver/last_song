@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 
 const String discogsKey = 'GRcTnfYcKdIFUeOEtUtA';
@@ -102,8 +103,7 @@ Future<ResponseDiscogs> searchDiscogs(Map<String, String> search) async {
       }
     }
   } else {
-    print(resp.statusCode);
-    print(resp.body);
+    debugPrint('debug: ${resp.statusCode}: ${resp.body}');
   }
   return ResponseDiscogs(imageUrl, duration);
 }
