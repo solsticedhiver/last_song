@@ -84,6 +84,8 @@ Future<ResponseDiscogs> searchDiscogs(Map<String, String> search) async {
   http.Request req = http.Request(
       'GET', Uri.parse('https://api.discogs.com/database/search?$queryString'));
   req.headers.addAll({
+    'User-Agent':
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
     'Authorization':
         'Discogs key=$discogsKey, secret=${discogsSecret.split('').reversed.join()}',
   });
