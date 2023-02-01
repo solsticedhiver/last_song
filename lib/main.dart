@@ -50,7 +50,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: AppConfig.name,
       theme: ThemeData(
         //useMaterial3: true,
         primarySwatch: Colors.deepOrange,
@@ -119,13 +119,13 @@ class _MyHomePageState extends State<MyHomePage> {
         _favorites.map((e) => cm.channels[e].subchannel.codename).toList());
   }
 
-  void _loadFavorites() async {
+  Future<void> _loadFavorites() async {
     final prefs = await SharedPreferences.getInstance();
     final fs = prefs.getStringList('favorites');
     List<int> tmpFavorites = [];
+    final cm = Provider.of<ChannelManager>(context, listen: false);
 
     if (fs != null) {
-      final cm = Provider.of<ChannelManager>(context, listen: false);
       for (var f in fs) {
         bool found = false;
         int indx = 0;
@@ -141,6 +141,9 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       }
       _favorites.addAll(tmpFavorites);
+    }
+    if (_favorites.isNotEmpty) {
+      cm.changeChannel(_favorites.first);
     }
   }
 
@@ -222,7 +225,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   width: 15,
                   height: 15,
                 ),
-                const Text('Last Song',
+                const Text('${AppConfig.name} ${AppConfig.version}',
                     style: TextStyle(color: Colors.white, fontSize: 25)),
               ],
             ),
@@ -964,11 +967,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _fetchCurrentTrack();
-    setState(() {
-      timer = _launchTimer();
+    timer = _launchTimer();
+    Future.delayed(Duration.zero, () async {
+      await _loadFavorites();
+      _fetchCurrentTrack();
     });
-    _loadFavorites();
   }
 
   Timer _launchTimer() {

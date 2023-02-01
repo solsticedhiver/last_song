@@ -87,8 +87,11 @@ class RadioOne extends Channel {
     List<Track> ret = <Track>[];
 
     final http.Response resp;
+    final headers = {
+      'User-Agent': AppConfig.userAgent,
+    };
     try {
-      resp = await http.get(Uri.parse(bbcRadioOne));
+      resp = await http.get(Uri.parse(bbcRadioOne), headers: headers);
       //print(resp.statusCode);
     } catch (e) {
       debugPrint('debug: $e');
@@ -133,10 +136,15 @@ class RadioOne extends Channel {
 
   Future<int> getCurrentShow() async {
     final http.Response resp;
+    final headers = {
+      'User-Agent': AppConfig.userAgent,
+    };
     int ret = 0;
     try {
-      resp = await http.get(Uri.parse(
-          bbcCurrentShow.replaceFirst('SERVICE', subchannel.codename)));
+      resp = await http.get(
+          Uri.parse(
+              bbcCurrentShow.replaceFirst('SERVICE', subchannel.codename)),
+          headers: headers);
       //print(resp.statusCode);
     } catch (e) {
       debugPrint('debug: $e');

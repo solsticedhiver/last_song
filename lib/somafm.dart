@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:web_scraper/web_scraper.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:http/http.dart' as http;
 
 import 'helpers.dart';
 import 'bandcamp.dart';
@@ -367,47 +368,57 @@ class SomaFm extends Channel {
         sanFrancisco.timeZone(now.millisecondsSinceEpoch).offset ~/ 1000);
     String currentDate = now.toString().substring(0, 10);
 
-    WebScraper webScraper = WebScraper('https://somafm.com');
-
     List<Track> ret = <Track>[];
-    String page = '/recent/${subchannel.codename}.html';
-    bool isLoaded = false;
+    String page = 'https://somafm.com/recent/${subchannel.codename}.html';
+
+    final http.Response resp;
     try {
-      isLoaded = await webScraper.loadWebPage(page);
+      resp = await http.get(Uri.parse(page), headers: {
+        'User-Agent': AppConfig.userAgent,
+      });
+    } catch (e) {
+      debugPrint('debug: $e');
+      return ret;
+    }
+
+    if (resp.statusCode != 200) {
+      return ret;
+    }
+    WebScraper webScraper = WebScraper();
+    try {
+      webScraper.loadFromString(resp.body);
     } on WebScraperException catch (e) {
       debugPrint('debug: ${e.errorMessage()}');
     }
-    if (isLoaded) {
-      List<Map<String, dynamic>> elements =
-          webScraper.getElement('#playinc table tr td', ['colspan']);
-      //print(elements);
-      List<String> columns = [];
-      for (var e in elements) {
-        //print(e);
-        if (e['attributes']['colspan'] != null) {
-          columns.clear();
-          continue;
-        }
-        columns.add(e['title'].replaceFirst(' (Now) ', '').trim());
-        if (columns.length == 5) {
-          if (!columns[0].startsWith('Played At')) {
-            // convert SF local time to our local time
-            // add current SF date in front of parsed hour
-            DateTime diffusionDate =
-                DateTime.parse('${currentDate}T${columns[0]} $timeZone');
-            Track track = Track(
-              diffusionDate:
-                  diffusionDate.toLocal().toString().replaceFirst(' ', 'T'),
-              artist: columns[1],
-              title: columns[2],
-              album: columns[3],
-            );
-            ret.add(track);
-          }
-          columns.clear();
-        }
-        //print(count);
+    List<Map<String, dynamic>> elements =
+        webScraper.getElement('#playinc table tr td', ['colspan']);
+    //print(elements);
+    List<String> columns = [];
+    for (var e in elements) {
+      //print(e);
+      if (e['attributes']['colspan'] != null) {
+        columns.clear();
+        continue;
       }
+      columns.add(e['title'].replaceFirst(' (Now) ', '').trim());
+      if (columns.length == 5) {
+        if (!columns[0].startsWith('Played At')) {
+          // convert SF local time to our local time
+          // add current SF date in front of parsed hour
+          DateTime diffusionDate =
+              DateTime.parse('${currentDate}T${columns[0]} $timeZone');
+          Track track = Track(
+            diffusionDate:
+                diffusionDate.toLocal().toString().replaceFirst(' ', 'T'),
+            artist: columns[1],
+            title: columns[2],
+            album: columns[3],
+          );
+          ret.add(track);
+        }
+        columns.clear();
+      }
+      //print(count);
     }
     return ret;
   }

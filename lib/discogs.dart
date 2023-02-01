@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 
+import 'helpers.dart';
+
 const String discogsKey = 'GRcTnfYcKdIFUeOEtUtA';
 const String discogsSecret = 'dtmKATJxslqZHzKHFmRhJUDFLXNVBGlb';
 
@@ -81,16 +83,29 @@ Future<ResponseDiscogs> searchDiscogs(Map<String, String> search) async {
     Search contributor usernames.
   */
   //print(queryString);
-  http.Request req = http.Request(
-      'GET', Uri.parse('https://api.discogs.com/database/search?$queryString'));
-  req.headers.addAll({
-    'User-Agent':
-        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+  final client = http.Client();
+  final url = Uri.parse('https://api.discogs.com/database/search?$queryString');
+  final headers = {
+    'User-Agent': AppConfig.userAgent,
     'Authorization':
         'Discogs key=$discogsKey, secret=${discogsSecret.split('').reversed.join()}',
-  });
-  http.StreamedResponse streamedResponse = await req.send();
-  final resp = await http.Response.fromStream(streamedResponse);
+  };
+  http.Response resp = await client.get(url, headers: headers);
+
+  if (resp.statusCode == 403) {
+    // CloudFlare anti-scrap technique
+    final regex = RegExp(r" *cRay: '.*',");
+    RegExpMatch? match = regex.firstMatch(resp.body);
+    if (match != null) {
+      String cRay = match[0]!.split("'")[1];
+      debugPrint('debug cRay=$cRay');
+      resp = await client.get(
+          Uri.parse(
+              'https://api.discogs.com/cdn-cgi/images/trace/managed/nojs/transparent.gif?ray=$cRay'),
+          headers: headers);
+      resp = await client.get(url, headers: headers);
+    }
+  }
 
   if (resp.statusCode == 200) {
     Map<String, dynamic> reply = jsonDecode(resp.body);
@@ -105,7 +120,8 @@ Future<ResponseDiscogs> searchDiscogs(Map<String, String> search) async {
       }
     }
   } else {
-    debugPrint('debug: ${resp.statusCode}: ${resp.body}');
+    //debugPrint('debug: ${resp.statusCode}: ${resp.body}');
+    debugPrint('debug: ${resp.statusCode}');
   }
   return ResponseDiscogs(imageUrl, duration);
 }

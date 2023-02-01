@@ -182,19 +182,21 @@ class Nova extends Channel {
     String startTime = DateTime.now().toString().substring(11, 16);
     // action=loadmore_programs&date=&time=18%3A08&page=1&radio=910
     String? radioId = subchannels[subchannel.codename]?["id"];
-    String rawData =
-        'action=loadmore_programs&date=&time=$startTime&page=1&radio=$radioId';
-
-    http.Request req = http.Request('POST', Uri.parse(url));
-    req.body = Uri.encodeFull(rawData);
-    req.headers.addAll({
+    final rawData = {
+      'action': 'loadmore_programs',
+      'date': '',
+      'time': startTime,
+      'page': '1',
+      'radio': radioId
+    };
+    final headers = {
       'x-requested-with': 'XMLHttpRequest',
       'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-    });
-    http.StreamedResponse streamedResponse = await req.send();
+      'user-agent': AppConfig.userAgent,
+    };
     final http.Response resp;
     try {
-      resp = await http.Response.fromStream(streamedResponse);
+      resp = await http.post(Uri.parse(url), body: rawData, headers: headers);
       //print(resp.statusCode);
     } catch (e) {
       debugPrint('debug: $e');

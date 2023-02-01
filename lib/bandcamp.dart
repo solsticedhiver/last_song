@@ -1,7 +1,10 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_scraper/web_scraper.dart';
+
+import 'helpers.dart';
 
 class ResponseBandcamp {
   String imageUrl = '';
@@ -15,26 +18,28 @@ Future<ResponseBandcamp> searchBandcamp(String s, String type) async {
 
   String imageUrl = '';
   String duration = '';
-  String rawData = json.encode({
+  final rawData = json.encode({
     'search_text': s,
     'search_filter': type,
     'full_page': false,
     'fan_id': null
   });
-
-  // the official API is not free, so using the result of elastic search
-  http.Request req = http.Request(
-      'POST',
-      Uri.parse(
-          'https://bandcamp.com/api/bcsearch_public_api/1/autocomplete_elastic'));
-  req.body = rawData;
-  req.headers.addAll({
+  final headers = {
     'x-requested-with': 'XMLHttpRequest',
     'accept': 'application/json',
     'content-type': 'application/json; charset=UTF-8',
-  });
-  http.StreamedResponse streamedResponse = await req.send();
-  final resp = await http.Response.fromStream(streamedResponse);
+    'user-agent': AppConfig.userAgent,
+  };
+  // the official API is not free, so using the result of elastic search
+  Uri uri = Uri.parse(
+      'https://bandcamp.com/api/bcsearch_public_api/1/autocomplete_elastic');
+  final http.Response resp;
+  try {
+    resp = await http.post(uri, body: rawData, headers: headers);
+  } catch (e) {
+    debugPrint('debug: $e');
+    return ResponseBandcamp(imageUrl, duration);
+  }
 
   if (resp.statusCode == 200) {
     Map<String, dynamic> reply = jsonDecode(resp.body);
