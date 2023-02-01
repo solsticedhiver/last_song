@@ -123,5 +123,8 @@ Future<ResponseDiscogs> searchDiscogs(Map<String, String> search) async {
     //debugPrint('debug: ${resp.statusCode}: ${resp.body}');
     debugPrint('debug: ${resp.statusCode}');
   }
+  if (imageUrl != '') {
+    debugPrint('debug: on discogs $imageUrl');
+  }
   return ResponseDiscogs(imageUrl, duration);
 }

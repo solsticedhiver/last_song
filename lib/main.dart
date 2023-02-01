@@ -78,6 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<int> _favorites = <int>[];
   final List<List<int>> _channelsByType = <List<int>>[];
   final List<bool> _drawerExpansionPanelListState = <bool>[false, false, false];
+  bool isFetchingCurrentTrack = false;
 
   Future<void> _fetchCurrentTrack(
       {bool cancel = false, bool manual = false}) async {
@@ -92,8 +93,14 @@ class _MyHomePageState extends State<MyHomePage> {
         timer = _launchTimer();
       });
     }
+    setState(() {
+      isFetchingCurrentTrack = true;
+    });
     ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
     int ret = await cm.fetchCurrentTrack(manual);
+    setState(() {
+      isFetchingCurrentTrack = false;
+    });
 
     if (manual && ret < 1) {
       String msg = 'No update available';
@@ -471,16 +478,33 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       bSS = bottomSheetSizeSmallScreen;
     }
+    Widget ctw;
     if (constraints.maxWidth > 1000) {
-      return _buildCurrentTrackWidgetLargeScreen(bSS, constraints);
+      ctw = _buildCurrentTrackWidgetLargeScreen(bSS, constraints);
     } else {
-      return _buildCurrentTrackWidgetSmallScreen(bSS);
+      ctw = _buildCurrentTrackWidgetSmallScreen(bSS);
     }
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        ctw,
+        Visibility(
+            visible: isFetchingCurrentTrack,
+            child: const Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: LinearProgressIndicator(
+                value: null,
+              ),
+            )),
+      ],
+    );
   }
 
   Widget _buildCurrentTrackWidgetSmallScreen(double bottomSheetSize) {
     return Container(
-      padding: EdgeInsets.only(bottom: bottomSheetSize),
+      padding: EdgeInsets.only(bottom: bottomSheetSize, left: 10, right: 10),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         textDirection: TextDirection.ltr,
@@ -529,7 +553,7 @@ class _MyHomePageState extends State<MyHomePage> {
       gap = 45;
     }
     return Container(
-      padding: EdgeInsets.only(bottom: bottomSheetSize),
+      padding: EdgeInsets.only(bottom: bottomSheetSize, left: 20, right: 20),
       child: Row(
         //mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
