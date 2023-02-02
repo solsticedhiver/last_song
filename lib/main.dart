@@ -962,6 +962,7 @@ class _MyHomePageState extends State<MyHomePage> {
           }
           int val = _favorites.removeAt(oldIndex);
           _favorites.insert(newIndex, val);
+          _saveFavorites();
         });
       },
     );
