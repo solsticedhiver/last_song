@@ -546,14 +546,16 @@ class _MyHomePageState extends State<MyHomePage> {
       double bottomSheetSize, BoxConstraints constraints) {
     double imgSize = 400;
     double gap = 30;
+    double left = 30;
     // on very large screen
     if (constraints.maxHeight > 900 && constraints.maxWidth > 1500) {
       // increase image size
       imgSize = 700;
       gap = 45;
+      left = 45;
     }
     return Container(
-      padding: EdgeInsets.only(bottom: bottomSheetSize, left: 20, right: 20),
+      padding: EdgeInsets.only(bottom: bottomSheetSize, left: left, right: 20),
       child: Row(
         //mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
