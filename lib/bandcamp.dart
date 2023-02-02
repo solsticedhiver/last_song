@@ -37,7 +37,7 @@ Future<ResponseBandcamp> searchBandcamp(String s, String type) async {
   try {
     resp = await http.post(uri, body: rawData, headers: headers);
   } catch (e) {
-    debugPrint('debug: $e');
+    debugPrint('debug: bandcamp search = $e');
     return ResponseBandcamp(imageUrl, duration);
   }
 
@@ -56,6 +56,13 @@ Future<ResponseBandcamp> searchBandcamp(String s, String type) async {
         break;
       }
     }
+  } else {
+    debugPrint('debug: bandcamp search = ${resp.statusCode}');
+    return ResponseBandcamp(imageUrl, duration);
+  }
+
+  if (imageUrl != '') {
+    debugPrint('debug: found on bandcamp $imageUrl');
   }
   return ResponseBandcamp(imageUrl, duration);
 }

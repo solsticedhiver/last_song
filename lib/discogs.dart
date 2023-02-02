@@ -93,18 +93,8 @@ Future<ResponseDiscogs> searchDiscogs(Map<String, String> search) async {
   http.Response resp = await client.get(url, headers: headers);
 
   if (resp.statusCode == 403) {
-    // CloudFlare anti-scrap technique
-    final regex = RegExp(r" *cRay: '.*',");
-    RegExpMatch? match = regex.firstMatch(resp.body);
-    if (match != null) {
-      String cRay = match[0]!.split("'")[1];
-      debugPrint('debug cRay=$cRay');
-      resp = await client.get(
-          Uri.parse(
-              'https://api.discogs.com/cdn-cgi/images/trace/managed/nojs/transparent.gif?ray=$cRay'),
-          headers: headers);
-      resp = await client.get(url, headers: headers);
-    }
+    // CloudFlare anti-scrap technique IUAM
+    // TODO: find a way to work-around that
   }
 
   if (resp.statusCode == 200) {
@@ -121,10 +111,10 @@ Future<ResponseDiscogs> searchDiscogs(Map<String, String> search) async {
     }
   } else {
     //debugPrint('debug: ${resp.statusCode}: ${resp.body}');
-    debugPrint('debug: ${resp.statusCode}');
+    debugPrint('debug: discogs search = ${resp.statusCode}');
   }
   if (imageUrl != '') {
-    debugPrint('debug: on discogs $imageUrl');
+    debugPrint('debug: found on discogs $imageUrl');
   }
   return ResponseDiscogs(imageUrl, duration);
 }
