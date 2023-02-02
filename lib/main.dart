@@ -111,6 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ScaffoldMessengerState sms = ScaffoldMessenger.of(skcc);
         sms.clearSnackBars();
         sms.showSnackBar(SnackBar(
+          backgroundColor: Colors.black87,
           content: Text(msg),
           behavior: SnackBarBehavior.floating,
         ));
@@ -353,7 +354,7 @@ class _MyHomePageState extends State<MyHomePage> {
         //  text = '$text / $name';
         //}
         return ListTile(
-            //tileColor: index % 2 == 0 ? Colors.grey[350] : null,
+            //tileColor: index % 2 == 0 ? Colors.black87 : null,
             //dense: true,
             subtitle: name != null ? Text(channel.radio) : null,
             title: name != null ? Text(name) : Text(channel.radio),
@@ -417,7 +418,7 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: Container(
                   height: bottomSheetSize,
-                  color: Colors.grey[800],
+                  color: Colors.black87,
                   child: Row(
                     children: [
                       image.startsWith('assets')
@@ -495,6 +496,9 @@ class _MyHomePageState extends State<MyHomePage> {
               left: 0,
               right: 0,
               child: LinearProgressIndicator(
+                // deepOrange is not seen beside the appBar of the same color
+                color: Colors.black87,
+                backgroundColor: Colors.white,
                 value: null,
               ),
             )),
