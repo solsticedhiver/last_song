@@ -27,6 +27,8 @@ void main(List<String> args) async {
         await PlatformAssetBundle().load('assets/ca/lets-encrypt-r3.pem');
     SecurityContext.defaultContext
         .setTrustedCertificatesBytes(data.buffer.asUint8List());
+  } on SocketException {
+    debugPrint('debug: Failed to test for valid-isrgrootx1.letsencrypt.org');
   }
 
   runApp(MultiProvider(
@@ -163,6 +165,19 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
         actions: <Widget>[
+          IconButton(
+              onPressed: () {
+                final cm = Provider.of<ChannelManager>(context, listen: false);
+                StringBuffer txt = StringBuffer(
+                    '${cm.currentChannel.currentTrack.artist.toTitleCase()} - ${cm.currentChannel.currentTrack.title.toTitleCase()}');
+                if (cm.currentChannel.currentTrack.album.isNotEmpty &&
+                    cm.currentChannel.currentTrack.album != 'Album') {
+                  txt.write(' - ${cm.currentChannel.currentTrack.album}');
+                }
+                _copyToClipboard(txt.toString());
+              },
+              tooltip: 'Copy all',
+              icon: const Icon(Icons.copy_all)),
           IconButton(
             icon: const Icon(Icons.favorite),
             tooltip: 'Favorites',
@@ -602,19 +617,20 @@ class _MyHomePageState extends State<MyHomePage> {
                 .split('T')[1]
                 .substring(0, 8);
             return RichText(
-                text: TextSpan(
-                    text: dd.substring(0, 5),
-                    style: TextStyle(
-                        fontSize: isSmallScreen ? 25 : 40,
-                        fontWeight:
-                            isSmallScreen ? FontWeight.bold : FontWeight.normal,
-                        color: Theme.of(context).primaryColor),
-                    children: <TextSpan>[
-                  TextSpan(
-                      text: dd.substring(5, 8),
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.normal))
-                ]));
+              text: TextSpan(
+                  text: dd.substring(0, 5),
+                  style: TextStyle(
+                      fontSize: isSmallScreen ? 25 : 40,
+                      fontWeight:
+                          isSmallScreen ? FontWeight.bold : FontWeight.normal,
+                      color: Theme.of(context).primaryColor),
+                  children: <TextSpan>[
+                    TextSpan(
+                        text: dd.substring(5, 8),
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.normal))
+                  ]),
+            );
           }),
           Consumer<ChannelManager>(builder: (context, cm, child) {
             String artist;
@@ -995,6 +1011,15 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  Future<void> _copyToClipboard(String text) async {
+    await Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Copied to clipboard'),
+      backgroundColor: Colors.black87,
+      behavior: SnackBarBehavior.floating,
+    ));
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1003,6 +1028,12 @@ class _MyHomePageState extends State<MyHomePage> {
       await _loadFavorites();
       _fetchCurrentTrack();
     });
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
   }
 
   Timer _launchTimer() {
