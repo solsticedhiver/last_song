@@ -163,44 +163,10 @@ class _MyHomePageState extends State<MyHomePage> {
       key: scaffoldKey,
       drawer: _buildDrawer(),
       appBar: AppBar(
-        title: Text(widget.title),
-        actions: <Widget>[
-          IconButton(
-              onPressed: () {
-                final cm = Provider.of<ChannelManager>(context, listen: false);
-                StringBuffer txt = StringBuffer(
-                    '${cm.currentChannel.currentTrack.artist.toTitleCase()} - ${cm.currentChannel.currentTrack.title.toTitleCase()}');
-                if (cm.currentChannel.currentTrack.album.isNotEmpty &&
-                    cm.currentChannel.currentTrack.album != 'Album') {
-                  txt.write(' - ${cm.currentChannel.currentTrack.album}');
-                }
-                _copyToClipboard(txt.toString());
-              },
-              tooltip: 'Copy all',
-              icon: const Icon(Icons.copy_all)),
-          IconButton(
-            icon: const Icon(Icons.favorite),
-            tooltip: 'Favorites',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => _buildFavoriteRoute(),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.history),
-            tooltip: 'Track history',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => _buildLastSongListRoute(),
-                ),
-              );
-            },
-          ),
-        ],
+        title: Text((MediaQuery.of(context).size.width < 700)
+            ? widget.title.replaceFirst(' played ', ' ')
+            : widget.title),
+        actions: _buildActionButtons(context),
       ),
       body: LayoutBuilder(builder: (context, constraints) {
         return RefreshIndicator(
@@ -228,6 +194,68 @@ class _MyHomePageState extends State<MyHomePage> {
       bottomSheet: _buildBottomSheet(),
     );
     return scaffold;
+  }
+
+  List<Widget> _buildActionButtons(BuildContext context) {
+    final actions = <IconButton>[
+      IconButton(
+        icon: const Icon(Icons.copy_all),
+        tooltip: 'Copy all',
+        onPressed: () {
+          final cm = Provider.of<ChannelManager>(context, listen: false);
+          StringBuffer txt = StringBuffer(
+              '${cm.currentChannel.currentTrack.artist.toTitleCase()} - ${cm.currentChannel.currentTrack.title.toTitleCase()}');
+          if (cm.currentChannel.currentTrack.album.isNotEmpty &&
+              cm.currentChannel.currentTrack.album != 'Album') {
+            txt.write(' - ${cm.currentChannel.currentTrack.album}');
+          }
+          _copyToClipboard(txt.toString());
+        },
+      ),
+      IconButton(
+        icon: const Icon(Icons.favorite),
+        tooltip: 'Favorites',
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => _buildFavoriteRoute(),
+            ),
+          );
+        },
+      ),
+      IconButton(
+        icon: const Icon(Icons.history),
+        tooltip: 'Track history',
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => _buildLastSongListRoute(),
+            ),
+          );
+        },
+      ),
+    ];
+    if (MediaQuery.of(context).size.width > 500) {
+      // return the list of IconButtons if screen is large enough
+      return actions;
+    } else {
+      // build a PopupMenuButton from the IconsButtons
+      return <Widget>[
+        PopupMenuButton<IconButton>(itemBuilder: (context) {
+          return actions.map((e) {
+            return PopupMenuItem<IconButton>(
+              // Navigator inside PopupMenuItem does not work: https://stackoverflow.com/a/69589313/283067
+              onTap: () async {
+                await Future.delayed(Duration.zero, () {
+                  e.onPressed!();
+                });
+              },
+              child: Text(e.tooltip!),
+            );
+          }).toList();
+        })
+      ];
+    }
   }
 
   Widget _buildDrawer() {
