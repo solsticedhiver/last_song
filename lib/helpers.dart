@@ -134,7 +134,7 @@ class Track {
 
 class AppConfig {
   static const String name = 'Last Song';
-  static const String version = '0.1';
+  static const String version = '0.0.2';
   static const String url = 'https://github.com/solsticedhiver/last_song';
   static String userAgent = '${name.replaceAll(' ', '')}/$version +$url';
 }

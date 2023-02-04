@@ -28,6 +28,7 @@ void main(List<String> args) async {
     SecurityContext.defaultContext
         .setTrustedCertificatesBytes(data.buffer.asUint8List());
   } on SocketException {
+    // TODO: we need to recheck that later on
     debugPrint('debug: Failed to test for valid-isrgrootx1.letsencrypt.org');
   }
 
@@ -164,7 +165,9 @@ class _MyHomePageState extends State<MyHomePage> {
       drawer: _buildDrawer(),
       appBar: AppBar(
         title: Text((MediaQuery.of(context).size.width < 700)
-            ? widget.title.replaceFirst(' played ', ' ')
+            ? widget.title
+                .replaceFirst(' played ', ' ')
+                .replaceFirst(' on ', ' - ')
             : widget.title),
         actions: _buildActionButtons(context),
       ),
@@ -542,6 +545,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 // deepOrange is not seen beside the appBar of the same color
                 color: Colors.black87,
                 backgroundColor: Colors.white,
+                minHeight: 2,
                 value: null,
               ),
             )),
