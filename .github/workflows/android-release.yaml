@@ -1,0 +1,42 @@
+name: App Android Release
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  version:
+    name: Create version number
+    runs-on: ubuntu-latest
+    outputs:
+      output1: ${{ steps.version.outputs.version }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Fetch all history for all tags and branches
+      run: |
+        git fetch --prune --depth=1000
+    - name: Create version
+      id: version
+      run: echo "version=v$(grep ^version pubspec.yaml |cut -f 2 -d ' '|cut -f 1 -d '+')" >> $GITHUB_OUTPUT
+  build:
+    name: Build APK and Create release
+    needs: [ version ]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: subosito/flutter-action@v2
+      with:
+        channel : 'stable'
+        cache: true
+    - run: flutter pub get
+    #- run: flutter test
+    - run: flutter build apk --release --split-per-abi
+    - run: flutter build appbundle
+    - name: Create a Release in GitHub
+      uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        artifacts: "build/app/outputs/apk/release/*.apk,build/app/outputs/bundle/release/app-release.aab"
+        token: "${{ secrets.GH_TOKEN }}"
+        tag: "${{ needs.version.outputs.output1 }}"
+        commit: "${{ github.sha }}"
