@@ -13,52 +13,57 @@ import 'package:web_scraper/web_scraper.dart';
 const String radioNova = 'https://www.nova.fr/wp-json/radios/';
 
 class Nova extends Channel {
-  static const _subchannels = {
-    "radio-nova": {
+  static List<dynamic> subchannels = [
+    {
+      "code": "radio-nova",
       "name": "Radio Nova",
       "id": "910",
       "image": "/2/2022/12/Radio-Nova-en-direct.png"
     },
-    "nouvo-nova": {
+    {
+      "code": "nouvo-nova",
       "name": "Nouvo Nova",
       "id": "79676",
       "image": "/2/2022/11/Web-radio--Nouvo-Nova.png"
     },
-    "nova-la-nuit": {
+    {
+      "code": "nova-la-nuit",
       "name": "Nova la Nuit",
       "id": "916",
       "image": "/2/2022/11/Web-radio--Nova-la-Nuit.png"
     },
-    "nova-classics": {
+    {
+      "code": "nova-classics",
       "name": "Nova Classics",
       "id": "913",
       "image": "/2/2020/10/Web-radio--Nova-Classics.png"
     },
-    "nova-danse": {
+    {
+      "code": "nova-danse",
       "name": "Nova Danse",
       "id": "560",
       "image": "/2/2020/09/Web-radio--Nova-Danse.png"
     },
-  };
-  @override
-  Map<String, dynamic> get subchannels => _subchannels;
-
-  static Map<String, dynamic> get getSubchannels => _subchannels;
+  ];
 
   // datetime until which the last update request is valid according to cache-control(max-age) header, age and date
   static DateTime validity =
       DateTime.now().subtract(const Duration(minutes: 1));
 
-  Nova(String subchannel) : super(radio: 'Radio Nova') {
-    this.subchannel = SubChannel(codename: subchannel);
-    String? sn = subchannels[subchannel]?['name'];
-    if (sn != null) {
-      this.subchannel.title = sn;
-    }
-    this.subchannel.imageUrl =
-        "https://www.nova.fr/wp-content/uploads/sites${subchannels[subchannel]['image']}";
-    this.subchannel.bigImageUrl = this.subchannel.imageUrl;
+  Nova(String code, String name, String imageUrl, String id)
+      : super(radio: 'Radio Nova') {
+    subchannel.codename = code;
+    subchannel.title = name;
+    subchannel.id = id;
+    subchannel.imageUrl =
+        'https://www.nova.fr/wp-content/uploads/sites$imageUrl';
+    subchannel.bigImageUrl = subchannel.imageUrl;
     show.description = "";
+  }
+
+  @override
+  String toString() {
+    return 'Nova(subchannel: ${subchannel.toString()}';
   }
 
   int updateFromJson(Map<String, dynamic> json) {
@@ -181,7 +186,7 @@ class Nova extends Channel {
     // 20 minutes from now
     String startTime = DateTime.now().toString().substring(11, 16);
     // action=loadmore_programs&date=&time=18%3A08&page=1&radio=910
-    String? radioId = subchannels[subchannel.codename]?["id"];
+    String radioId = subchannel.id;
     final rawData = {
       'action': 'loadmore_programs',
       'date': '',

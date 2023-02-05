@@ -36,23 +36,21 @@ const String bbcCurrentShow =
     'https://rms.api.bbc.co.uk/v2/broadcasts/latest?service=SERVICE&on_air=now';
 
 class RadioOne extends Channel {
-  static const _subchannels = {
-    "bbc_radio_one": {"name": "BBC Radio 1"}
-  };
-  @override
-  Map<String, dynamic> get subchannels => _subchannels;
+  static List<dynamic> subchannels = [
+    {"code": "bbc_radio_one", "name": "BBC Radio 1"},
+  ];
 
-  static Map<String, dynamic> get getSubchannels => _subchannels;
-
-  RadioOne(String subchannel) {
+  RadioOne(String code, String name) {
     radio = 'BBC Radio';
-    this.subchannel = SubChannel(codename: subchannel);
-    String? sn = subchannels[subchannel]?['name'];
-    if (sn != null) {
-      this.subchannel.title = sn;
-    }
-    this.subchannel.imageUrl = 'assets/img/radioone.png';
-    this.subchannel.bigImageUrl = this.subchannel.imageUrl;
+    subchannel.codename = code;
+    subchannel.title = name;
+    subchannel.imageUrl = 'assets/img/radioone.png';
+    subchannel.bigImageUrl = subchannel.imageUrl;
+  }
+
+  @override
+  String toString() {
+    return 'RadioOne(subchannel: ${subchannel.toString()}';
   }
 
   @override

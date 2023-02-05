@@ -22,15 +22,17 @@ class ChannelManager extends ChangeNotifier {
     }
   }
 
-  void initialize() {
-    for (var s in Nova.getSubchannels.keys) {
-      addChannel(Nova(s));
+  Future<void> initialize() async {
+    for (var s in Nova.subchannels) {
+      addChannel(Nova(s['code'], s['name'], s['image'], s['id']));
     }
-    for (var s in SomaFm.getSubchannels.keys) {
-      addChannel(SomaFm(s));
+    final subchannels = await SomaFm.loadSubChannels();
+    for (var s in subchannels) {
+      addChannel(SomaFm(s['id'], s['title'], s['image'], s['xlimage'],
+          s['description'], s['dj']));
     }
-    for (var s in RadioOne.getSubchannels.keys) {
-      addChannel(RadioOne(s));
+    for (var s in RadioOne.subchannels) {
+      addChannel(RadioOne(s['code'], s['name']));
     }
   }
 
@@ -46,11 +48,18 @@ class SubChannel {
   late String title;
   late String imageUrl;
   late String bigImageUrl;
+  late String id;
   SubChannel(
       {this.codename = 'subchannel',
       this.title = 'Subchannel',
       this.imageUrl = '',
-      this.bigImageUrl = ''});
+      this.bigImageUrl = '',
+      this.id = '-1'});
+
+  @override
+  String toString() {
+    return 'Subchannel(code: $codename, title: $title, imageUrl: $imageUrl, bigImageUrl: $bigImageUrl, id: $id)';
+  }
 }
 
 class Show {
@@ -67,6 +76,11 @@ class Show {
       this.description = '',
       this.airingTime = '00:00 - 00:00',
       this.imageUrl = ''});
+
+  @override
+  String toString() {
+    return 'Show(author: $author, name: $name, description: $description, airingTime: $airingTime, imageUrl: $imageUrl)';
+  }
 }
 
 class Channel extends ChangeNotifier {
@@ -76,8 +90,6 @@ class Channel extends ChangeNotifier {
   late Track currentTrack;
   //bool isFavorite = false;
   List<Track> recentTracks = <Track>[];
-
-  Map<String, dynamic> get subchannels => throw UnimplementedError();
 
   Channel({
     this.radio = 'Radio',

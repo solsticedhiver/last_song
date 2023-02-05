@@ -80,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Timer? timer;
   final List<int> _favorites = <int>[];
   final List<List<int>> _channelsByType = <List<int>>[];
-  final List<bool> _drawerExpansionPanelListState = <bool>[false, false, false];
+  final List<bool> _drawerExpansionPanelListState = <bool>[];
   bool isFetchingCurrentTrack = false;
 
   Future<void> _fetchCurrentTrack(
@@ -299,8 +299,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget _buildRadioExpansionPanelList() {
     final cm = Provider.of<ChannelManager>(context, listen: false);
+    int length = 0;
+    // we ned to check the length of _channelByType flattened against cm.channels
+    if (_channelsByType.isNotEmpty) {
+      length = _channelsByType
+          .map((e) => e.length)
+          .reduce((value, element) => value + element);
+    }
     // initialize _channelsByType
-    if (_channelsByType.isEmpty) {
+    if (cm.channels.length != length) {
+      // restart over
+      _channelsByType.clear();
+      _drawerExpansionPanelListState.clear();
       final Map<String, dynamic> networks = {};
       int index;
       for (var c in cm.channels) {
@@ -312,9 +322,12 @@ class _MyHomePageState extends State<MyHomePage> {
           networks[type] = [index];
         }
       }
-      for (var c in networks.values) {
-        _channelsByType.add(c);
+      for (var c in networks.keys) {
+        _channelsByType.add(networks[c]);
       }
+      // repopulate the state list given the new length
+      _drawerExpansionPanelListState.insertAll(
+          0, List.filled(_channelsByType.length, false));
     }
 
     List<ExpansionPanel> children = [];
@@ -354,7 +367,7 @@ class _MyHomePageState extends State<MyHomePage> {
       Channel c, int index, ChannelManager cm, List<int> t) {
     return ListTile(
       key: Key('$index'),
-      title: Text(c.subchannels[c.subchannel.codename]['name']),
+      title: Text(c.subchannel.title),
       subtitle: Text(c.radio),
       leading: SizedBox(
           width: 48,
@@ -733,7 +746,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       color: Colors.white),
                 ),
                 TextSpan(
-                  text: cm.currentChannel.show.author.isNotEmpty
+                  text: cm.currentChannel.show.author.isNotEmpty &&
+                          cm.currentChannel.show.author != 'Author'
                       ? ' - ${cm.currentChannel.show.author}'
                       : '',
                   style: const TextStyle(
@@ -742,7 +756,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 TextSpan(
-                  text: cm.currentChannel.show.airingTime.isNotEmpty
+                  text: cm.currentChannel.show.airingTime.isNotEmpty &&
+                          cm.currentChannel.show.airingTime != '00:00 - 00:00'
                       ? '\n${cm.currentChannel.show.airingTime}'
                       : '',
                   style: const TextStyle(
@@ -962,9 +977,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                         imageUrl: f.subchannel.bigImageUrl,
                                         fit: BoxFit.fitHeight))),
                         ListTile(
-                          title: Center(
-                              child: Text(f.subchannels[f.subchannel.codename]
-                                  ['name'])),
+                          title: Center(child: Text(f.subchannel.title)),
                           subtitle: Center(child: Text(f.radio)),
                         ),
                       ],
@@ -1000,7 +1013,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ? Image.asset(f.subchannel.imageUrl)
                 : Image(
                     image: CachedNetworkImageProvider(f.subchannel.imageUrl)),
-            title: Text(f.subchannels[f.subchannel.codename]['name']),
+            title: Text(f.subchannel.title),
             subtitle: Text(f.radio),
             onTap: () {
               final cm = Provider.of<ChannelManager>(context, listen: false);

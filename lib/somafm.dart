@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:web_scraper/web_scraper.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
@@ -9,304 +11,30 @@ import 'bandcamp.dart';
 import 'discogs.dart';
 
 class SomaFm extends Channel {
-  static const _subchannels = {
-    "groovesalad": {
-      "name": "Groove Salad",
-      "image": "/img/groovesalad120.png",
-      "big": "/img3/groovesalad-400.png",
-      "descr": "A nicely chilled plate of ambient/downtempo beats and grooves.",
-    },
-    "gsclassic": {
-      "name": "Groove Salad Classic",
-      "image": "/img3/gsclassic120.jpg",
-      "big": "/img3/gsclassic400.jpg",
-      "descr":
-          "The classic (early 2000s) version of a nicely chilled plate of ambient/downtempo beats and grooves.",
-    },
-    "synphaera": {
-      "name": "Synphaera Radio",
-      "image": "/img3/synphaera120.jpg",
-      "big": "/img3/synphaera400.jpg",
-      "descr":
-          "Featuring the music from an independent record label focused on modern electronic ambient and space music.",
-    },
-    "dronezone": {
-      "name": "Drone Zone",
-      "image": "/img/dronezone120.jpg",
-      "big": "/img3/dronezone-400.png",
-      "descr":
-          "Served best chilled, safe with most medications. Atmospheric textures with minimal beats.",
-    },
-    "darkzone": {
-      "name": "The Dark Zone",
-      "image": "/img/darkzone-120.jpg",
-      "big": "/img/darkzone-400.jpg",
-      "descr":
-          "The darker side of deep ambient. Music for staring into the Abyss.",
-    },
-    "metal": {
-      "name": "Metal Detector",
-      "image": "/img3/metal120.png",
-      "big": "/img3/metal-400.png",
-      "descr":
-          "From black to doom, prog to sludge, thrash to post, stoner to crossover, punk to industrial.",
-    },
-    "illstreet": {
-      "name": "Illinois Street Lounge",
-      "image": "/img/illstreet.jpg",
-      "big": "/img3/illstreet-400.jpg",
-      "descr":
-          "Classic bachelor pad, playful exotica and vintage music of tomorrow.",
-    },
-    "suburbsofgoa": {
-      "name": "Suburbs of Goa",
-      "image": "/img/sog120.jpg",
-      "big": "/img3/suburbsofgoa-400.png",
-      "descr": "Desi-influenced Asian world beats and beyond.",
-    },
-    "bootliquor": {
-      "name": "Boot Liquor",
-      "image": "/img/bootliquor120.jpg",
-      "big": "/img3/bootliquor-400.png",
-      "descr": "Americana Roots music for Cowhands, Cowpokes and Cowtippers",
-    },
-    "7soul": {
-      "name": "Seven Inch Soul",
-      "image": "/img/7soul120.png",
-      "big": "/img3/7soul-400.jpg",
-      "descr": "Vintage soul tracks from the original 45 RPM vinyl.",
-    },
-    "seventies": {
-      "name": "Left Coast 70s",
-      "image": "/img/seventies120.jpg",
-      "big": "/img3/seventies400.jpg",
-      "descr": "Mellow album rock from the Seventies. Yacht not required.",
-    },
-    "u80s": {
-      "name": "Underground 80s",
-      "image": "/img/u80s-120.png",
-      "big": "/img3/u80s-400.png",
-      "descr": "Early 80s UK Synthpop and a bit of New Wave.",
-    },
-    "defcon": {
-      "name": "DEF CON Radio",
-      "image": "/img/defcon120.png",
-      "big": "/img3/defcon400.png",
-      "descr": "Music for Hacking. The DEF CON Year-Round Channel.",
-    },
-    "fluid": {
-      "name": "Fluid",
-      "image": "/img/fluid120.jpg",
-      "big": "/img3/fluid-400.jpg",
-      "descr":
-          "Drown in the electronic sound of instrumental hiphop, future soul and liquid trap.",
-    },
-    "lush": {
-      "name": "Lush",
-      "image": "/img/lush120.jpg",
-      "big": "/img3/lush-400.jpg",
-      "descr":
-          "Sensuous and mellow female vocals, many with an electronic influence.",
-    },
-    "poptron": {
-      "name": "PopTron",
-      "image": "/img/poptron120.png",
-      "big": "/img3/poptron-400.png",
-      "descr": "Electropop and indie dance rock with sparkle and pop.",
-    },
-    "covers": {
-      "name": "Covers",
-      "image": "/img/covers120.jpg",
-      "big": "/img3/covers-400.png",
-      "descr":
-          "Just covers. Songs you know by artists you don't. We've got you covered.",
-    },
-    "cliqhop": {
-      "name": "cliqhop idm",
-      "image": "/img/cliqhop120.png",
-      "big": "/img3/cliqhop-400.png",
-      "descr": "Blips'n'beeps backed mostly w/beats. Intelligent Dance Music.",
-    },
-    "dubstep": {
-      "name": "Dub Step Beyond",
-      "image": "/img/dubstep120.png",
-      "big": "/img3/dubstep-400.png",
-      "descr":
-          "Dubstep, Dub and Deep Bass. May damage speakers at high volume.",
-    },
-    "beatblender": {
-      "name": "Beat Blender",
-      "image": "/img/blender120.png",
-      "big": "/img3/beatblender-400.png",
-      "descr": "A late night blend of deep-house and downtempo chill.",
-    },
-    "deepspaceone": {
-      "name": "Deep Space One",
-      "image": "/img/deepspaceone120.gif",
-      "big": "/img3/deepspaceone-400.png",
-      "descr":
-          "Deep ambient electronic, experimental and space music. For inner and outer space exploration.",
-    },
-    "spacestation": {
-      "name": "Space Station Soma",
-      "image": "/img/sss.jpg",
-      "big": "/img3/spacestation-400.png",
-      "descr":
-          "Tune in, turn on, space out. Spaced-out ambient and mid-tempo electronica.",
-    },
-    "n5md": {
-      "name": "n5MD Radio",
-      "image": "/img/n5md120.png",
-      "big": "/img3/n5md-400.png",
-      "descr":
-          "Emotional Experiments in Music: Ambient, modern composition, post-rock, & experimental electronic music",
-    },
-    "vaporwaves": {
-      "name": "Vaporwaves",
-      "image": "/img/vaporwaves120.jpg",
-      "big": "/img3/vaporwaves400.png",
-      "descr": "All Vaporwave. All the time.",
-    },
-    "secretagent": {
-      "name": "Secret Agent",
-      "image": "/img/secretagent120.jpg",
-      "big": "/img3/secretagent-400.png",
-      "descr":
-          "The soundtrack for your stylish, mysterious, dangerous life. For Spies and PIs too!",
-    },
-    "reggae": {
-      "name": "Heavyweight Reggae",
-      "image": "/img3/reggae120.png",
-      "big": "/img3/reggae400.png",
-      "descr": "Reggae, Ska, Rocksteady classic and deep tracks.",
-    },
-    "thetrip": {
-      "name": "The Trip",
-      "image": "/img/thetrip120.jpg",
-      "big": "/img3/thetrip-400.jpg",
-      "descr": "Progressive house / trance. Tip top tunes.",
-    },
-    "sonicuniverse": {
-      "name": "Sonic Universe",
-      "image": "/img/sonicuniverse120.jpg",
-      "big": "/img3/sonicuniverse-400.png",
-      "descr":
-          "Transcending the world of jazz with eclectic, avant-garde takes on tradition.",
-    },
-    "missioncontrol": {
-      "name": "Mission Control",
-      "image": "/img/missioncontrol120.jpg",
-      "big": "/img3/missioncontrol-400.png",
-      "descr": "Celebrating NASA and Space Explorers everywhere.",
-    },
-    "indiepop": {
-      "name": "Indie Pop Rocks!",
-      "image": "/img/indychick.jpg",
-      "big": "/img3/indiepop-400.png",
-      "descr": "New and classic favorite indie pop tracks.",
-    },
-    "digitalis": {
-      "name": "Digitalis",
-      "image": "/img/digitalis120.png",
-      "big": "/img3/digitalis-400.png",
-      "descr": "Digitally affected analog rock to calm the agitated heart.",
-    },
-    "folkfwd": {
-      "name": "Folk Forward",
-      "image": "/img/folkfwd120.jpg",
-      "big": "/img3/folkfwd-400.jpg",
-      "descr": "Indie Folk, Alt-folk and the occasional folk classics.",
-    },
-    "thistle": {
-      "name": "ThistleRadio",
-      "image": "/img/thistle120.png",
-      "big": "/img3/thistle-400.jpg",
-      "descr": "Exploring music from Celtic roots and branches",
-    },
-    "brfm": {
-      "name": "Black Rock FM",
-      "image": "/img/1023brc.jpg",
-      "big": "/img3/brfm-400.png",
-      "descr":
-          "From the Playa to the world, for the annual Burning Man festival.",
-    },
-    "sf1033": {
-      "name": "SF 10-33",
-      "image": "/img/sf1033120.png",
-      "big": "/img3/sf1033-400.png",
-      "descr":
-          "Ambient music mixed with the sounds of San Francisco public safety radio traffic.",
-    },
-    "scanner": {
-      "name": "SF Police Scanner",
-      "image": "/img/sf1033120.png",
-      "big": "/img3/scanner-400.jpg",
-      "descr": "San Francisco Public Safety Scanner Feed",
-    },
-    "live": {
-      "name": "SomaFM Live",
-      "image": "/img/SomaFMDJSquare120.jpg",
-      "big": "/img3/live-400.jpg",
-      "descr": "Special Live Events and rebroadcasts of past live events",
-    },
-    "specials": {
-      "name": "SomaFM Specials",
-      "image": "/img/SomaFMDJSquare120.jpg",
-      "big": "/img3/specials-400.jpg",
-      "descr": "Now featuring Tiki Time, Bossa Beyond, Surf Report & More!",
-    },
-    "xmasinfrisko": {
-      "name": "Xmas in Frisko",
-      "image": "/img/xmasinfrisco120.jpg",
-      "big": "/img3/xmasinfrisko-400.jpg",
-      "descr":
-          "SomaFM's wacky and eclectic holiday mix. Not for the easily offended.",
-    },
-    "christmas": {
-      "name": "Christmas Lounge",
-      "image": "/img/christmaslounge120.png",
-      "big": "/img3/christmas-400.jpg",
-      "descr":
-          "Chilled holiday grooves and classic winter lounge tracks. (Kid and Parent safe!)",
-    },
-    "xmasrocks": {
-      "name": "Christmas Rocks!",
-      "image": "/img/xmasrocks120.png",
-      "big": "/img3/xmasrocks-400.png",
-      "descr": "Have your self an indie/alternative holiday season!",
-    },
-    "jollysoul": {
-      "name": "Jolly Ol' Soul",
-      "image": "/img/jollysoul120.png",
-      "big": "/img3/jollysoul-400.png",
-      "descr": "Where we cut right to the soul of the season.",
-    },
-  };
+  static Future<List<dynamic>> loadSubChannels() async {
+    // list of channels available at https://api.somafm.com/channels.json (or somafm.com)
+    // TODO: use the online version instead of the hardcoded downloaded one ?
+    final cj = await rootBundle.loadString('assets/somafm_channels.json');
+    return json.decode(cj)['channels'];
+  }
 
-  @override
-  Map<String, dynamic> get subchannels => _subchannels;
-
-  static Map<String, dynamic> get getSubchannels => _subchannels;
-
-  SomaFm(String subchannel) : super(radio: 'Soma FM') {
-    String? scn = subchannels[subchannel]?['name'];
-    if (scn != null) {
-      this.subchannel.title = scn;
-    }
-    String? sci = subchannels[subchannel]?['image'];
-    if (sci != null) {
-      this.subchannel.imageUrl = 'https://somafm.com$sci';
-    }
-    String? scb = subchannels[subchannel]?['big'];
-    if (scb != null) {
-      this.subchannel.bigImageUrl = 'https://somafm.com$scb';
-    }
+  SomaFm(String subchannel, String name, String imageUrl, String bigImageUrl,
+      String description, String dj)
+      : super(radio: 'Soma FM') {
+    this.subchannel.title = name;
+    this.subchannel.imageUrl = imageUrl;
+    this.subchannel.bigImageUrl = bigImageUrl;
     this.subchannel.codename = subchannel;
-    show.author = 'Rusty Hodge';
+    show.author = dj;
     show.airingTime = '';
     show.imageUrl = this.subchannel.bigImageUrl;
     show.name = this.subchannel.title;
-    show.description = subchannels[subchannel]?['descr'];
+    show.description = description;
+  }
+
+  @override
+  String toString() {
+    return 'SomaFm(subchannel: ${subchannel.toString()}';
   }
 
   @override

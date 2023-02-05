@@ -79,6 +79,8 @@ flutter:
     - assets/img/deezer.png
     - assets/img/radioone.png
 
+    - assets/somafm_channels.json
+
     - assets/ca/lets-encrypt-r3.pem
 
   # An image asset can refer to one or more resolution-specific "variants", see
