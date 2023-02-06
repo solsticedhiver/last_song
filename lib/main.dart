@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:reorderable_grid/reorderable_grid.dart';
 
 import 'helpers.dart';
 
@@ -956,12 +957,20 @@ class _MyHomePageState extends State<MyHomePage> {
     return Center(
         child: SizedBox(
             width:
-                1200, // 400px image * 3, could be a liitle bigger but why care ?
-            child: GridView.count(
-              crossAxisCount: 3,
-              children: _favorites.map((e) {
-                final f = cm.channels[e];
+                1200, // 400px image * 3, could be a little bigger but why care ?
+            child: ReorderableGridView.builder(
+              // does not work with ReorderableGridView.count(). Why ?
+              itemCount: _favorites.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 0,
+                crossAxisSpacing: 0,
+                childAspectRatio: 1,
+              ),
+              itemBuilder: (context, index) {
+                final f = cm.channels[_favorites[index]];
                 return InkWell(
+                  key: ValueKey(f),
                   child: Card(
                     child: Column(
                       children: [
@@ -984,14 +993,19 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                   onTap: () {
-                    final cm =
-                        Provider.of<ChannelManager>(context, listen: false);
-                    cm.changeChannel(e);
+                    cm.changeChannel(_favorites[index]);
                     _fetchCurrentTrack(cancel: true);
                     Navigator.pop(context);
                   },
                 );
-              }).toList(),
+              },
+              onReorder: (oldIndex, newIndex) {
+                setState(() {
+                  int val = _favorites.removeAt(oldIndex);
+                  _favorites.insert(newIndex, val);
+                });
+                _saveFavorites();
+              },
             )));
   }
 
@@ -1016,7 +1030,6 @@ class _MyHomePageState extends State<MyHomePage> {
             title: Text(f.subchannel.title),
             subtitle: Text(f.radio),
             onTap: () {
-              final cm = Provider.of<ChannelManager>(context, listen: false);
               cm.changeChannel(_favorites[index]);
               _fetchCurrentTrack(cancel: true);
               Navigator.pop(context);

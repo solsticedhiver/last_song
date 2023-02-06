@@ -44,6 +44,7 @@ dependencies:
   web_scraper: ^0.1.4
   timezone: ^0.9.1
   shared_preferences: ^2.0.17
+  reorderable_grid: ^1.0.6
 
 dev_dependencies:
   flutter_test:
