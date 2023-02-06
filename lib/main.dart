@@ -389,8 +389,8 @@ class _MyHomePageState extends State<MyHomePage> {
             } else {
               _favorites.add(t[index]);
             }
-            _saveFavorites();
           });
+          _saveFavorites();
         },
       ),
       onTap: () {
@@ -1042,8 +1042,8 @@ class _MyHomePageState extends State<MyHomePage> {
           }
           int val = _favorites.removeAt(oldIndex);
           _favorites.insert(newIndex, val);
-          _saveFavorites();
         });
+        _saveFavorites();
       },
     );
   }
