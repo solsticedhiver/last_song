@@ -77,6 +77,9 @@ class Nova extends Channel {
         currentTrack.artist = ct['artist'];
         currentTrack.title = ct['title'];
         currentTrack.imageUrl = ct['image'] is String ? ct['image'] : '';
+        if (currentTrack.imageUrl.endsWith('nova-default.png')) {
+          currentTrack.imageUrl = '';
+        }
         currentTrack.diffusionDate = ct['diffusion_date'];
         currentTrack.duration = ct['duration'];
         //final ds = currentTrack.duration.split(':');
