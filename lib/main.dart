@@ -261,7 +261,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Widget _buildDrawer() {
+  StatelessWidget _buildDrawer() {
     return Drawer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -297,7 +297,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildRadioExpansionPanelList() {
+  StatelessWidget _buildRadioExpansionPanelList() {
     final cm = Provider.of<ChannelManager>(context, listen: false);
     int length = 0;
     // we ned to check the length of _channelByType flattened against cm.channels
@@ -363,7 +363,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ));
   }
 
-  Widget _buildRadioListExpansionPanel(
+  StatelessWidget _buildRadioListExpansionPanel(
       Channel c, int index, ChannelManager cm, List<int> t) {
     return ListTile(
       key: Key('$index'),
@@ -461,7 +461,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Widget _buildBottomSheetWidget(double bottomSheetSize) {
+  StatelessWidget _buildBottomSheetWidget(double bottomSheetSize) {
     return Consumer<ChannelManager>(builder: (context, cm, child) {
       String image = cm.currentChannel.show.imageUrl;
       if (image == '') {
@@ -566,7 +566,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildCurrentTrackWidgetSmallScreen(double bottomSheetSize) {
+  StatelessWidget _buildCurrentTrackWidgetSmallScreen(double bottomSheetSize) {
     return Container(
       padding: EdgeInsets.only(bottom: bottomSheetSize, left: 10, right: 10),
       child: Column(
@@ -606,7 +606,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildCurrentTrackWidgetLargeScreen(
+  StatelessWidget _buildCurrentTrackWidgetLargeScreen(
       double bottomSheetSize, BoxConstraints constraints) {
     double imgSize = 400;
     double gap = 30;
@@ -726,7 +726,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ]);
   }
 
-  Widget _buildCurrentShowText() {
+  StatelessWidget _buildCurrentShowText() {
     return Consumer<ChannelManager>(builder: (context, cm, child) {
       return RichText(
           softWrap: false,
@@ -769,7 +769,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Widget _buildLastSongListRoute() {
+  StatelessWidget _buildLastSongListRoute() {
     return Consumer<ChannelManager>(
       builder: (context, cm, child) {
         final recentTracks = cm.currentChannel.recentTracks;
