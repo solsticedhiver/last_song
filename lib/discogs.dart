@@ -90,7 +90,12 @@ Future<ResponseDiscogs> searchDiscogs(Map<String, String> search) async {
     'Authorization':
         'Discogs key=$discogsKey, secret=${discogsSecret.split('').reversed.join()}',
   };
-  http.Response resp = await client.get(url, headers: headers);
+  http.Response resp;
+  try {
+    resp = await client.get(url, headers: headers);
+  } catch (e) {
+    return ResponseDiscogs(imageUrl, duration);
+  }
 
   if (resp.statusCode == 403) {
     // CloudFlare anti-scrap technique IUAM
