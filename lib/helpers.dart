@@ -1,17 +1,26 @@
 import 'package:flutter/cupertino.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'nova.dart';
 import 'somafm.dart';
 import 'bbcone.dart';
 
 class ChannelManager extends ChangeNotifier {
-  final channels = <Channel>[];
+  final List<Channel> channels = [];
   int _currentChannel = -1;
+  List<Channel> _favorites = [];
 
   Channel get currentChannel => channels[_currentChannel];
 
-  void changeChannel(int index) {
-    _currentChannel = index;
+  List<Channel> get favorites {
+    if (_favorites.isEmpty) {
+      _favorites = channels.where((element) => element.isFavorite).toList();
+    }
+    return _favorites;
+  }
+
+  void changeChannel(Channel channel) {
+    _currentChannel = channels.indexOf(channel);
     notifyListeners();
   }
 
@@ -33,6 +42,38 @@ class ChannelManager extends ChangeNotifier {
     }
     for (var s in RadioOne.subchannels) {
       addChannel(RadioOne(s['code'], s['name']));
+    }
+    await loadFavorites();
+  }
+
+  Future<void> saveFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setStringList(
+        'favorites', favorites.map((e) => e.subchannel.codename).toList());
+  }
+
+  Future<void> loadFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final fs = prefs.getStringList('favorites');
+
+    if (fs != null) {
+      for (var f in fs) {
+        bool found = false;
+        int indx = 0;
+        while (indx < channels.length && !found) {
+          if (channels[indx].subchannel.codename == f) {
+            channels[indx].isFavorite = true;
+            _favorites.add(channels[indx]);
+            found = true;
+          } else {
+            indx++;
+          }
+        }
+      }
+    }
+    if (favorites.isNotEmpty) {
+      changeChannel(favorites.first);
+      fetchCurrentTrack();
     }
   }
 
@@ -88,7 +129,7 @@ class Channel extends ChangeNotifier {
   late Show show;
   late SubChannel subchannel;
   late Track currentTrack;
-  //bool isFavorite = false;
+  bool isFavorite = false;
   List<Track> recentTracks = <Track>[];
 
   Channel({

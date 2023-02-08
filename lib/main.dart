@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:reorderable_grid/reorderable_grid.dart';
 
 import 'helpers.dart';
@@ -79,9 +78,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Timer? timer;
-  final List<int> _favorites = <int>[];
-  final List<List<int>> _channelsByType = <List<int>>[];
-  final List<bool> _drawerExpansionPanelListState = <bool>[];
   bool isFetchingCurrentTrack = false;
 
   Future<void> _fetchCurrentTrack(
@@ -123,47 +119,32 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _saveFavorites() async {
-    final cm = Provider.of<ChannelManager>(context, listen: false);
-    final prefs = await SharedPreferences.getInstance();
-
-    prefs.setStringList('favorites',
-        _favorites.map((e) => cm.channels[e].subchannel.codename).toList());
-  }
-
-  Future<void> _loadFavorites() async {
-    final prefs = await SharedPreferences.getInstance();
-    final fs = prefs.getStringList('favorites');
-    List<int> tmpFavorites = [];
-    final cm = Provider.of<ChannelManager>(context, listen: false);
-
-    if (fs != null) {
-      for (var f in fs) {
-        bool found = false;
-        int indx = 0;
-        while (indx < cm.channels.length && !found) {
-          if (cm.channels[indx].subchannel.codename == f) {
-            found = true;
-          } else {
-            indx++;
-          }
-        }
-        if (found) {
-          tmpFavorites.add(indx);
-        }
-      }
-      _favorites.addAll(tmpFavorites);
-    }
-    if (_favorites.isNotEmpty) {
-      cm.changeChannel(_favorites.first);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final cm = Provider.of<ChannelManager>(context, listen: false);
+    final List<List<Widget>> channelsByType = <List<Widget>>[];
+
+    if (channelsByType.isEmpty) {
+      // initialize _channelsByType
+      final Map<String, dynamic> networks = {};
+
+      for (var c in cm.channels) {
+        String type = c.runtimeType.toString();
+        if (networks.keys.contains(type)) {
+          networks[type].add(MyRadioExpansionPanelListTile(channel: c));
+        } else {
+          networks[type] = [MyRadioExpansionPanelListTile(channel: c)];
+        }
+      }
+      for (var k in networks.keys) {
+        channelsByType.add(networks[k]);
+      }
+    }
+
     Scaffold scaffold = Scaffold(
       key: scaffoldKey,
-      drawer: _buildDrawer(),
+      drawer:
+          MyDrawer(child: MyRadioExpansionPanelList(children: channelsByType)),
       appBar: AppBar(
         title: Text((MediaQuery.of(context).size.width < 700)
             ? widget.title
@@ -260,145 +241,6 @@ class _MyHomePageState extends State<MyHomePage> {
         })
       ];
     }
-  }
-
-  StatelessWidget _buildDrawer() {
-    return Drawer(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-            child: Column(
-              children: [
-                Image.asset(
-                  'assets/img/black-record-vinyl-excl-point-64x64.png',
-                  height: 64,
-                  width: 64,
-                ),
-                const SizedBox(
-                  width: 15,
-                  height: 15,
-                ),
-                const Text('${AppConfig.name} ${AppConfig.version}',
-                    style: TextStyle(color: Colors.white, fontSize: 25)),
-              ],
-            ),
-          ),
-          const ListTile(
-              title: Text('Radio channels',
-                  style: TextStyle(fontStyle: FontStyle.italic))),
-          Expanded(
-            flex: 1,
-            //child: _buildRadioListView(),
-            child: _buildRadioExpansionPanelList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  StatelessWidget _buildRadioExpansionPanelList() {
-    final cm = Provider.of<ChannelManager>(context, listen: false);
-    int length = 0;
-    // we ned to check the length of _channelByType flattened against cm.channels
-    if (_channelsByType.isNotEmpty) {
-      length = _channelsByType
-          .map((e) => e.length)
-          .reduce((value, element) => value + element);
-    }
-    // initialize _channelsByType
-    if (cm.channels.length != length) {
-      // restart over
-      _channelsByType.clear();
-      _drawerExpansionPanelListState.clear();
-      final Map<String, dynamic> networks = {};
-      int index;
-      for (var c in cm.channels) {
-        index = cm.channels.indexOf(c);
-        String type = c.runtimeType.toString();
-        if (networks.keys.contains(type)) {
-          networks[type].add(index);
-        } else {
-          networks[type] = [index];
-        }
-      }
-      for (var c in networks.keys) {
-        _channelsByType.add(networks[c]);
-      }
-      // repopulate the state list given the new length
-      _drawerExpansionPanelListState.insertAll(
-          0, List.filled(_channelsByType.length, false));
-    }
-
-    List<ExpansionPanel> children = [];
-    for (var t in _channelsByType) {
-      final l = ListView.builder(
-        shrinkWrap: true,
-        physics: const ClampingScrollPhysics(),
-        itemCount: t.length,
-        prototypeItem:
-            _buildRadioListExpansionPanel(cm.channels[t[0]], 0, cm, t),
-        itemBuilder: (context, index) {
-          Channel c = cm.channels[t[index]];
-          return _buildRadioListExpansionPanel(c, index, cm, t);
-        },
-      );
-
-      children.add(ExpansionPanel(
-        headerBuilder: (context, isExpanded) {
-          return ListTile(title: Text(cm.channels[t[0]].radio));
-        },
-        body: l,
-        isExpanded: _drawerExpansionPanelListState[_channelsByType.indexOf(t)],
-      ));
-    }
-    return SingleChildScrollView(
-        child: ExpansionPanelList(
-      expansionCallback: (panelIndex, isExpanded) {
-        setState(() {
-          _drawerExpansionPanelListState[panelIndex] = !isExpanded;
-        });
-      },
-      children: children,
-    ));
-  }
-
-  StatelessWidget _buildRadioListExpansionPanel(
-      Channel c, int index, ChannelManager cm, List<int> t) {
-    return ListTile(
-      key: Key('$index'),
-      title: Text(c.subchannel.title),
-      subtitle: Text(c.radio),
-      leading: SizedBox(
-          width: 48,
-          height: 48,
-          child: c.subchannel.imageUrl.startsWith('assets')
-              ? Image.asset(c.subchannel.imageUrl)
-              : Image(
-                  image: CachedNetworkImageProvider(c.subchannel.imageUrl))),
-      trailing: IconButton(
-        icon: Icon(Icons.favorite,
-            color: _favorites.contains(t[index])
-                ? Colors.red
-                : ListTileTheme.of(context).iconColor),
-        onPressed: () {
-          setState(() {
-            if (_favorites.contains(t[index])) {
-              _favorites.remove(t[index]);
-            } else {
-              _favorites.add(t[index]);
-            }
-          });
-          _saveFavorites();
-        },
-      ),
-      onTap: () {
-        cm.changeChannel(t[index]);
-        _fetchCurrentTrack(cancel: true);
-        Navigator.pop(context);
-      },
-    );
   }
 
 /*
@@ -952,75 +794,21 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 */
-  Widget _buildFavoriteGrid() {
-    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
-    return Center(
-        child: SizedBox(
-            width:
-                1200, // 400px image * 3, could be a little bigger but why care ?
-            child: ReorderableGridView.builder(
-              // does not work with ReorderableGridView.count(). Why ?
-              itemCount: _favorites.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisSpacing: 0,
-                crossAxisSpacing: 0,
-                childAspectRatio: 1,
-              ),
-              itemBuilder: (context, index) {
-                final f = cm.channels[_favorites[index]];
-                return InkWell(
-                  key: ValueKey(f),
-                  child: Card(
-                    child: Column(
-                      children: [
-                        Expanded(
-                            child: Container(
-                                padding:
-                                    const EdgeInsets.fromLTRB(15, 15, 15, 0),
-                                child: f.subchannel.bigImageUrl
-                                        .startsWith('assets')
-                                    ? Image.asset(f.subchannel.bigImageUrl,
-                                        fit: BoxFit.fitHeight)
-                                    : CachedNetworkImage(
-                                        imageUrl: f.subchannel.bigImageUrl,
-                                        fit: BoxFit.fitHeight))),
-                        ListTile(
-                          title: Center(child: Text(f.subchannel.title)),
-                          subtitle: Center(child: Text(f.radio)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  onTap: () {
-                    cm.changeChannel(_favorites[index]);
-                    _fetchCurrentTrack(cancel: true);
-                    Navigator.pop(context);
-                  },
-                );
-              },
-              onReorder: (oldIndex, newIndex) {
-                setState(() {
-                  int val = _favorites.removeAt(oldIndex);
-                  _favorites.insert(newIndex, val);
-                });
-                _saveFavorites();
-              },
-            )));
-  }
 
   Widget _buildFavoriteList() {
     ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
+    final favorites = cm.favorites;
+
     return ReorderableListView.builder(
-      itemCount: _favorites.length,
+      itemCount: favorites.length,
       itemBuilder: (context, index) {
-        if (_favorites.isEmpty) {
+        if (favorites.isEmpty) {
           return const SizedBox(
             height: 0,
             width: 0,
           );
         }
-        final f = cm.channels[_favorites[index]];
+        final f = favorites[index];
         return ListTile(
             key: Key('$index'),
             leading: f.subchannel.imageUrl.startsWith('assets')
@@ -1030,7 +818,7 @@ class _MyHomePageState extends State<MyHomePage> {
             title: Text(f.subchannel.title),
             subtitle: Text(f.radio),
             onTap: () {
-              cm.changeChannel(_favorites[index]);
+              cm.changeChannel(favorites[index]);
               _fetchCurrentTrack(cancel: true);
               Navigator.pop(context);
             });
@@ -1040,27 +828,28 @@ class _MyHomePageState extends State<MyHomePage> {
           if (oldIndex < newIndex) {
             newIndex -= 1;
           }
-          int val = _favorites.removeAt(oldIndex);
-          _favorites.insert(newIndex, val);
+          Channel val = favorites.removeAt(oldIndex);
+          favorites.insert(newIndex, val);
         });
-        _saveFavorites();
+        cm.saveFavorites();
       },
     );
   }
 
   Widget _buildFavoriteRoute() {
+    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
+    final favorites = cm.favorites;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Favorites'),
       ),
       body: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-          if (_favorites.isEmpty) {
+          if (favorites.isEmpty) {
             return const Center(child: Text('Nothing to show here'));
           }
           if (constraints.maxWidth > 700) {
-            //return _buildFavoriteList();
-            return _buildFavoriteGrid();
+            return const FavoriteGrid();
           } else {
             return _buildFavoriteList();
           }
@@ -1082,10 +871,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     timer = _launchTimer();
-    Future.delayed(Duration.zero, () async {
-      await _loadFavorites();
-      _fetchCurrentTrack();
-    });
+    _fetchCurrentTrack();
   }
 
   @override
@@ -1120,5 +906,242 @@ extension ChangeCaseString on String {
     }
 
     return stringBuffer.toString();
+  }
+}
+
+class MyDrawer extends StatelessWidget {
+  final Widget child;
+
+  const MyDrawer({super.key, required this.child});
+
+  @override
+  Drawer build(BuildContext context) {
+    return Drawer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+            child: Column(
+              children: [
+                Image.asset(
+                  'assets/img/black-record-vinyl-excl-point-64x64.png',
+                  height: 64,
+                  width: 64,
+                ),
+                const SizedBox(
+                  width: 15,
+                  height: 15,
+                ),
+                const Text('${AppConfig.name} ${AppConfig.version}',
+                    style: TextStyle(color: Colors.white, fontSize: 25)),
+              ],
+            ),
+          ),
+          const ListTile(
+              title: Text('Radio channels',
+                  style: TextStyle(fontStyle: FontStyle.italic))),
+          Expanded(
+            flex: 1,
+            child: child,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MyRadioExpansionPanelList extends StatefulWidget {
+  const MyRadioExpansionPanelList({
+    super.key,
+    required this.children,
+  });
+
+  final List<List<Widget>> children;
+
+  @override
+  State<MyRadioExpansionPanelList> createState() =>
+      _MyRadioExpansionPanelListState();
+}
+
+class _MyRadioExpansionPanelListState extends State<MyRadioExpansionPanelList> {
+  final List<bool> _drawerExpansionPanelListState = <bool>[];
+
+  @override
+  Widget build(BuildContext context) {
+    List<ExpansionPanel> children = [];
+
+    for (var subList in widget.children) {
+      final listView = ListView.builder(
+        shrinkWrap: true,
+        physics: const ClampingScrollPhysics(),
+        itemCount: subList.length,
+        itemBuilder: (context, index) {
+          return subList[index];
+        },
+      );
+
+      children.add(ExpansionPanel(
+        headerBuilder: (context, isExpanded) {
+          return ListTile(
+              title: Text(
+                  (subList[0] as MyRadioExpansionPanelListTile).channel.radio));
+        },
+        body: listView,
+        isExpanded:
+            _drawerExpansionPanelListState[widget.children.indexOf(subList)],
+      ));
+    } // for
+
+    return SingleChildScrollView(
+        child: ExpansionPanelList(
+      expansionCallback: (panelIndex, isExpanded) {
+        setState(() {
+          _drawerExpansionPanelListState[panelIndex] = !isExpanded;
+        });
+      },
+      children: children,
+    ));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _drawerExpansionPanelListState
+        .addAll(List<bool>.generate(widget.children.length, (index) => false));
+  }
+}
+
+class MyRadioExpansionPanelListTile extends StatefulWidget {
+  const MyRadioExpansionPanelListTile({super.key, required this.channel});
+
+  final Channel channel;
+
+  @override
+  State<MyRadioExpansionPanelListTile> createState() =>
+      _MyRadioExpansionPanelListTileState();
+}
+
+class _MyRadioExpansionPanelListTileState
+    extends State<MyRadioExpansionPanelListTile> {
+  late bool isFavorite;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      key: ValueKey(widget.channel),
+      title: Text(widget.channel.subchannel.title),
+      subtitle: Text(widget.channel.radio),
+      leading: SizedBox(
+          width: 48,
+          height: 48,
+          child: widget.channel.subchannel.imageUrl.startsWith('assets')
+              ? Image.asset(widget.channel.subchannel.imageUrl)
+              : Image(
+                  image: CachedNetworkImageProvider(
+                      widget.channel.subchannel.imageUrl))),
+      trailing: IconButton(
+        icon: Icon(Icons.favorite,
+            color:
+                isFavorite ? Colors.red : ListTileTheme.of(context).iconColor),
+        onPressed: () {
+          setState(() {
+            isFavorite = !isFavorite;
+            widget.channel.isFavorite = isFavorite;
+          });
+        },
+      ),
+      onTap: () {
+        final cm = Provider.of<ChannelManager>(context, listen: false);
+        cm.changeChannel(widget.channel);
+        cm.fetchCurrentTrack();
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    isFavorite = widget.channel.isFavorite;
+  }
+}
+
+class FavoriteGrid extends StatefulWidget {
+  const FavoriteGrid({super.key});
+
+  @override
+  State<FavoriteGrid> createState() => _FavoriteGridState();
+}
+
+class _FavoriteGridState extends State<FavoriteGrid> {
+  late final List<Channel> favorites;
+
+  @override
+  void initState() {
+    super.initState();
+    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
+    favorites = cm.favorites;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+        child: SizedBox(
+            width:
+                1200, // 400px image * 3, could be a little bigger but why care ?
+            child: ReorderableGridView.builder(
+              // does not work with ReorderableGridView.count(). Why ?
+              itemCount: favorites.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 0,
+                crossAxisSpacing: 0,
+                childAspectRatio: 1,
+              ),
+              itemBuilder: (context, index) {
+                final f = favorites[index];
+                return InkWell(
+                  key: ValueKey(f),
+                  child: Card(
+                    child: Column(
+                      children: [
+                        Expanded(
+                            child: Container(
+                                padding:
+                                    const EdgeInsets.fromLTRB(15, 15, 15, 0),
+                                child: f.subchannel.bigImageUrl
+                                        .startsWith('assets')
+                                    ? Image.asset(f.subchannel.bigImageUrl,
+                                        fit: BoxFit.fitHeight)
+                                    : CachedNetworkImage(
+                                        imageUrl: f.subchannel.bigImageUrl,
+                                        fit: BoxFit.fitHeight))),
+                        ListTile(
+                          title: Center(child: Text(f.subchannel.title)),
+                          subtitle: Center(child: Text(f.radio)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  onTap: () {
+                    ChannelManager cm =
+                        Provider.of<ChannelManager>(context, listen: false);
+                    cm.changeChannel(favorites[index]);
+                    cm.fetchCurrentTrack();
+                    Navigator.pop(context);
+                  },
+                );
+              },
+              onReorder: (oldIndex, newIndex) {
+                setState(() {
+                  Channel val = favorites.removeAt(oldIndex);
+                  favorites.insert(newIndex, val);
+                });
+                ChannelManager cm =
+                    Provider.of<ChannelManager>(context, listen: false);
+                cm.saveFavorites();
+              },
+            )));
   }
 }
