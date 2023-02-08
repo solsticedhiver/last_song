@@ -78,8 +78,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  bool isFetchingCurrentTrack = false;
-
   void showSnackBar() {
     String msg = 'No update available';
     // https://stackoverflow.com/a/68847551/283067
@@ -239,26 +237,28 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       ctw = _buildCurrentTrackWidgetSmallScreen(bSS);
     }
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        ctw,
-        Visibility(
-            visible: isFetchingCurrentTrack,
-            child: const Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: LinearProgressIndicator(
-                // deepOrange is not seen beside the appBar of the same color
-                color: Colors.black87,
-                backgroundColor: Colors.white,
-                minHeight: 2,
-                value: null,
-              ),
-            )),
-      ],
-    );
+    return Consumer<ChannelManager>(builder: (context, cm, child) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          ctw,
+          Visibility(
+              visible: cm.isFetchingCurrentTrack,
+              child: const Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: LinearProgressIndicator(
+                  // deepOrange is not seen beside the appBar of the same color
+                  color: Colors.black87,
+                  backgroundColor: Colors.white,
+                  minHeight: 2,
+                  value: null,
+                ),
+              )),
+        ],
+      );
+    });
   }
 
   StatelessWidget _buildCurrentTrackWidgetSmallScreen(double bottomSheetSize) {

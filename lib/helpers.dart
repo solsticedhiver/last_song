@@ -12,6 +12,7 @@ class ChannelManager extends ChangeNotifier {
   int _currentChannel = -1;
   List<Channel> _favorites = [];
   late Timer? _timer;
+  bool isFetchingCurrentTrack = false;
 
   Channel get currentChannel => channels[_currentChannel];
 
@@ -91,7 +92,10 @@ class ChannelManager extends ChangeNotifier {
         launchTimer();
       }
     }
+    isFetchingCurrentTrack = true;
+    notifyListeners();
     int ret = await currentChannel.fetchCurrentTrack(manual);
+    isFetchingCurrentTrack = false;
     notifyListeners();
     return ret;
   }
