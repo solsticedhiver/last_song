@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,6 +11,7 @@ class ChannelManager extends ChangeNotifier {
   final List<Channel> channels = [];
   int _currentChannel = -1;
   List<Channel> _favorites = [];
+  late Timer? _timer;
 
   Channel get currentChannel => channels[_currentChannel];
 
@@ -77,10 +80,26 @@ class ChannelManager extends ChangeNotifier {
     }
   }
 
-  Future<int> fetchCurrentTrack([bool manual = false]) async {
+  Future<int> fetchCurrentTrack(
+      {bool cancel = false, bool manual = false}) async {
+    debugPrint(
+        '${DateTime.now().toIso8601String().substring(11, 19)}: in fetchCurrentTrack(cancel: $cancel, manual: $manual)');
+    if (cancel) {
+      // reschedule a new timer if requested and cancel the previous one
+      if (_timer != null) {
+        _timer?.cancel();
+        launchTimer();
+      }
+    }
     int ret = await currentChannel.fetchCurrentTrack(manual);
     notifyListeners();
     return ret;
+  }
+
+  void launchTimer() {
+    // schedule a check of current track for an update, every 30s
+    _timer = Timer.periodic(
+        const Duration(seconds: 30), (timer) => fetchCurrentTrack());
   }
 }
 

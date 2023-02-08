@@ -38,6 +38,7 @@ void main(List<String> args) async {
         create: (context) {
           ChannelManager cm = ChannelManager();
           cm.initialize();
+          cm.launchTimer();
           return cm;
         },
       ),
@@ -77,45 +78,21 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Timer? timer;
   bool isFetchingCurrentTrack = false;
 
-  Future<void> _fetchCurrentTrack(
-      {bool cancel = false, bool manual = false}) async {
-    //print(
-    //    '${DateTime.now().toString().substring(11, 19)}: _fetchCurrentTrack(manual:$manual)');
-    if (cancel) {
-      // reschedule a new timer if requested and cancel the previous one
-      if (timer != null) {
-        timer?.cancel();
-      }
-      setState(() {
-        timer = _launchTimer();
-      });
-    }
-    setState(() {
-      isFetchingCurrentTrack = true;
-    });
-    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
-    int ret = await cm.fetchCurrentTrack(manual);
-    setState(() {
-      isFetchingCurrentTrack = false;
-    });
-
-    if (manual && ret < 1) {
-      String msg = 'No update available';
-      // https://stackoverflow.com/a/68847551/283067
-      BuildContext? skcc = scaffoldKey.currentContext;
-      ScaffoldState? skcs = scaffoldKey.currentState;
-      if (skcs != null && skcc != null) {
-        ScaffoldMessengerState sms = ScaffoldMessenger.of(skcc);
-        sms.clearSnackBars();
-        sms.showSnackBar(SnackBar(
-          backgroundColor: Colors.black87,
-          content: Text(msg),
-          behavior: SnackBarBehavior.floating,
-        ));
-      }
+  void showSnackBar() {
+    String msg = 'No update available';
+    // https://stackoverflow.com/a/68847551/283067
+    BuildContext? skcc = scaffoldKey.currentContext;
+    ScaffoldState? skcs = scaffoldKey.currentState;
+    if (skcs != null && skcc != null) {
+      ScaffoldMessengerState sms = ScaffoldMessenger.of(skcc);
+      sms.clearSnackBars();
+      sms.showSnackBar(SnackBar(
+        backgroundColor: Colors.black87,
+        content: Text(msg),
+        behavior: SnackBarBehavior.floating,
+      ));
     }
   }
 
@@ -166,17 +143,23 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: _buildCurrentTrackWidget(constraints),
                     )))),
             onRefresh: () async {
-              return _fetchCurrentTrack(cancel: true, manual: true);
+              int ret = await cm.fetchCurrentTrack(cancel: true, manual: true);
+              if (ret < 1) {
+                showSnackBar();
+              }
             });
       }),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _fetchCurrentTrack(cancel: true, manual: true);
+        onPressed: () async {
+          int ret = await cm.fetchCurrentTrack(cancel: true, manual: true);
+          if (ret < 1) {
+            showSnackBar();
+          }
         },
         tooltip: 'Update current track',
         child: const Icon(Icons.sync),
       ),
-      bottomSheet: _buildBottomSheet(),
+      bottomSheet: const MyBottomSheet(),
     );
     return scaffold;
   }
@@ -241,137 +224,6 @@ class _MyHomePageState extends State<MyHomePage> {
         })
       ];
     }
-  }
-
-/*
-  Widget _buildRadioListView() {
-    final channelManager = Provider.of<ChannelManager>(context, listen: false);
-    return ListView.separated(
-      itemCount: channelManager.channels.length,
-      itemBuilder: (context, index) {
-        Channel channel = channelManager.channels[index];
-        String subchannel = channel.subchannel;
-        String? name = channel.subchannels[subchannel]?['name'];
-        //if (subchannel.isNotEmpty) {
-        //  text = '$text / $name';
-        //}
-        return ListTile(
-            //tileColor: index % 2 == 0 ? Colors.black87 : null,
-            //dense: true,
-            subtitle: name != null ? Text(channel.radio) : null,
-            title: name != null ? Text(name) : Text(channel.radio),
-            leading: SizedBox(
-                width: 48,
-                height: 48,
-                child:
-                    Image(image: CachedNetworkImageProvider(channel.imageUrl))),
-            trailing: IconButton(
-              icon: Icon(Icons.favorite,
-                  color: _favorites.contains(index)
-                      ? Colors.red
-                      : ListTileTheme.of(context).iconColor),
-              onPressed: () {
-                setState(() {
-                  if (_favorites.contains(index)) {
-                    _favorites.remove(index);
-                  } else {
-                    _favorites.add(index);
-                  }
-                });
-              },
-            ),
-            onTap: () {
-              channelManager.changeChannel(index);
-              _fetchCurrentTrack(cancel: true);
-              Navigator.pop(context);
-            });
-      },
-      separatorBuilder: (context, index) => const Divider(
-        height: 5, // do we need to do this ?
-      ),
-    );
-  }
-*/
-
-  Widget _buildBottomSheet() {
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-      if (constraints.maxHeight > 700) {
-        return _buildBottomSheetWidget(bottomSheetSizeLargeScreen);
-      } else {
-        return _buildBottomSheetWidget(bottomSheetSizeSmallScreen);
-      }
-    });
-  }
-
-  StatelessWidget _buildBottomSheetWidget(double bottomSheetSize) {
-    return Consumer<ChannelManager>(builder: (context, cm, child) {
-      String image = cm.currentChannel.show.imageUrl;
-      if (image == '') {
-        image = cm.currentChannel.subchannel.imageUrl;
-      }
-
-      return BottomSheet(
-        enableDrag: false,
-        builder: (context) {
-          return InkWell(
-              onTap: () async {
-                return _buildCurrentShowDialog(context, cm);
-              },
-              child: Container(
-                  height: bottomSheetSize,
-                  color: Colors.black87,
-                  child: Row(
-                    children: [
-                      image.startsWith('assets')
-                          ? Image.asset(image)
-                          : Image(
-                              image: CachedNetworkImageProvider(image),
-                              height: bottomSheetSize,
-                              width: bottomSheetSize,
-                            ),
-                      const SizedBox(
-                        width: 15,
-                      ),
-                      _buildCurrentShowText(),
-                    ],
-                  )));
-        },
-        onClosing: () {},
-      );
-    });
-  }
-
-  Future<void> _buildCurrentShowDialog(
-      BuildContext context, ChannelManager cm) {
-    final imageUrl = cm.currentChannel.show.imageUrl;
-    return showDialog<void>(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            icon: imageUrl.startsWith('assets')
-                ? Image.asset(imageUrl, height: 400, width: 400)
-                : CachedNetworkImage(
-                    imageUrl: imageUrl, height: 400, width: 400),
-            title: Text(cm.currentChannel.show.name),
-            content: Text(
-              cm.currentChannel.show.description,
-              overflow: TextOverflow.clip,
-              softWrap: true,
-            ),
-            actions: <Widget>[
-              TextButton(
-                style: TextButton.styleFrom(
-                  textStyle: Theme.of(context).textTheme.labelLarge,
-                ),
-                child: const Text('Dismiss'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        });
   }
 
   Widget _buildCurrentTrackWidget(BoxConstraints constraints) {
@@ -569,49 +421,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ]);
   }
 
-  StatelessWidget _buildCurrentShowText() {
-    return Consumer<ChannelManager>(builder: (context, cm, child) {
-      return RichText(
-          softWrap: false,
-          overflow: TextOverflow.clip,
-          text: TextSpan(
-              text:
-                  '', // empty just to define the default style of the whole RichText
-              style: DefaultTextStyle.of(context).style,
-              children: <TextSpan>[
-                TextSpan(
-                  text: cm.currentChannel.show.name != 'Show'
-                      ? cm.currentChannel.show.name
-                      : cm.currentChannel.subchannel.title,
-                  style: const TextStyle(
-                      fontWeight: FontWeight
-                          .w700, // bold is too heavy and cause blur/smudge
-                      color: Colors.white),
-                ),
-                TextSpan(
-                  text: cm.currentChannel.show.author.isNotEmpty &&
-                          cm.currentChannel.show.author != 'Author'
-                      ? ' - ${cm.currentChannel.show.author}'
-                      : '',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w300, // same idea as above
-                  ),
-                ),
-                TextSpan(
-                  text: cm.currentChannel.show.airingTime.isNotEmpty &&
-                          cm.currentChannel.show.airingTime != '00:00 - 00:00'
-                      ? '\n${cm.currentChannel.show.airingTime}'
-                      : '',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w300,
-                  ),
-                ),
-              ]));
-    });
-  }
-
   StatelessWidget _buildLastSongListRoute() {
     return Consumer<ChannelManager>(
       builder: (context, cm, child) {
@@ -739,103 +548,6 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-/*
-  Widget _buildListItemSong(List<Track> recentTracks) {
-    // TODO: wrap it in a Card, or not?
-    return ListView.separated(
-        itemCount: recentTracks.length,
-        //prototypeItem: _buildListItemSong(recentTracks.first),
-        separatorBuilder: (context, index) {
-          return const Divider();
-        },
-        itemBuilder: (context, index) {
-          Track track = recentTracks[index];
-          String dd = track.diffusionDate.split('T')[1].substring(0, 8);
-          return ListTile(
-              leading: RichText(
-                  text: TextSpan(
-                      text: dd.substring(0, 5),
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.normal,
-                          color: Theme.of(context).primaryColor),
-                      children: <TextSpan>[
-                    TextSpan(
-                        text: dd.substring(5, 8),
-                        style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.normal))
-                  ])),
-              isThreeLine: true,
-              title: Text(toTitleCase(track.artist),
-                  overflow: TextOverflow.fade,
-                  softWrap: true,
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold)),
-              subtitle: RichText(
-                text: TextSpan(
-                  text: toTitleCase(track.title),
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.black,
-                  ),
-                  children: [
-                    TextSpan(
-                        text: track.album != 'Album'
-                            ? '\n${track.album}'
-                            : '\n---',
-                        style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.normal,
-                            fontStyle: FontStyle.italic)),
-                  ],
-                ),
-              ));
-        });
-  }
-*/
-
-  Widget _buildFavoriteList() {
-    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
-    final favorites = cm.favorites;
-
-    return ReorderableListView.builder(
-      itemCount: favorites.length,
-      itemBuilder: (context, index) {
-        if (favorites.isEmpty) {
-          return const SizedBox(
-            height: 0,
-            width: 0,
-          );
-        }
-        final f = favorites[index];
-        return ListTile(
-            key: Key('$index'),
-            leading: f.subchannel.imageUrl.startsWith('assets')
-                ? Image.asset(f.subchannel.imageUrl)
-                : Image(
-                    image: CachedNetworkImageProvider(f.subchannel.imageUrl)),
-            title: Text(f.subchannel.title),
-            subtitle: Text(f.radio),
-            onTap: () {
-              cm.changeChannel(favorites[index]);
-              _fetchCurrentTrack(cancel: true);
-              Navigator.pop(context);
-            });
-      },
-      onReorder: (oldIndex, newIndex) {
-        setState(() {
-          if (oldIndex < newIndex) {
-            newIndex -= 1;
-          }
-          Channel val = favorites.removeAt(oldIndex);
-          favorites.insert(newIndex, val);
-        });
-        cm.saveFavorites();
-      },
-    );
-  }
-
   Widget _buildFavoriteRoute() {
     ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
     final favorites = cm.favorites;
@@ -849,9 +561,9 @@ class _MyHomePageState extends State<MyHomePage> {
             return const Center(child: Text('Nothing to show here'));
           }
           if (constraints.maxWidth > 700) {
-            return const FavoriteGrid();
+            return const FavoritesGrid();
           } else {
-            return _buildFavoriteList();
+            return const FavoritesList();
           }
         },
       ),
@@ -870,20 +582,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    timer = _launchTimer();
-    _fetchCurrentTrack();
   }
 
   @override
   void dispose() {
-    timer?.cancel();
     super.dispose();
-  }
-
-  Timer _launchTimer() {
-    // schedule a check of current track for an update, every 30s
-    return Timer.periodic(
-        const Duration(seconds: 30), (timer) => _fetchCurrentTrack());
   }
 }
 
@@ -1048,13 +751,20 @@ class _MyRadioExpansionPanelListTileState
           setState(() {
             isFavorite = !isFavorite;
             widget.channel.isFavorite = isFavorite;
+            ChannelManager cm =
+                Provider.of<ChannelManager>(context, listen: false);
+            if (isFavorite) {
+              cm.favorites.add(widget.channel);
+            } else {
+              cm.favorites.remove(widget.channel);
+            }
           });
         },
       ),
       onTap: () {
         final cm = Provider.of<ChannelManager>(context, listen: false);
         cm.changeChannel(widget.channel);
-        cm.fetchCurrentTrack();
+        cm.fetchCurrentTrack(cancel: true);
         Navigator.pop(context);
       },
     );
@@ -1067,14 +777,14 @@ class _MyRadioExpansionPanelListTileState
   }
 }
 
-class FavoriteGrid extends StatefulWidget {
-  const FavoriteGrid({super.key});
+class FavoritesGrid extends StatefulWidget {
+  const FavoritesGrid({super.key});
 
   @override
-  State<FavoriteGrid> createState() => _FavoriteGridState();
+  State<FavoritesGrid> createState() => _FavoritesGridState();
 }
 
-class _FavoriteGridState extends State<FavoriteGrid> {
+class _FavoritesGridState extends State<FavoritesGrid> {
   late final List<Channel> favorites;
 
   @override
@@ -1128,7 +838,7 @@ class _FavoriteGridState extends State<FavoriteGrid> {
                     ChannelManager cm =
                         Provider.of<ChannelManager>(context, listen: false);
                     cm.changeChannel(favorites[index]);
-                    cm.fetchCurrentTrack();
+                    cm.fetchCurrentTrack(cancel: true);
                     Navigator.pop(context);
                   },
                 );
@@ -1143,5 +853,209 @@ class _FavoriteGridState extends State<FavoriteGrid> {
                 cm.saveFavorites();
               },
             )));
+  }
+}
+
+class FavoritesList extends StatefulWidget {
+  const FavoritesList({super.key});
+
+  @override
+  State<FavoritesList> createState() => _FavoritesListState();
+}
+
+class _FavoritesListState extends State<FavoritesList> {
+  late final List<Channel> favorites;
+
+  @override
+  void initState() {
+    super.initState();
+    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
+    favorites = cm.favorites;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ReorderableListView.builder(
+      itemCount: favorites.length,
+      itemBuilder: (context, index) {
+        if (favorites.isEmpty) {
+          return const SizedBox(
+            height: 0,
+            width: 0,
+          );
+        }
+        final f = favorites[index];
+        return ListTile(
+            key: Key('$index'),
+            leading: f.subchannel.imageUrl.startsWith('assets')
+                ? Image.asset(f.subchannel.imageUrl)
+                : Image(
+                    image: CachedNetworkImageProvider(f.subchannel.imageUrl)),
+            title: Text(f.subchannel.title),
+            subtitle: Text(f.radio),
+            onTap: () {
+              ChannelManager cm =
+                  Provider.of<ChannelManager>(context, listen: false);
+              cm.changeChannel(favorites[index]);
+              cm.fetchCurrentTrack(cancel: true);
+              Navigator.pop(context);
+            });
+      },
+      onReorder: (oldIndex, newIndex) {
+        setState(() {
+          if (oldIndex < newIndex) {
+            newIndex -= 1;
+          }
+          Channel val = favorites.removeAt(oldIndex);
+          favorites.insert(newIndex, val);
+        });
+        ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
+        cm.saveFavorites();
+      },
+    );
+  }
+}
+
+class CurrentShowText extends StatelessWidget {
+  const CurrentShowText({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ChannelManager>(builder: (context, cm, child) {
+      Channel currentChannel = cm.currentChannel;
+      return RichText(
+          softWrap: false,
+          overflow: TextOverflow.clip,
+          text: TextSpan(
+              text:
+                  '', // empty just to define the default style of the whole RichText
+              style: DefaultTextStyle.of(context).style,
+              children: <TextSpan>[
+                TextSpan(
+                  text: currentChannel.show.name != 'Show'
+                      ? currentChannel.show.name
+                      : currentChannel.subchannel.title,
+                  style: const TextStyle(
+                      fontWeight: FontWeight
+                          .w700, // bold is too heavy and cause blur/smudge
+                      color: Colors.white),
+                ),
+                TextSpan(
+                  text: currentChannel.show.author.isNotEmpty &&
+                          currentChannel.show.author != 'Author'
+                      ? ' - ${currentChannel.show.author}'
+                      : '',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w300, // same idea as above
+                  ),
+                ),
+                TextSpan(
+                  text: currentChannel.show.airingTime.isNotEmpty &&
+                          currentChannel.show.airingTime != '00:00 - 00:00'
+                      ? '\n${currentChannel.show.airingTime}'
+                      : '',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w300,
+                  ),
+                ),
+              ]));
+    });
+  }
+}
+
+class MyBottomSheetWidget extends StatelessWidget {
+  final double bottomSheetSize;
+
+  const MyBottomSheetWidget({super.key, required this.bottomSheetSize});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ChannelManager>(builder: (context, cm, child) {
+      String image = cm.currentChannel.show.imageUrl;
+      if (image == '') {
+        image = cm.currentChannel.subchannel.imageUrl;
+      }
+
+      return BottomSheet(
+        enableDrag: false,
+        builder: (context) {
+          return InkWell(
+              onTap: () async {
+                return _buildCurrentShowDialog(context, cm);
+              },
+              child: Container(
+                  height: bottomSheetSize,
+                  color: Colors.black87,
+                  child: Row(
+                    children: [
+                      image.startsWith('assets')
+                          ? Image.asset(image)
+                          : Image(
+                              image: CachedNetworkImageProvider(image),
+                              height: bottomSheetSize,
+                              width: bottomSheetSize,
+                            ),
+                      const SizedBox(
+                        width: 15,
+                      ),
+                      const CurrentShowText(),
+                    ],
+                  )));
+        },
+        onClosing: () {},
+      );
+    });
+  }
+
+  Future<void> _buildCurrentShowDialog(
+      BuildContext context, ChannelManager cm) {
+    final imageUrl = cm.currentChannel.show.imageUrl;
+    return showDialog<void>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            icon: imageUrl.startsWith('assets')
+                ? Image.asset(imageUrl, height: 400, width: 400)
+                : CachedNetworkImage(
+                    imageUrl: imageUrl, height: 400, width: 400),
+            title: Text(cm.currentChannel.show.name),
+            content: Text(
+              cm.currentChannel.show.description,
+              overflow: TextOverflow.clip,
+              softWrap: true,
+            ),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: const Text('Dismiss'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
+  }
+}
+
+class MyBottomSheet extends StatelessWidget {
+  const MyBottomSheet({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+      if (constraints.maxHeight > 700) {
+        return const MyBottomSheetWidget(
+            bottomSheetSize: bottomSheetSizeLargeScreen);
+      } else {
+        return const MyBottomSheetWidget(
+            bottomSheetSize: bottomSheetSizeSmallScreen);
+      }
+    });
   }
 }
