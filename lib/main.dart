@@ -138,7 +138,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     child: IntrinsicHeight(
                         child: Center(
-                      child: _buildCurrentTrackWidget(constraints),
+                      child: CurrentTrackWidget(constraints: constraints),
                     )))),
             onRefresh: () async {
               int ret = await cm.fetchCurrentTrack(cancel: true, manual: true);
@@ -184,7 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => _buildFavoriteRoute(),
+              builder: (context) => const FavoritesRoute(),
             ),
           );
         },
@@ -195,7 +195,7 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => _buildLastSongListRoute(),
+              builder: (context) => const LastSongListRoute(),
             ),
           );
         },
@@ -222,352 +222,6 @@ class _MyHomePageState extends State<MyHomePage> {
         })
       ];
     }
-  }
-
-  Widget _buildCurrentTrackWidget(BoxConstraints constraints) {
-    double bSS;
-    if (constraints.maxHeight > 700) {
-      bSS = bottomSheetSizeLargeScreen;
-    } else {
-      bSS = bottomSheetSizeSmallScreen;
-    }
-    Widget ctw;
-    if (constraints.maxWidth > 1000) {
-      ctw = _buildCurrentTrackWidgetLargeScreen(bSS, constraints);
-    } else {
-      ctw = _buildCurrentTrackWidgetSmallScreen(bSS);
-    }
-    return Consumer<ChannelManager>(builder: (context, cm, child) {
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          ctw,
-          Visibility(
-              visible: cm.isFetchingCurrentTrack,
-              child: const Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: LinearProgressIndicator(
-                  // deepOrange is not seen beside the appBar of the same color
-                  color: Colors.black87,
-                  backgroundColor: Colors.white,
-                  minHeight: 2,
-                  value: null,
-                ),
-              )),
-        ],
-      );
-    });
-  }
-
-  StatelessWidget _buildCurrentTrackWidgetSmallScreen(double bottomSheetSize) {
-    return Container(
-      padding: EdgeInsets.only(bottom: bottomSheetSize, left: 10, right: 10),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        textDirection: TextDirection.ltr,
-        children: <Widget>[
-          Flexible(
-            flex: 2,
-            child: Container(
-              padding: const EdgeInsets.only(
-                  top: 10, right: 15, left: 15, bottom: 5),
-              child: Consumer<ChannelManager>(builder: (context, cm, child) {
-                double imgSize = 400;
-                if (cm.currentChannel.currentTrack.imageUrl.isEmpty) {
-                  return Image.asset(defaultImage,
-                      height: imgSize, width: imgSize);
-                } else {
-                  return CachedNetworkImage(
-                      imageUrl: cm.currentChannel.currentTrack.imageUrl,
-                      height: imgSize,
-                      width: imgSize);
-                }
-              }),
-            ),
-          ),
-          Flexible(
-            flex: 1,
-            //fit: FlexFit.tight,
-            child: Container(
-              padding:
-                  const EdgeInsets.only(top: 5, bottom: 5, right: 10, left: 10),
-              child: _buildCurrentTrackText(isSmallScreen: true),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  StatelessWidget _buildCurrentTrackWidgetLargeScreen(
-      double bottomSheetSize, BoxConstraints constraints) {
-    double imgSize = 400;
-    double gap = 30;
-    double left = 30;
-    // on very large screen
-    if (constraints.maxHeight > 900 && constraints.maxWidth > 1500) {
-      // increase image size
-      imgSize = 700;
-      gap = 45;
-      left = 45;
-    }
-    return Container(
-      padding: EdgeInsets.only(bottom: bottomSheetSize, left: left, right: 20),
-      child: Row(
-        //mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Consumer<ChannelManager>(builder: (context, cm, child) {
-            if (cm.currentChannel.currentTrack.imageUrl.isEmpty) {
-              return Image.asset(
-                defaultImage,
-                height: imgSize,
-                width: imgSize,
-                fit: BoxFit.fill,
-              );
-            } else {
-              return CachedNetworkImage(
-                imageUrl: cm.currentChannel.currentTrack.imageUrl,
-                height: imgSize,
-                width: imgSize,
-                fit: BoxFit.fill,
-              );
-            }
-          }),
-          SizedBox(width: gap),
-          Flexible(
-            flex: 0,
-            child: _buildCurrentTrackText(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCurrentTrackText({bool isSmallScreen = false}) {
-    return Column(
-        mainAxisAlignment:
-            isSmallScreen ? MainAxisAlignment.start : MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Consumer<ChannelManager>(builder: (context, cm, child) {
-            String dd = cm.currentChannel.currentTrack.diffusionDate
-                .split('T')[1]
-                .substring(0, 8);
-            return RichText(
-              text: TextSpan(
-                  text: dd.substring(0, 5),
-                  style: TextStyle(
-                      fontSize: isSmallScreen ? 25 : 40,
-                      fontWeight:
-                          isSmallScreen ? FontWeight.bold : FontWeight.normal,
-                      color: Theme.of(context).primaryColor),
-                  children: <TextSpan>[
-                    TextSpan(
-                        text: dd.substring(5, 8),
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.normal))
-                  ]),
-            );
-          }),
-          Consumer<ChannelManager>(builder: (context, cm, child) {
-            String artist;
-            artist = cm.currentChannel.currentTrack.artist
-                .split('/')
-                .map((e) => e.toTitleCase())
-                .join(' /\n');
-            return Flexible(
-                child: Text(artist,
-                    overflow: TextOverflow.clip,
-                    softWrap: true,
-                    style: TextStyle(
-                        fontSize: isSmallScreen ? 30 : 55,
-                        fontWeight: FontWeight.bold)));
-          }),
-          Consumer<ChannelManager>(builder: (context, cm, child) {
-            return Text(cm.currentChannel.currentTrack.title.toTitleCase(),
-                overflow: TextOverflow.clip,
-                softWrap: true,
-                style: TextStyle(
-                    fontSize: isSmallScreen ? 20 : 35,
-                    fontWeight: FontWeight.normal));
-          }),
-          Consumer<ChannelManager>(builder: (context, cm, child) {
-            if (cm.currentChannel.currentTrack.album.isNotEmpty &&
-                cm.currentChannel.currentTrack.album != 'Album') {
-              return Text(cm.currentChannel.currentTrack.album,
-                  overflow: TextOverflow.clip,
-                  softWrap: true,
-                  style: TextStyle(
-                      fontSize: isSmallScreen ? 20 : 35,
-                      fontWeight: FontWeight.normal,
-                      fontStyle: FontStyle.italic));
-            } else {
-              return const SizedBox(
-                height: 0,
-                width: 0,
-              );
-            }
-          }),
-          Consumer<ChannelManager>(builder: (context, cm, child) {
-            return Text(
-                '${cm.currentChannel.currentTrack.duration.replaceFirst(RegExp(r'^0'), '').replaceFirst(':', 'min ')}s',
-                style: TextStyle(
-                    fontSize: isSmallScreen ? 15 : 20,
-                    color: Theme.of(context).primaryColor));
-          }),
-        ]);
-  }
-
-  StatelessWidget _buildLastSongListRoute() {
-    return Consumer<ChannelManager>(
-      builder: (context, cm, child) {
-        final recentTracks = cm.currentChannel.recentTracks;
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Recently played songs'),
-          ),
-          body: Container(
-            alignment: recentTracks.isNotEmpty
-                ? Alignment.topCenter
-                : Alignment.center,
-            child: recentTracks.isNotEmpty
-                //? _buildListItemSong(recentTracks)
-                ? SingleChildScrollView(
-                    child: _buildDataTableSong(recentTracks, cm))
-                : const Text('Nothing to show here'),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDataTableSong(List<Track> recentTracks, ChannelManager cm) {
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-      bool isSmallScreen;
-      if (constraints.maxWidth > 1000) {
-        isSmallScreen = false;
-      } else {
-        isSmallScreen = true;
-      }
-      final int empties = recentTracks.where((e) => e.album == 'Album').length;
-      // remove last column (Album) if none is defined
-      if (empties == recentTracks.length) {
-        isSmallScreen = true;
-      }
-      List<DataColumn> columns = <DataColumn>[
-        DataColumn(
-          label: Expanded(
-            child: Text(
-              'Time',
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  color: Theme.of(context).primaryColor),
-            ),
-          ),
-        ),
-        const DataColumn(
-          label: Expanded(
-            child: Text(
-              'Artist',
-              style: TextStyle(
-                  fontStyle: FontStyle.normal,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20),
-            ),
-          ),
-        ),
-        const DataColumn(
-          label: Expanded(
-            child: Text(
-              'Title',
-              style: TextStyle(
-                  fontStyle: FontStyle.normal,
-                  fontWeight: FontWeight.normal,
-                  fontSize: 20),
-            ),
-          ),
-        ),
-      ];
-      if (!isSmallScreen) {
-        columns.add(
-          const DataColumn(
-            label: Expanded(
-              child: Text(
-                'Album',
-                style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontWeight: FontWeight.normal,
-                    fontSize: 20),
-              ),
-            ),
-          ),
-        );
-      }
-      final rows = <DataRow>[];
-      for (var track in recentTracks) {
-        String dd = track.diffusionDate.split('T')[1].substring(0, 8);
-        List<DataCell> cells = [
-          DataCell(Text(dd,
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor))),
-          DataCell(Text(track.artist.toTitleCase(),
-              style: const TextStyle(fontWeight: FontWeight.bold))),
-          DataCell(Text(track.title.toTitleCase())),
-        ];
-        // add album only is screen is large enough
-        if (!isSmallScreen) {
-          cells.add(DataCell(Text(track.album != 'Album' ? track.album : '---',
-              style: const TextStyle(fontStyle: FontStyle.italic))));
-        }
-        rows.add(DataRow(cells: cells));
-      }
-      return Column(
-        children: [
-          Center(
-              child: Container(
-                  padding: const EdgeInsets.all(15),
-                  child: Text(
-                      '${cm.currentChannel.radio} / ${cm.currentChannel.show.name}',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 20)))),
-          DataTable(
-              headingRowColor: MaterialStateProperty.resolveWith<Color?>(
-                  (Set<MaterialState> states) {
-                return Theme.of(context).secondaryHeaderColor;
-              }),
-              columns: columns,
-              rows: rows),
-        ],
-      );
-    });
-  }
-
-  Widget _buildFavoriteRoute() {
-    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
-    final favorites = cm.favorites;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Favorites'),
-      ),
-      body: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          if (favorites.isEmpty) {
-            return const Center(child: Text('Nothing to show here'));
-          }
-          if (constraints.maxWidth > 700) {
-            return const FavoritesGrid();
-          } else {
-            return const FavoritesList();
-          }
-        },
-      ),
-    );
   }
 
   Future<void> _copyToClipboard(String text) async {
@@ -774,6 +428,34 @@ class _MyRadioExpansionPanelListTileState
   void initState() {
     super.initState();
     isFavorite = widget.channel.isFavorite;
+  }
+}
+
+class FavoritesRoute extends StatelessWidget {
+  const FavoritesRoute({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
+    final favorites = cm.favorites;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Favorites'),
+      ),
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          if (favorites.isEmpty) {
+            return const Center(child: Text('Nothing to show here'));
+          }
+          if (constraints.maxWidth > 700) {
+            return const FavoritesGrid();
+          } else {
+            return const FavoritesList();
+          }
+        },
+      ),
+    );
   }
 }
 
@@ -1056,6 +738,372 @@ class MyBottomSheet extends StatelessWidget {
         return const MyBottomSheetWidget(
             bottomSheetSize: bottomSheetSizeSmallScreen);
       }
+    });
+  }
+}
+
+class CurrentTrackWidget extends StatelessWidget {
+  final BoxConstraints constraints;
+
+  const CurrentTrackWidget({super.key, required this.constraints});
+
+  @override
+  Widget build(BuildContext context) {
+    double bSS;
+    if (constraints.maxHeight > 700) {
+      bSS = bottomSheetSizeLargeScreen;
+    } else {
+      bSS = bottomSheetSizeSmallScreen;
+    }
+    Widget ctw;
+    if (constraints.maxWidth > 1000) {
+      ctw = CurrentTrackWidgetLargeScreen(
+          bottomSheetSize: bSS, constraints: constraints);
+    } else {
+      ctw = CurrentTrackWidgetSmallScreen(bottomSheetSize: bSS);
+    }
+    return Consumer<ChannelManager>(builder: (context, cm, child) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          ctw,
+          Visibility(
+              visible: cm.isFetchingCurrentTrack,
+              child: const Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: LinearProgressIndicator(
+                  // deepOrange is not seen beside the appBar of the same color
+                  color: Colors.black87,
+                  backgroundColor: Colors.white,
+                  minHeight: 2,
+                  value: null,
+                ),
+              )),
+        ],
+      );
+    });
+  }
+}
+
+class CurrentTrackWidgetSmallScreen extends StatelessWidget {
+  final double bottomSheetSize;
+
+  const CurrentTrackWidgetSmallScreen(
+      {super.key, required this.bottomSheetSize});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(bottom: bottomSheetSize, left: 10, right: 10),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        textDirection: TextDirection.ltr,
+        children: <Widget>[
+          Flexible(
+            flex: 2,
+            child: Container(
+              padding: const EdgeInsets.only(
+                  top: 10, right: 15, left: 15, bottom: 5),
+              child: Consumer<ChannelManager>(builder: (context, cm, child) {
+                double imgSize = 400;
+                if (cm.currentChannel.currentTrack.imageUrl.isEmpty) {
+                  return Image.asset(defaultImage,
+                      height: imgSize, width: imgSize);
+                } else {
+                  return CachedNetworkImage(
+                      imageUrl: cm.currentChannel.currentTrack.imageUrl,
+                      height: imgSize,
+                      width: imgSize);
+                }
+              }),
+            ),
+          ),
+          Flexible(
+            flex: 1,
+            //fit: FlexFit.tight,
+            child: Container(
+              padding:
+                  const EdgeInsets.only(top: 5, bottom: 5, right: 10, left: 10),
+              child: const CurrentTrackText(isSmallScreen: true),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CurrentTrackWidgetLargeScreen extends StatelessWidget {
+  final double bottomSheetSize;
+  final BoxConstraints constraints;
+
+  const CurrentTrackWidgetLargeScreen(
+      {super.key, required this.bottomSheetSize, required this.constraints});
+
+  @override
+  Widget build(BuildContext context) {
+    double imgSize = 400;
+    double gap = 30;
+    double left = 30;
+    // on very large screen
+    if (constraints.maxHeight > 900 && constraints.maxWidth > 1500) {
+      // increase image size
+      imgSize = 700;
+      gap = 45;
+      left = 45;
+    }
+    return Container(
+      padding: EdgeInsets.only(bottom: bottomSheetSize, left: left, right: 20),
+      child: Row(
+        //mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Consumer<ChannelManager>(builder: (context, cm, child) {
+            if (cm.currentChannel.currentTrack.imageUrl.isEmpty) {
+              return Image.asset(
+                defaultImage,
+                height: imgSize,
+                width: imgSize,
+                fit: BoxFit.fill,
+              );
+            } else {
+              return CachedNetworkImage(
+                imageUrl: cm.currentChannel.currentTrack.imageUrl,
+                height: imgSize,
+                width: imgSize,
+                fit: BoxFit.fill,
+              );
+            }
+          }),
+          SizedBox(width: gap),
+          const Flexible(
+            flex: 0,
+            child: CurrentTrackText(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CurrentTrackText extends StatelessWidget {
+  final bool isSmallScreen;
+  const CurrentTrackText({super.key, this.isSmallScreen = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+        mainAxisAlignment:
+            isSmallScreen ? MainAxisAlignment.start : MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Consumer<ChannelManager>(builder: (context, cm, child) {
+            String dd = cm.currentChannel.currentTrack.diffusionDate
+                .split('T')[1]
+                .substring(0, 8);
+            return RichText(
+              text: TextSpan(
+                  text: dd.substring(0, 5),
+                  style: TextStyle(
+                      fontSize: isSmallScreen ? 25 : 40,
+                      fontWeight:
+                          isSmallScreen ? FontWeight.bold : FontWeight.normal,
+                      color: Theme.of(context).primaryColor),
+                  children: <TextSpan>[
+                    TextSpan(
+                        text: dd.substring(5, 8),
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.normal))
+                  ]),
+            );
+          }),
+          Consumer<ChannelManager>(builder: (context, cm, child) {
+            String artist;
+            artist = cm.currentChannel.currentTrack.artist
+                .split('/')
+                .map((e) => e.toTitleCase())
+                .join(' /\n');
+            return Flexible(
+                child: Text(artist,
+                    overflow: TextOverflow.clip,
+                    softWrap: true,
+                    style: TextStyle(
+                        fontSize: isSmallScreen ? 30 : 55,
+                        fontWeight: FontWeight.bold)));
+          }),
+          Consumer<ChannelManager>(builder: (context, cm, child) {
+            return Text(cm.currentChannel.currentTrack.title.toTitleCase(),
+                overflow: TextOverflow.clip,
+                softWrap: true,
+                style: TextStyle(
+                    fontSize: isSmallScreen ? 20 : 35,
+                    fontWeight: FontWeight.normal));
+          }),
+          Consumer<ChannelManager>(builder: (context, cm, child) {
+            if (cm.currentChannel.currentTrack.album.isNotEmpty &&
+                cm.currentChannel.currentTrack.album != 'Album') {
+              return Text(cm.currentChannel.currentTrack.album,
+                  overflow: TextOverflow.clip,
+                  softWrap: true,
+                  style: TextStyle(
+                      fontSize: isSmallScreen ? 20 : 35,
+                      fontWeight: FontWeight.normal,
+                      fontStyle: FontStyle.italic));
+            } else {
+              return const SizedBox(
+                height: 0,
+                width: 0,
+              );
+            }
+          }),
+          Consumer<ChannelManager>(builder: (context, cm, child) {
+            return Text(
+                '${cm.currentChannel.currentTrack.duration.replaceFirst(RegExp(r'^0'), '').replaceFirst(':', 'min ')}s',
+                style: TextStyle(
+                    fontSize: isSmallScreen ? 15 : 20,
+                    color: Theme.of(context).primaryColor));
+          }),
+        ]);
+  }
+}
+
+class LastSongListRoute extends StatelessWidget {
+  const LastSongListRoute({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ChannelManager>(
+      builder: (context, cm, child) {
+        final recentTracks = cm.currentChannel.recentTracks;
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Recently played songs'),
+          ),
+          body: Container(
+            alignment: recentTracks.isNotEmpty
+                ? Alignment.topCenter
+                : Alignment.center,
+            child: recentTracks.isNotEmpty
+                //? _buildListItemSong(recentTracks)
+                ? SingleChildScrollView(
+                    child: DataTableSong(
+                        tracks: recentTracks, channel: cm.currentChannel))
+                : const Text('Nothing to show here'),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class DataTableSong extends StatelessWidget {
+  final List<Track> tracks;
+  final Channel channel;
+  const DataTableSong({super.key, required this.tracks, required this.channel});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+      bool isSmallScreen;
+      if (constraints.maxWidth > 1000) {
+        isSmallScreen = false;
+      } else {
+        isSmallScreen = true;
+      }
+      final int empties = tracks.where((e) => e.album == 'Album').length;
+      // remove last column (Album) if none is defined
+      if (empties == tracks.length) {
+        isSmallScreen = true;
+      }
+      List<DataColumn> columns = <DataColumn>[
+        DataColumn(
+          label: Expanded(
+            child: Text(
+              'Time',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: Theme.of(context).primaryColor),
+            ),
+          ),
+        ),
+        const DataColumn(
+          label: Expanded(
+            child: Text(
+              'Artist',
+              style: TextStyle(
+                  fontStyle: FontStyle.normal,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20),
+            ),
+          ),
+        ),
+        const DataColumn(
+          label: Expanded(
+            child: Text(
+              'Title',
+              style: TextStyle(
+                  fontStyle: FontStyle.normal,
+                  fontWeight: FontWeight.normal,
+                  fontSize: 20),
+            ),
+          ),
+        ),
+      ];
+      if (!isSmallScreen) {
+        columns.add(
+          const DataColumn(
+            label: Expanded(
+              child: Text(
+                'Album',
+                style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.normal,
+                    fontSize: 20),
+              ),
+            ),
+          ),
+        );
+      }
+      final rows = <DataRow>[];
+      for (var track in tracks) {
+        String dd = track.diffusionDate.split('T')[1].substring(0, 8);
+        List<DataCell> cells = [
+          DataCell(Text(dd,
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor))),
+          DataCell(Text(track.artist.toTitleCase(),
+              style: const TextStyle(fontWeight: FontWeight.bold))),
+          DataCell(Text(track.title.toTitleCase())),
+        ];
+        // add album only is screen is large enough
+        if (!isSmallScreen) {
+          cells.add(DataCell(Text(track.album != 'Album' ? track.album : '---',
+              style: const TextStyle(fontStyle: FontStyle.italic))));
+        }
+        rows.add(DataRow(cells: cells));
+      }
+      return Column(
+        children: [
+          Center(
+              child: Container(
+                  padding: const EdgeInsets.all(15),
+                  child: Text('${channel.radio} / ${channel.show.name}',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 20)))),
+          DataTable(
+              headingRowColor: MaterialStateProperty.resolveWith<Color?>(
+                  (Set<MaterialState> states) {
+                return Theme.of(context).secondaryHeaderColor;
+              }),
+              columns: columns,
+              rows: rows),
+        ],
+      );
     });
   }
 }

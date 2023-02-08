@@ -83,8 +83,8 @@ class ChannelManager extends ChangeNotifier {
 
   Future<int> fetchCurrentTrack(
       {bool cancel = false, bool manual = false}) async {
-    debugPrint(
-        '${DateTime.now().toIso8601String().substring(11, 19)}: in fetchCurrentTrack(cancel: $cancel, manual: $manual)');
+    //debugPrint(
+    //    '${DateTime.now().toIso8601String().substring(11, 19)}: in fetchCurrentTrack(cancel: $cancel, manual: $manual)');
     if (cancel) {
       // reschedule a new timer if requested and cancel the previous one
       if (_timer != null) {
