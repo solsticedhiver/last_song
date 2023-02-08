@@ -482,17 +482,9 @@ class _FavoritesGridState extends State<FavoritesGrid> {
         child: SizedBox(
             width:
                 1200, // 400px image * 3, could be a little bigger but why care ?
-            child: ReorderableGridView.builder(
-              // does not work with ReorderableGridView.count(). Why ?
-              itemCount: favorites.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisSpacing: 0,
-                crossAxisSpacing: 0,
-                childAspectRatio: 1,
-              ),
-              itemBuilder: (context, index) {
-                final f = favorites[index];
+            child: ReorderableGridView.count(
+              crossAxisCount: 3,
+              children: favorites.map((f) {
                 return InkWell(
                   key: ValueKey(f),
                   child: Card(
@@ -519,12 +511,12 @@ class _FavoritesGridState extends State<FavoritesGrid> {
                   onTap: () {
                     ChannelManager cm =
                         Provider.of<ChannelManager>(context, listen: false);
-                    cm.changeChannel(favorites[index]);
+                    cm.changeChannel(f);
                     cm.fetchCurrentTrack(cancel: true);
                     Navigator.pop(context);
                   },
                 );
-              },
+              }).toList(),
               onReorder: (oldIndex, newIndex) {
                 setState(() {
                   Channel val = favorites.removeAt(oldIndex);
