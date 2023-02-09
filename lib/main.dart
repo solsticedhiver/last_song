@@ -484,9 +484,11 @@ class _FavoritesGridState extends State<FavoritesGrid> {
           action: SnackBarAction(
               label: "Cancel",
               onPressed: () {
-                setState(() {
-                  favorites.insert(index, f);
-                });
+                if (mounted) {
+                  setState(() {
+                    favorites.insert(index, f);
+                  });
+                }
                 cm.saveFavorites();
               })));
   }
@@ -573,6 +575,8 @@ class _FavoritesListState extends State<FavoritesList> {
     setState(() {
       favorites.removeAt(index);
     });
+    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
+    cm.saveFavorites();
 
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
@@ -583,9 +587,12 @@ class _FavoritesListState extends State<FavoritesList> {
           action: SnackBarAction(
               label: "Cancel",
               onPressed: () {
-                setState(() {
-                  favorites.insert(index, oldFavorite);
-                });
+                if (mounted) {
+                  setState(() {
+                    favorites.insert(index, oldFavorite);
+                  });
+                }
+                cm.saveFavorites();
               })));
   }
 
