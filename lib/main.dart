@@ -559,21 +559,30 @@ class _FavoritesListState extends State<FavoritesList> {
           );
         }
         final f = favorites[index];
-        return ListTile(
-            key: Key('$index'),
-            leading: f.subchannel.imageUrl.startsWith('assets')
-                ? Image.asset(f.subchannel.imageUrl)
-                : Image(
-                    image: CachedNetworkImageProvider(f.subchannel.imageUrl)),
-            title: Text(f.subchannel.title),
-            subtitle: Text(f.radio),
-            onTap: () {
-              ChannelManager cm =
-                  Provider.of<ChannelManager>(context, listen: false);
-              cm.changeChannel(favorites[index]);
-              cm.fetchCurrentTrack(cancel: true);
-              Navigator.pop(context);
-            });
+        return Dismissible(
+            key: ValueKey(f),
+            background: Container(color: Colors.deepOrange),
+            onDismissed: (direction) {
+              setState(() {
+                favorites.removeAt(index);
+              });
+            },
+            child: ListTile(
+                key: ValueKey(f),
+                leading: f.subchannel.imageUrl.startsWith('assets')
+                    ? Image.asset(f.subchannel.imageUrl)
+                    : Image(
+                        image:
+                            CachedNetworkImageProvider(f.subchannel.imageUrl)),
+                title: Text(f.subchannel.title),
+                subtitle: Text(f.radio),
+                onTap: () {
+                  ChannelManager cm =
+                      Provider.of<ChannelManager>(context, listen: false);
+                  cm.changeChannel(favorites[index]);
+                  cm.fetchCurrentTrack(cancel: true);
+                  Navigator.pop(context);
+                }));
       },
       onReorder: (oldIndex, newIndex) {
         setState(() {
