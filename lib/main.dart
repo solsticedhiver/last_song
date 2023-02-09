@@ -13,8 +13,6 @@ const String defaultImage = 'assets/img/black-record-vinyl-640x640.png';
 const double bottomSheetSizeLargeScreen = 75;
 const double bottomSheetSizeSmallScreen = 55;
 
-GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
@@ -79,19 +77,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   void showSnackBar() {
-    String msg = 'No update available';
-    // https://stackoverflow.com/a/68847551/283067
-    BuildContext? skcc = scaffoldKey.currentContext;
-    ScaffoldState? skcs = scaffoldKey.currentState;
-    if (skcs != null && skcc != null) {
-      ScaffoldMessengerState sms = ScaffoldMessenger.of(skcc);
-      sms.clearSnackBars();
-      sms.showSnackBar(SnackBar(
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(const SnackBar(
         backgroundColor: Colors.black87,
-        content: Text(msg),
+        content: Text('No update available'),
         behavior: SnackBarBehavior.floating,
       ));
-    }
   }
 
   @override
@@ -117,7 +109,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     Scaffold scaffold = Scaffold(
-      key: scaffoldKey,
       drawer:
           MyDrawer(child: MyRadioExpansionPanelList(children: channelsByType)),
       appBar: AppBar(
@@ -476,6 +467,30 @@ class _FavoritesGridState extends State<FavoritesGrid> {
     favorites = cm.favorites;
   }
 
+  void _onPressed(Channel f) {
+    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
+
+    int index = favorites.indexOf(f);
+    setState(() {
+      favorites.remove(f);
+    });
+    cm.saveFavorites();
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(
+          backgroundColor: Colors.black87,
+          content: const Text('The favorite has been deleted'),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+              label: "Cancel",
+              onPressed: () {
+                setState(() {
+                  favorites.insert(index, f);
+                });
+                cm.saveFavorites();
+              })));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -504,6 +519,12 @@ class _FavoritesGridState extends State<FavoritesGrid> {
                         ListTile(
                           title: Center(child: Text(f.subchannel.title)),
                           subtitle: Center(child: Text(f.radio)),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () {
+                              _onPressed(f);
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -547,6 +568,27 @@ class _FavoritesListState extends State<FavoritesList> {
     favorites = cm.favorites;
   }
 
+  void _onDismissed(int index) {
+    Channel oldFavorite = favorites[index];
+    setState(() {
+      favorites.removeAt(index);
+    });
+
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(
+          backgroundColor: Colors.black87,
+          content: const Text('The favorite has been deleted'),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+              label: "Cancel",
+              onPressed: () {
+                setState(() {
+                  favorites.insert(index, oldFavorite);
+                });
+              })));
+  }
+
   @override
   Widget build(BuildContext context) {
     return ReorderableListView.builder(
@@ -563,9 +605,7 @@ class _FavoritesListState extends State<FavoritesList> {
             key: ValueKey(f),
             background: Container(color: Colors.deepOrange),
             onDismissed: (direction) {
-              setState(() {
-                favorites.removeAt(index);
-              });
+              _onDismissed(index);
             },
             child: ListTile(
                 key: ValueKey(f),
