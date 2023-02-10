@@ -18,6 +18,7 @@ class ChannelManager extends ChangeNotifier {
 
   List<Channel> get favorites {
     if (_favorites.isEmpty) {
+      // only update when empty otherwise we loose the order
       _favorites = channels.where((element) => element.isFavorite).toList();
     }
     return _favorites;

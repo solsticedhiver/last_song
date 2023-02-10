@@ -88,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final cm = Provider.of<ChannelManager>(context, listen: false);
+    final cm = Provider.of<ChannelManager>(context, listen: true);
     final List<List<Widget>> channelsByType = <List<Widget>>[];
 
     if (channelsByType.isEmpty) {
@@ -216,7 +216,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _copyToClipboard(String text) async {
-    await Clipboard.setData(ClipboardData(text: text));
+    Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
       content: Text('Copied to clipboard'),
       backgroundColor: Colors.black87,
@@ -473,6 +473,7 @@ class _FavoritesGridState extends State<FavoritesGrid> {
     int index = favorites.indexOf(f);
     setState(() {
       favorites.remove(f);
+      f.isFavorite = false;
     });
     cm.saveFavorites();
     ScaffoldMessenger.of(context)
@@ -487,6 +488,7 @@ class _FavoritesGridState extends State<FavoritesGrid> {
                 if (mounted) {
                   setState(() {
                     favorites.insert(index, f);
+                    f.isFavorite = true;
                   });
                 }
                 cm.saveFavorites();
@@ -574,6 +576,7 @@ class _FavoritesListState extends State<FavoritesList> {
     Channel oldFavorite = favorites[index];
     setState(() {
       favorites.removeAt(index);
+      oldFavorite.isFavorite = false;
     });
     ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
     cm.saveFavorites();
@@ -590,6 +593,7 @@ class _FavoritesListState extends State<FavoritesList> {
                 if (mounted) {
                   setState(() {
                     favorites.insert(index, oldFavorite);
+                    oldFavorite.isFavorite = true;
                   });
                 }
                 cm.saveFavorites();
