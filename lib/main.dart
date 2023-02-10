@@ -483,7 +483,7 @@ class _FavoritesGridState extends State<FavoritesGrid> {
           content: const Text('The favorite has been deleted'),
           behavior: SnackBarBehavior.floating,
           action: SnackBarAction(
-              label: "Cancel",
+              label: "Undelete",
               onPressed: () {
                 if (mounted) {
                   setState(() {
@@ -588,7 +588,7 @@ class _FavoritesListState extends State<FavoritesList> {
           content: const Text('The favorite has been deleted'),
           behavior: SnackBarBehavior.floating,
           action: SnackBarAction(
-              label: "Cancel",
+              label: "Undelete",
               onPressed: () {
                 if (mounted) {
                   setState(() {
