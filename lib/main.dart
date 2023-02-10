@@ -40,6 +40,13 @@ void main(List<String> args) async {
           return cm;
         },
       ),
+      ChangeNotifierProvider<Favorites>(
+        create: (context) {
+          Favorites favorites = Favorites.fromChannelList(
+              Provider.of<ChannelManager>(context, listen: false).channels);
+          return favorites;
+        },
+      ),
     ],
     child: const MyApp(),
   ));
@@ -396,12 +403,12 @@ class _MyRadioExpansionPanelListTileState
           setState(() {
             isFavorite = !isFavorite;
             widget.channel.isFavorite = isFavorite;
-            ChannelManager cm =
-                Provider.of<ChannelManager>(context, listen: false);
+            Favorites favorites =
+                Provider.of<Favorites>(context, listen: false);
             if (isFavorite) {
-              cm.favorites.add(widget.channel);
+              favorites.add(widget.channel);
             } else {
-              cm.favorites.remove(widget.channel);
+              favorites.remove(widget.channel);
             }
           });
         },
@@ -427,23 +434,24 @@ class FavoritesRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
-    final favorites = cm.favorites;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Favorites'),
       ),
-      body: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          if (favorites.isEmpty) {
-            return const Center(child: Text('Nothing to show here'));
-          }
-          if (constraints.maxWidth > 700) {
-            return const FavoritesGrid();
-          } else {
-            return const FavoritesList();
-          }
+      body: Consumer<Favorites>(
+        builder: (context, favorites, child) {
+          return LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              if (favorites.isEmpty) {
+                return const Center(child: Text('Nothing to show here'));
+              }
+              if (constraints.maxWidth > 700) {
+                return const FavoritesGrid();
+              } else {
+                return const FavoritesList();
+              }
+            },
+          );
         },
       ),
     );
@@ -458,13 +466,12 @@ class FavoritesGrid extends StatefulWidget {
 }
 
 class _FavoritesGridState extends State<FavoritesGrid> {
-  late final List<Channel> favorites;
+  late final Favorites favorites;
 
   @override
   void initState() {
     super.initState();
-    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
-    favorites = cm.favorites;
+    favorites = Provider.of<Favorites>(context, listen: false);
   }
 
   void _onPressed(Channel f) {
@@ -473,7 +480,6 @@ class _FavoritesGridState extends State<FavoritesGrid> {
     int index = favorites.indexOf(f);
     setState(() {
       favorites.remove(f);
-      f.isFavorite = false;
     });
     cm.saveFavorites();
     ScaffoldMessenger.of(context)
@@ -488,7 +494,6 @@ class _FavoritesGridState extends State<FavoritesGrid> {
                 if (mounted) {
                   setState(() {
                     favorites.insert(index, f);
-                    f.isFavorite = true;
                   });
                 }
                 cm.saveFavorites();
@@ -563,20 +568,18 @@ class FavoritesList extends StatefulWidget {
 }
 
 class _FavoritesListState extends State<FavoritesList> {
-  late final List<Channel> favorites;
+  late final Favorites favorites;
 
   @override
   void initState() {
     super.initState();
-    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
-    favorites = cm.favorites;
+    favorites = Provider.of<Favorites>(context, listen: false);
   }
 
   void _onDismissed(int index) {
     Channel oldFavorite = favorites[index];
     setState(() {
       favorites.removeAt(index);
-      oldFavorite.isFavorite = false;
     });
     ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
     cm.saveFavorites();
@@ -593,7 +596,6 @@ class _FavoritesListState extends State<FavoritesList> {
                 if (mounted) {
                   setState(() {
                     favorites.insert(index, oldFavorite);
-                    oldFavorite.isFavorite = true;
                   });
                 }
                 cm.saveFavorites();
