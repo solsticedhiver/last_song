@@ -47,6 +47,7 @@ void main(List<String> args) async {
     builder: (context, child) {
       final favorites = context.watch<Favorites>();
       final cm = context.watch<ChannelManager>();
+      // initialization is done here, be sure to do it only once
       if (cm.channels.isEmpty) {
         Future.delayed(Duration.zero, () async {
           await cm.initialize();
@@ -345,6 +346,7 @@ class _MyRadioExpansionPanelListState extends State<MyRadioExpansionPanelList> {
         shrinkWrap: true,
         physics: const ClampingScrollPhysics(),
         itemCount: subList.length,
+        prototypeItem: subList.first,
         itemBuilder: (context, index) {
           return subList[index];
         },
@@ -405,10 +407,17 @@ class _MyRadioExpansionPanelListTileState
           width: 48,
           height: 48,
           child: widget.channel.subchannel.imageUrl.startsWith('assets')
-              ? Image.asset(widget.channel.subchannel.imageUrl)
-              : Image(
-                  image: CachedNetworkImageProvider(
-                      widget.channel.subchannel.imageUrl))),
+              // use 64x64px for memache image because the image is used in bottomsheet too
+              ? Image.asset(
+                  widget.channel.subchannel.imageUrl,
+                  cacheHeight: 64,
+                  cacheWidth: 64,
+                )
+              : CachedNetworkImage(
+                  imageUrl: widget.channel.subchannel.imageUrl,
+                  memCacheHeight: 64,
+                  memCacheWidth: 64,
+                )),
       trailing: IconButton(
         icon: Icon(Icons.favorite,
             color:
@@ -523,13 +532,19 @@ class _FavoritesGridState extends State<FavoritesGrid> {
                               child: Container(
                                   padding:
                                       const EdgeInsets.fromLTRB(15, 15, 15, 0),
+                                  // for a grid of 3 columns this gives an image of 313x313. Use 350px for memcache
                                   child: f.subchannel.bigImageUrl
                                           .startsWith('assets')
                                       ? Image.asset(f.subchannel.bigImageUrl,
+                                          cacheHeight: 350,
+                                          cacheWidth: 350,
                                           fit: BoxFit.fitHeight)
                                       : CachedNetworkImage(
                                           imageUrl: f.subchannel.bigImageUrl,
-                                          fit: BoxFit.fitHeight))),
+                                          fit: BoxFit.fitHeight,
+                                          memCacheHeight: 350,
+                                          memCacheWidth: 350,
+                                        ))),
                           ListTile(
                             title: Center(child: Text(f.subchannel.title)),
                             subtitle: Center(child: Text(f.radio)),
@@ -617,14 +632,23 @@ class _FavoritesListState extends State<FavoritesList> {
               child: ListTile(
                   key: ValueKey(f),
                   leading: f.subchannel.imageUrl.startsWith('assets')
-                      ? Image.asset(f.subchannel.imageUrl)
+                      ? Image.asset(
+                          f.subchannel.imageUrl,
+                          cacheHeight: 64,
+                          cacheWidth: 64,
+                        )
                       : (f.subchannel.imageUrl.isEmpty
                           ? Image.asset(
                               defaultImage,
+                              cacheHeight: 64,
+                              cacheWidth: 64,
                             )
                           : Image(
-                              image: CachedNetworkImageProvider(
-                                  f.subchannel.imageUrl))),
+                              image: ResizeImage(
+                                  CachedNetworkImageProvider(
+                                      f.subchannel.imageUrl),
+                                  height: 64,
+                                  width: 64))),
                   title: Text(f.subchannel.title),
                   subtitle: Text(f.radio),
                   onTap: () {
@@ -720,12 +744,13 @@ class MyBottomSheetWidget extends StatelessWidget {
               height: bottomSheetSize,
             );
           } else if (image.startsWith('assets')) {
-            wi = Image.asset(image);
+            wi = Image.asset(image,
+                height: bottomSheetSize, width: bottomSheetSize);
           } else {
-            wi = Image(
-              image: CachedNetworkImageProvider(image),
-              height: bottomSheetSize,
-              width: bottomSheetSize,
+            wi = CachedNetworkImage(
+              imageUrl: image,
+              memCacheHeight: bottomSheetSize.toInt(),
+              memCacheWidth: bottomSheetSize.toInt(),
             );
           }
           return InkWell(
@@ -758,9 +783,11 @@ class MyBottomSheetWidget extends StatelessWidget {
         builder: (context) {
           return AlertDialog(
             icon: imageUrl.startsWith('assets')
-                ? Image.asset(imageUrl, height: 400, width: 400)
+                ? Image.asset(imageUrl, cacheHeight: 400, cacheWidth: 400)
                 : CachedNetworkImage(
-                    imageUrl: imageUrl, height: 400, width: 400),
+                    imageUrl: imageUrl,
+                    memCacheHeight: 400,
+                    memCacheWidth: 400),
             title: Text(cm.currentChannel.show.name),
             content: Text(
               cm.currentChannel.show.description,
