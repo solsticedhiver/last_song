@@ -87,17 +87,12 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends StatelessWidget {
   const MyHomePage({super.key, required this.title});
 
   final String title;
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  void showSnackBar() {
+  void showSnackBar(BuildContext context) {
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
       ..showSnackBar(const SnackBar(
@@ -134,10 +129,8 @@ class _MyHomePageState extends State<MyHomePage> {
           MyDrawer(child: MyRadioExpansionPanelList(children: channelsByType)),
       appBar: AppBar(
         title: Text((MediaQuery.of(context).size.width < 700)
-            ? widget.title
-                .replaceFirst(' played ', ' ')
-                .replaceFirst(' on ', ' - ')
-            : widget.title),
+            ? title.replaceFirst(' played ', ' ').replaceFirst(' on ', ' - ')
+            : title),
         actions: _buildActionButtons(context),
       ),
       body: LayoutBuilder(builder: (context, constraints) {
@@ -155,7 +148,7 @@ class _MyHomePageState extends State<MyHomePage> {
             onRefresh: () async {
               int ret = await cm.fetchCurrentTrack(cancel: true, manual: true);
               if (ret < 1) {
-                showSnackBar();
+                showSnackBar(context);
               }
             });
       }),
@@ -163,7 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: () async {
           int ret = await cm.fetchCurrentTrack(cancel: true, manual: true);
           if (ret < 1) {
-            showSnackBar();
+            showSnackBar(context);
           }
         },
         tooltip: 'Update current track',
@@ -187,7 +180,7 @@ class _MyHomePageState extends State<MyHomePage> {
               cm.currentChannel.currentTrack.album != 'Album') {
             txt.write(' - ${cm.currentChannel.currentTrack.album}');
           }
-          _copyToClipboard(txt.toString());
+          _copyToClipboard(context, txt.toString());
         },
       ),
       IconButton(
@@ -236,23 +229,13 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<void> _copyToClipboard(String text) async {
+  Future<void> _copyToClipboard(BuildContext context, String text) async {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
       content: Text('Copied to clipboard'),
       backgroundColor: Colors.black87,
       behavior: SnackBarBehavior.floating,
     ));
-  }
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }
 
