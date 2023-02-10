@@ -177,4 +177,9 @@ class AppConfig {
   static const String version = '0.0.2';
   static const String url = 'https://github.com/solsticedhiver/last_song';
   static String userAgent = '${name.replaceAll(' ', '')}/$version +$url';
+
+  static const String defaultImage =
+      'assets/img/black-record-vinyl-640x640.png';
+  static const double bottomSheetSizeLargeScreen = 75;
+  static const double bottomSheetSizeSmallScreen = 55;
 }
