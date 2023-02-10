@@ -8,6 +8,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:reorderable_grid/reorderable_grid.dart';
 
 import 'helpers.dart';
+import 'favorites.dart';
 
 const String defaultImage = 'assets/img/black-record-vinyl-640x640.png';
 const double bottomSheetSizeLargeScreen = 75;
@@ -32,23 +33,36 @@ void main(List<String> args) async {
 
   runApp(MultiProvider(
     providers: [
+      ChangeNotifierProvider<Favorites>(create: (context) {
+        Favorites favorites = Favorites();
+        return favorites;
+      }),
       ChangeNotifierProvider<ChannelManager>(
         create: (context) {
           ChannelManager cm = ChannelManager();
-          cm.initialize();
-          cm.launchTimer();
           return cm;
         },
       ),
-      ChangeNotifierProvider<Favorites>(
-        create: (context) {
-          Favorites favorites = Favorites.fromChannelList(
-              Provider.of<ChannelManager>(context, listen: false).channels);
-          return favorites;
-        },
-      ),
     ],
-    child: const MyApp(),
+    builder: (context, child) {
+      final favorites = context.watch<Favorites>();
+      final cm = context.watch<ChannelManager>();
+      if (cm.channels.isEmpty) {
+        Future.delayed(Duration.zero, () async {
+          await cm.initialize();
+          final f = await Favorites.loadFavorites(cm.channels);
+          favorites.set(f);
+          if (favorites.isNotEmpty) {
+            cm.changeChannel(favorites.first);
+          } else {
+            cm.changeChannel(cm.channels.first);
+          }
+          cm.fetchCurrentTrack();
+          cm.launchTimer();
+        });
+      }
+      return const MyApp();
+    },
   ));
 }
 
@@ -400,17 +414,16 @@ class _MyRadioExpansionPanelListTileState
             color:
                 isFavorite ? Colors.red : ListTileTheme.of(context).iconColor),
         onPressed: () {
+          Favorites favorites = Provider.of<Favorites>(context, listen: false);
           setState(() {
             isFavorite = !isFavorite;
-            widget.channel.isFavorite = isFavorite;
-            Favorites favorites =
-                Provider.of<Favorites>(context, listen: false);
-            if (isFavorite) {
-              favorites.add(widget.channel);
-            } else {
-              favorites.remove(widget.channel);
-            }
           });
+          if (isFavorite) {
+            favorites.add(widget.channel);
+          } else {
+            favorites.remove(widget.channel);
+          }
+          favorites.saveFavorites();
         },
       ),
       onTap: () {
@@ -466,22 +479,17 @@ class FavoritesGrid extends StatefulWidget {
 }
 
 class _FavoritesGridState extends State<FavoritesGrid> {
-  late final Favorites favorites;
-
   @override
   void initState() {
     super.initState();
-    favorites = Provider.of<Favorites>(context, listen: false);
   }
 
   void _onPressed(Channel f) {
-    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
+    final favorites = Provider.of<Favorites>(context, listen: false);
 
     int index = favorites.indexOf(f);
-    setState(() {
-      favorites.remove(f);
-    });
-    cm.saveFavorites();
+    favorites.remove(f);
+    favorites.saveFavorites();
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
       ..showSnackBar(SnackBar(
@@ -491,72 +499,66 @@ class _FavoritesGridState extends State<FavoritesGrid> {
           action: SnackBarAction(
               label: "Undelete",
               onPressed: () {
-                if (mounted) {
-                  setState(() {
-                    favorites.insert(index, f);
-                  });
-                }
-                cm.saveFavorites();
+                favorites.insert(index, f);
+                favorites.saveFavorites();
               })));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-        child: SizedBox(
-            width:
-                1200, // 400px image * 3, could be a little bigger but why care ?
-            child: ReorderableGridView.count(
-              crossAxisCount: 3,
-              children: favorites.map((f) {
-                return InkWell(
-                  key: ValueKey(f),
-                  child: Card(
-                    child: Column(
-                      children: [
-                        Expanded(
-                            child: Container(
-                                padding:
-                                    const EdgeInsets.fromLTRB(15, 15, 15, 0),
-                                child: f.subchannel.bigImageUrl
-                                        .startsWith('assets')
-                                    ? Image.asset(f.subchannel.bigImageUrl,
-                                        fit: BoxFit.fitHeight)
-                                    : CachedNetworkImage(
-                                        imageUrl: f.subchannel.bigImageUrl,
-                                        fit: BoxFit.fitHeight))),
-                        ListTile(
-                          title: Center(child: Text(f.subchannel.title)),
-                          subtitle: Center(child: Text(f.radio)),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () {
-                              _onPressed(f);
-                            },
+    return Consumer<Favorites>(builder: (context, favorites, child) {
+      return Center(
+          child: SizedBox(
+              width:
+                  1200, // 400px image * 3, could be a little bigger but why care ?
+              child: ReorderableGridView.count(
+                crossAxisCount: 3,
+                children: favorites.map((f) {
+                  return InkWell(
+                    key: ValueKey(f),
+                    child: Card(
+                      child: Column(
+                        children: [
+                          Expanded(
+                              child: Container(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(15, 15, 15, 0),
+                                  child: f.subchannel.bigImageUrl
+                                          .startsWith('assets')
+                                      ? Image.asset(f.subchannel.bigImageUrl,
+                                          fit: BoxFit.fitHeight)
+                                      : CachedNetworkImage(
+                                          imageUrl: f.subchannel.bigImageUrl,
+                                          fit: BoxFit.fitHeight))),
+                          ListTile(
+                            title: Center(child: Text(f.subchannel.title)),
+                            subtitle: Center(child: Text(f.radio)),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                _onPressed(f);
+                              },
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  onTap: () {
-                    ChannelManager cm =
-                        Provider.of<ChannelManager>(context, listen: false);
-                    cm.changeChannel(f);
-                    cm.fetchCurrentTrack(cancel: true);
-                    Navigator.pop(context);
-                  },
-                );
-              }).toList(),
-              onReorder: (oldIndex, newIndex) {
-                setState(() {
+                    onTap: () {
+                      ChannelManager cm =
+                          Provider.of<ChannelManager>(context, listen: false);
+                      cm.changeChannel(f);
+                      cm.fetchCurrentTrack(cancel: true);
+                      Navigator.pop(context);
+                    },
+                  );
+                }).toList(),
+                onReorder: (oldIndex, newIndex) {
                   Channel val = favorites.removeAt(oldIndex);
                   favorites.insert(newIndex, val);
-                });
-                ChannelManager cm =
-                    Provider.of<ChannelManager>(context, listen: false);
-                cm.saveFavorites();
-              },
-            )));
+                  favorites.saveFavorites();
+                },
+              )));
+    });
   }
 }
 
@@ -568,21 +570,16 @@ class FavoritesList extends StatefulWidget {
 }
 
 class _FavoritesListState extends State<FavoritesList> {
-  late final Favorites favorites;
-
   @override
   void initState() {
     super.initState();
-    favorites = Provider.of<Favorites>(context, listen: false);
   }
 
   void _onDismissed(int index) {
+    final favorites = Provider.of<Favorites>(context, listen: false);
     Channel oldFavorite = favorites[index];
-    setState(() {
-      favorites.removeAt(index);
-    });
-    ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
-    cm.saveFavorites();
+    favorites.removeAt(index);
+    favorites.saveFavorites();
 
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
@@ -593,62 +590,61 @@ class _FavoritesListState extends State<FavoritesList> {
           action: SnackBarAction(
               label: "Undelete",
               onPressed: () {
-                if (mounted) {
-                  setState(() {
-                    favorites.insert(index, oldFavorite);
-                  });
-                }
-                cm.saveFavorites();
+                favorites.insert(index, oldFavorite);
+                favorites.saveFavorites();
               })));
   }
 
   @override
   Widget build(BuildContext context) {
-    return ReorderableListView.builder(
-      itemCount: favorites.length,
-      itemBuilder: (context, index) {
-        if (favorites.isEmpty) {
-          return const SizedBox(
-            height: 0,
-            width: 0,
-          );
-        }
-        final f = favorites[index];
-        return Dismissible(
-            key: ValueKey(f),
-            background: Container(color: Colors.deepOrange),
-            onDismissed: (direction) {
-              _onDismissed(index);
-            },
-            child: ListTile(
-                key: ValueKey(f),
-                leading: f.subchannel.imageUrl.startsWith('assets')
-                    ? Image.asset(f.subchannel.imageUrl)
-                    : Image(
-                        image:
-                            CachedNetworkImageProvider(f.subchannel.imageUrl)),
-                title: Text(f.subchannel.title),
-                subtitle: Text(f.radio),
-                onTap: () {
-                  ChannelManager cm =
-                      Provider.of<ChannelManager>(context, listen: false);
-                  cm.changeChannel(favorites[index]);
-                  cm.fetchCurrentTrack(cancel: true);
-                  Navigator.pop(context);
-                }));
-      },
-      onReorder: (oldIndex, newIndex) {
-        setState(() {
+    return Consumer<Favorites>(builder: (context, favorites, child) {
+      return ReorderableListView.builder(
+        itemCount: favorites.length,
+        itemBuilder: (context, index) {
+          if (favorites.isEmpty) {
+            return const SizedBox(
+              height: 0,
+              width: 0,
+            );
+          }
+          final f = favorites[index];
+          return Dismissible(
+              key: ValueKey(f),
+              background: Container(color: Colors.deepOrange),
+              onDismissed: (direction) {
+                _onDismissed(index);
+              },
+              child: ListTile(
+                  key: ValueKey(f),
+                  leading: f.subchannel.imageUrl.startsWith('assets')
+                      ? Image.asset(f.subchannel.imageUrl)
+                      : (f.subchannel.imageUrl.isEmpty
+                          ? Image.asset(
+                              defaultImage,
+                            )
+                          : Image(
+                              image: CachedNetworkImageProvider(
+                                  f.subchannel.imageUrl))),
+                  title: Text(f.subchannel.title),
+                  subtitle: Text(f.radio),
+                  onTap: () {
+                    ChannelManager cm =
+                        Provider.of<ChannelManager>(context, listen: false);
+                    cm.changeChannel(favorites[index]);
+                    cm.fetchCurrentTrack(cancel: true);
+                    Navigator.pop(context);
+                  }));
+        },
+        onReorder: (oldIndex, newIndex) {
           if (oldIndex < newIndex) {
             newIndex -= 1;
           }
           Channel val = favorites.removeAt(oldIndex);
           favorites.insert(newIndex, val);
-        });
-        ChannelManager cm = Provider.of<ChannelManager>(context, listen: false);
-        cm.saveFavorites();
-      },
-    );
+          favorites.saveFavorites();
+        },
+      );
+    });
   }
 }
 
@@ -717,6 +713,21 @@ class MyBottomSheetWidget extends StatelessWidget {
       return BottomSheet(
         enableDrag: false,
         builder: (context) {
+          Widget wi;
+          if (image.isEmpty) {
+            wi = SizedBox(
+              width: bottomSheetSize,
+              height: bottomSheetSize,
+            );
+          } else if (image.startsWith('assets')) {
+            wi = Image.asset(image);
+          } else {
+            wi = Image(
+              image: CachedNetworkImageProvider(image),
+              height: bottomSheetSize,
+              width: bottomSheetSize,
+            );
+          }
           return InkWell(
               onTap: () async {
                 return _buildCurrentShowDialog(context, cm);
@@ -726,13 +737,7 @@ class MyBottomSheetWidget extends StatelessWidget {
                   color: Colors.black87,
                   child: Row(
                     children: [
-                      image.startsWith('assets')
-                          ? Image.asset(image)
-                          : Image(
-                              image: CachedNetworkImageProvider(image),
-                              height: bottomSheetSize,
-                              width: bottomSheetSize,
-                            ),
+                      wi,
                       const SizedBox(
                         width: 15,
                       ),
