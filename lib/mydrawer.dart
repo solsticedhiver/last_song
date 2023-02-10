@@ -67,11 +67,12 @@ class _MyRadioExpansionPanelListState extends State<MyRadioExpansionPanelList> {
   Widget build(BuildContext context) {
     List<ExpansionPanel> children = [];
 
+    int pos = 0;
     for (var subList in widget.children) {
       final listView = ListView.builder(
         shrinkWrap: true,
         physics: const ClampingScrollPhysics(),
-        itemCount: subList.length,
+        itemCount: _drawerExpansionPanelListState[pos] ? subList.length : 0,
         prototypeItem: subList.first,
         itemBuilder: (context, index) {
           return subList[index];
@@ -88,6 +89,7 @@ class _MyRadioExpansionPanelListState extends State<MyRadioExpansionPanelList> {
         isExpanded:
             _drawerExpansionPanelListState[widget.children.indexOf(subList)],
       ));
+      pos++;
     } // for
 
     return SingleChildScrollView(
