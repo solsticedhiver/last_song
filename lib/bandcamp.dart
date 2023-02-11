@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:web_scraper/web_scraper.dart';
+import 'package:html/parser.dart' as parser;
 
 import 'helpers.dart';
 
@@ -70,19 +70,21 @@ Future<ResponseBandcamp> searchBandcamp(String s, String type) async {
 Future<String> lookForTrackDuration(String url) async {
   String duration = '';
 
-  WebScraper webScraper = WebScraper();
-  if (await webScraper.loadFullURL(url)) {
-    List<Map<String, dynamic>> elements =
-        webScraper.getElement('script', ['type']);
-    for (var e in elements) {
-      if (e['attributes']['type'] == 'application/ld+json') {
-        final jd = json
-            .decode(e['title'])['duration']; // coded like P00H10M11S for 10:11
-        if (jd == null) break;
-        duration = '${jd.substring(4, 6)}:${jd.substring(7, 9)}';
-        break;
-      }
+  final resp = await http.get(Uri.parse(url), headers: {
+    'User-Agent': AppConfig.userAgent,
+  });
+  if (resp.statusCode != 200) {
+    return duration;
+  }
+  final document = parser.parse(resp.body);
+  final script = document.querySelector('script[type="application/ld+json"]');
+  if (script != null) {
+    final jd =
+        json.decode(script.text)['duration']; // coded like P00H10M11S for 10:11
+    if (jd != null) {
+      duration = '${jd.substring(4, 6)}:${jd.substring(7, 9)}';
     }
   }
+
   return duration;
 }

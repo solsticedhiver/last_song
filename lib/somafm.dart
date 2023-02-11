@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:web_scraper/web_scraper.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:http/http.dart' as http;
+import 'package:html/parser.dart' as parser;
 
 import 'helpers.dart';
 import 'bandcamp.dart';
@@ -112,41 +112,33 @@ class SomaFm extends Channel {
     if (resp.statusCode != 200) {
       return ret;
     }
-    WebScraper webScraper = WebScraper();
-    try {
-      webScraper.loadFromString(resp.body);
-    } on WebScraperException catch (e) {
-      debugPrint('debug: ${e.errorMessage()}');
-    }
-    List<Map<String, dynamic>> elements =
-        webScraper.getElement('#playinc table tr td', ['colspan']);
-    //print(elements);
-    List<String> columns = [];
-    for (var e in elements) {
-      //print(e);
-      if (e['attributes']['colspan'] != null) {
-        columns.clear();
-        continue;
+    final document = parser.parse(resp.body);
+    final rows = document.querySelectorAll('#playinc table tr');
+    rows.removeAt(0); // remove header of table
+    for (var element in rows) {
+      final tds = element.querySelectorAll('td');
+      if (tds.length != 5) continue;
+      final time = tds[0].text.replaceFirst(' (Now) ', '').trim();
+      String artist = 'Artist';
+      if (tds[1].firstChild != null && tds[1].firstChild?.text != null) {
+        artist = (tds[1].firstChild?.text)!;
       }
-      columns.add(e['title'].replaceFirst(' (Now) ', '').trim());
-      if (columns.length == 5) {
-        if (!columns[0].startsWith('Played At')) {
-          // convert SF local time to our local time
-          // add current SF date in front of parsed hour
-          DateTime diffusionDate =
-              DateTime.parse('${currentDate}T${columns[0]} $timeZone');
-          Track track = Track(
-            diffusionDate:
-                diffusionDate.toLocal().toString().replaceFirst(' ', 'T'),
-            artist: columns[1],
-            title: columns[2],
-            album: columns[3],
-          );
-          ret.add(track);
-        }
-        columns.clear();
+      String album = 'Album';
+      if (tds[3].firstChild != null && tds[3].firstChild?.text != null) {
+        album = (tds[3].firstChild?.text)!;
       }
-      //print(count);
+      // convert SF local time to our local time
+      // add current SF date in front of parsed hour
+      // this gives error at midnight
+      DateTime diffusionDate = DateTime.parse('${currentDate}T$time $timeZone');
+      Track track = Track(
+          diffusionDate:
+              diffusionDate.toLocal().toString().replaceFirst(' ', 'T'),
+          artist: artist,
+          title: tds[2].text,
+          album: album);
+      //debugPrint('$track');
+      ret.add(track);
     }
     return ret;
   }

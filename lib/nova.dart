@@ -8,7 +8,7 @@ import 'helpers.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:html_unescape/html_unescape.dart';
-import 'package:web_scraper/web_scraper.dart';
+import 'package:html/parser.dart' as parser;
 
 const String radioNova = 'https://www.nova.fr/wp-json/radios/';
 
@@ -183,11 +183,11 @@ class Nova extends Channel {
   @override
   Future<List<Track>> getRecentTracks() async {
     String url = 'https://www.nova.fr/wp-admin/admin-ajax.php';
-    WebScraper webScraper = WebScraper();
     List<Track> ret = <Track>[];
 
     // 20 minutes from now
-    String startTime = DateTime.now().toString().substring(11, 16);
+    String now = DateTime.now().toString();
+    String startTime = now.substring(11, 16);
     // action=loadmore_programs&date=&time=18%3A08&page=1&radio=910
     String radioId = subchannel.id;
     final rawData = {
@@ -214,54 +214,31 @@ class Nova extends Channel {
     if (resp.statusCode != 200) {
       return ret;
     }
-    if (webScraper.loadFromString(resp.body)) {
-      // first pass only collect title and diffusionDate
-      List<Map<String, dynamic>> elements =
-          webScraper.getElement('div.wwtt_right p', ['class']);
-      //print(elements);
-      String dd = '', title = '';
-      // first pass to get diffusion date and title
-      for (var e in elements) {
-        //print(e);
-        if (e['attributes']['class'] != null &&
-            e['attributes']['class'].split(' ').contains('time')) {
-          dd = '2000-01-01T${e["title"]}:00';
-        } else {
-          title = e['title'];
-        }
-        if (dd != '' && title != '') {
-          // add 10 minutes
-          String diffusionDate = DateTime.parse(dd)
-              .add(const Duration(minutes: 10))
-              .toIso8601String();
-          Track track = Track(diffusionDate: diffusionDate, title: title);
-          //print(track);
-          ret.add(track);
-          dd = '';
-          title = '';
-        }
+    final document = parser.parse(resp.body);
+    for (var element in document.getElementsByClassName('wwtt_right')) {
+      final time = element.querySelector('p.time')?.text;
+      final dd = '${now.substring(0, 10)}T$time:00';
+      // add 10 minutes
+      String diffusionDate =
+          DateTime.parse(dd).add(const Duration(minutes: 10)).toIso8601String();
+      final title = element.querySelectorAll('p')[1].text;
+      final artist = element.querySelector('h2');
+      final imgWwtt = element.querySelector('.img_wwtt');
+      final img = imgWwtt?.getElementsByTagName('img');
+      String imageUrl = '';
+      if (img != null && img.isNotEmpty) {
+        imageUrl = img.first.attributes['src']!;
       }
-      // second pass to get the artist name
-      elements = webScraper.getElement('div.wwtt_right h2', []);
-      //print(elements);
-      int indx = 0;
-      // add artist
-      for (var e in elements) {
-        ret[indx].artist = e['title'];
-        indx++;
-      }
-      // third pass to get image
-      elements = webScraper.getElement('div.img_wwtt img', ['src']);
-      //print(elements);
-      indx = 0;
-      // add image
-      for (var e in elements) {
-        //print(e);
-        ret[indx].imageUrl = e['attributes']['src'];
-        indx++;
-      }
+
+      Track track = Track(
+          diffusionDate: diffusionDate,
+          title: title,
+          artist: artist != null ? artist.text : 'Artist',
+          imageUrl: imageUrl);
+      //debugPrint('$track');
+      ret.add(track);
     }
-    //print(ret);
+    //debugPrint(ret);
     return ret;
   }
 }

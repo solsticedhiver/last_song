@@ -41,10 +41,10 @@ dependencies:
   intl: ^0.18.0
   cached_network_image: ^3.2.3
   html_unescape: ^2.0.0
-  web_scraper: ^0.1.4
   timezone: ^0.9.1
   shared_preferences: ^2.0.17
   reorderable_grid: ^1.0.6
+  html: ^0.15.1
 
 dev_dependencies:
   flutter_test:
