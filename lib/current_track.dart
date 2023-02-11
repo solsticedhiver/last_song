@@ -157,16 +157,22 @@ class CurrentTrackText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-        mainAxisAlignment:
-            isSmallScreen ? MainAxisAlignment.start : MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Consumer<ChannelManager>(builder: (context, cm, child) {
-            String dd = cm.currentChannel.currentTrack.diffusionDate
-                .split('T')[1]
-                .substring(0, 8);
-            return RichText(
+    return Consumer<ChannelManager>(builder: (context, cm, child) {
+      String dd = cm.currentChannel.currentTrack.diffusionDate
+          .split('T')[1]
+          .substring(0, 8);
+      String artist;
+      artist = cm.currentChannel.currentTrack.artist
+          .split('/')
+          .map((e) => e.toTitleCase())
+          .join(' /\n');
+      return Column(
+          mainAxisAlignment: isSmallScreen
+              ? MainAxisAlignment.start
+              : MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            RichText(
               text: TextSpan(
                   text: dd.substring(0, 5),
                   style: TextStyle(
@@ -180,54 +186,39 @@ class CurrentTrackText extends StatelessWidget {
                         style: const TextStyle(
                             fontSize: 20, fontWeight: FontWeight.normal))
                   ]),
-            );
-          }),
-          Consumer<ChannelManager>(builder: (context, cm, child) {
-            String artist;
-            artist = cm.currentChannel.currentTrack.artist
-                .split('/')
-                .map((e) => e.toTitleCase())
-                .join(' /\n');
-            return Flexible(
+            ),
+            Flexible(
                 child: Text(artist,
                     overflow: TextOverflow.clip,
                     softWrap: true,
                     style: TextStyle(
                         fontSize: isSmallScreen ? 30 : 55,
-                        fontWeight: FontWeight.bold)));
-          }),
-          Consumer<ChannelManager>(builder: (context, cm, child) {
-            return Text(cm.currentChannel.currentTrack.title.toTitleCase(),
+                        fontWeight: FontWeight.bold))),
+            Text(cm.currentChannel.currentTrack.title.toTitleCase(),
                 overflow: TextOverflow.clip,
                 softWrap: true,
                 style: TextStyle(
                     fontSize: isSmallScreen ? 20 : 35,
-                    fontWeight: FontWeight.normal));
-          }),
-          Consumer<ChannelManager>(builder: (context, cm, child) {
-            if (cm.currentChannel.currentTrack.album.isNotEmpty &&
-                cm.currentChannel.currentTrack.album != 'Album') {
-              return Text(cm.currentChannel.currentTrack.album,
-                  overflow: TextOverflow.clip,
-                  softWrap: true,
-                  style: TextStyle(
-                      fontSize: isSmallScreen ? 20 : 35,
-                      fontWeight: FontWeight.normal,
-                      fontStyle: FontStyle.italic));
-            } else {
-              return const SizedBox(
-                height: 0,
-                width: 0,
-              );
-            }
-          }),
-          Consumer<ChannelManager>(builder: (context, cm, child) {
-            return Text(
+                    fontWeight: FontWeight.normal)),
+            (cm.currentChannel.currentTrack.album.isNotEmpty &&
+                    cm.currentChannel.currentTrack.album != 'Album')
+                ? Text(cm.currentChannel.currentTrack.album,
+                    overflow: TextOverflow.clip,
+                    softWrap: true,
+                    style: TextStyle(
+                        fontSize: isSmallScreen ? 20 : 35,
+                        fontWeight: FontWeight.normal,
+                        fontStyle: FontStyle.italic))
+                : const SizedBox(
+                    height: 0,
+                    width: 0,
+                  ),
+            Text(
                 '${cm.currentChannel.currentTrack.duration.replaceFirst(RegExp(r'^0'), '').replaceFirst(':', 'min ')}s',
                 style: TextStyle(
                     fontSize: isSmallScreen ? 15 : 20,
-                    color: Theme.of(context).primaryColor));
-          }),
-        ]);
+                    color: Theme.of(context).primaryColor)),
+          ]);
+    });
   }
 }
