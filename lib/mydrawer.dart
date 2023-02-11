@@ -128,7 +128,7 @@ class _MyRadioExpansionPanelListTileState
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      key: ValueKey(widget.channel),
+      key: ObjectKey(widget.channel),
       title: Text(widget.channel.subchannel.title),
       subtitle: Text(widget.channel.radio),
       leading: SizedBox(

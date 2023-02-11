@@ -222,7 +222,7 @@ class _FavoritesGridState extends State<FavoritesGrid> {
                 crossAxisCount: 3,
                 children: favorites.map((f) {
                   return InkWell(
-                    key: ValueKey(f),
+                    key: ObjectKey(f),
                     child: Card(
                       child: Column(
                         children: [
@@ -322,13 +322,13 @@ class _FavoritesListState extends State<FavoritesList> {
           }
           final f = favorites[index];
           return Dismissible(
-              key: ValueKey(f),
+              key: ObjectKey(f),
               background: Container(color: Colors.deepOrange),
               onDismissed: (direction) {
                 _onDismissed(index);
               },
               child: ListTile(
-                  key: ValueKey(f),
+                  key: ObjectKey(f),
                   leading: f.subchannel.imageUrl.startsWith('assets')
                       ? Image.asset(
                           f.subchannel.imageUrl,
