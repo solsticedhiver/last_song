@@ -14,7 +14,8 @@ class ResponseBandcamp {
 }
 
 Future<ResponseBandcamp> searchBandcamp(String s, String type) async {
-  assert(type == 'a' || type == 't');
+  assert(type == 'a' || type == 't' || type == 'b');
+  // a = album, t = track, b = band
 
   String imageUrl = '';
   String duration = '';
