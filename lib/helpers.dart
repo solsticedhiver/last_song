@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
+
+import 'package:flutter/foundation.dart';
 
 import 'nova.dart';
 import 'somafm.dart';
