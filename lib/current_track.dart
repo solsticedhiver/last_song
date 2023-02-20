@@ -59,36 +59,33 @@ class CurrentTrackWidgetSmallScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(bottom: bottomSheetSize, left: 10, right: 10),
+      padding: EdgeInsets.only(
+          bottom: bottomSheetSize, left: 10, right: 10, top: 10),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         textDirection: TextDirection.ltr,
         children: <Widget>[
+          Consumer<ChannelManager>(builder: (context, cm, child) {
+            double imgSize = 400;
+            if (MediaQuery.of(context).size.width < 420) {
+              imgSize = MediaQuery.of(context).size.width - 20;
+            }
+            if (cm.currentChannel.currentTrack.imageUrl.isEmpty) {
+              return Image.asset(AppConfig.defaultImage,
+                  height: imgSize, width: imgSize);
+            } else {
+              return CachedNetworkImage(
+                  imageUrl: cm.currentChannel.currentTrack.imageUrl,
+                  height: imgSize,
+                  width: imgSize);
+            }
+          }),
           Flexible(
             flex: 2,
-            child: Container(
-              padding: const EdgeInsets.only(
-                  top: 10, right: 15, left: 15, bottom: 5),
-              child: Consumer<ChannelManager>(builder: (context, cm, child) {
-                double imgSize = 400;
-                if (cm.currentChannel.currentTrack.imageUrl.isEmpty) {
-                  return Image.asset(AppConfig.defaultImage,
-                      height: imgSize, width: imgSize);
-                } else {
-                  return CachedNetworkImage(
-                      imageUrl: cm.currentChannel.currentTrack.imageUrl,
-                      height: imgSize,
-                      width: imgSize);
-                }
-              }),
-            ),
-          ),
-          Flexible(
-            flex: 1,
             //fit: FlexFit.tight,
             child: Container(
-              padding:
-                  const EdgeInsets.only(top: 5, bottom: 5, right: 10, left: 10),
+              padding: const EdgeInsets.only(
+                  top: 10, bottom: 5, right: 10, left: 10),
               child: const CurrentTrackText(isSmallScreen: true),
             ),
           ),
@@ -118,7 +115,8 @@ class CurrentTrackWidgetLargeScreen extends StatelessWidget {
       left = 45;
     }
     return Container(
-      padding: EdgeInsets.only(bottom: bottomSheetSize, left: left, right: 20),
+      padding: EdgeInsets.only(
+          top: 10, bottom: bottomSheetSize, left: left, right: 20),
       child: Row(
         //mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
