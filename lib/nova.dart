@@ -83,21 +83,7 @@ class Nova extends Channel {
         currentTrack.diffusionDate = ct['diffusion_date'];
         currentTrack.duration = ct['duration'];
         //final ds = currentTrack.duration.split(':');
-        debugPrint('debug: ${subchannel.id}');
-        if (subchannel.id == '910') {
-          // WTF: why does the datetime always late for around 10 minutes??
-          // add 10 minutes for Radio Nova
-          currentTrack.diffusionDate = DateTime.parse(
-                  currentTrack.diffusionDate)
-              .add(const Duration(minutes: 10))
-              // but subtract track length
-              //.subtract(
-              //    Duration(minutes: int.parse(ds[0]), seconds: int.parse(ds[1])))
-              .toIso8601String();
-        } else {
-          currentTrack.diffusionDate =
-              DateTime.parse(currentTrack.diffusionDate).toIso8601String();
-        }
+        currentTrack.diffusionDate = DateTime.parse(currentTrack.diffusionDate).toIso8601String();
       }
     }
     final cs = json['currentShow'];
@@ -225,15 +211,7 @@ class Nova extends Channel {
     for (var element in document.getElementsByClassName('wwtt_right')) {
       final time = element.querySelector('p.time')?.text;
       final dd = '${now.substring(0, 10)}T$time:00';
-      String diffusionDate;
-      if (subchannel.id == '910') {
-        // add 10 minutes
-        diffusionDate = DateTime.parse(dd)
-            .add(const Duration(minutes: 10))
-            .toIso8601String();
-      } else {
-        diffusionDate = DateTime.parse(dd).toIso8601String();
-      }
+      String diffusionDate = DateTime.parse(dd).toIso8601String();
       final title = element.querySelectorAll('p')[1].text;
       final artist = element.querySelector('h2');
       final imgWwtt = element.querySelector('.img_wwtt');
