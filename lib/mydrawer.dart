@@ -143,6 +143,11 @@ class _MyRadioExpansionPanelListTileState
                 )
               : CachedNetworkImage(
                   imageUrl: widget.channel.subchannel.imageUrl,
+                  httpHeaders: {
+                    'User-Agent': AppConfig.userAgent,
+                  },
+                  errorWidget: (context, url, error) =>
+                      const SizedBox(height: 64, width: 64),
                   memCacheHeight: 64,
                   memCacheWidth: 64,
                 )),

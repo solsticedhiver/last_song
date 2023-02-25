@@ -76,6 +76,13 @@ class CurrentTrackWidgetSmallScreen extends StatelessWidget {
             } else {
               return CachedNetworkImage(
                   imageUrl: cm.currentChannel.currentTrack.imageUrl,
+                  httpHeaders: {
+                    'User-Agent': AppConfig.userAgent,
+                  },
+                  errorWidget: (context, url, error) => SizedBox(
+                        height: imgSize,
+                        width: imgSize,
+                      ),
                   height: imgSize,
                   width: imgSize);
             }
@@ -132,6 +139,13 @@ class CurrentTrackWidgetLargeScreen extends StatelessWidget {
             } else {
               return CachedNetworkImage(
                 imageUrl: cm.currentChannel.currentTrack.imageUrl,
+                httpHeaders: {
+                  'User-Agent': AppConfig.userAgent,
+                },
+                errorWidget: (context, url, error) => SizedBox(
+                  height: imgSize,
+                  width: imgSize,
+                ),
                 height: imgSize,
                 width: imgSize,
                 fit: BoxFit.fill,

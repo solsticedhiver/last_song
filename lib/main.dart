@@ -318,6 +318,17 @@ class MyBottomSheetWidget extends StatelessWidget {
               imageUrl: image,
               memCacheHeight: bottomSheetSize.toInt(),
               memCacheWidth: bottomSheetSize.toInt(),
+              httpHeaders: {
+                'User-Agent': AppConfig.userAgent,
+              },
+              placeholder: (context, url) => SizedBox(
+                height: bottomSheetSize,
+                width: bottomSheetSize,
+              ),
+              errorWidget: (context, url, error) => SizedBox(
+                height: bottomSheetSize,
+                width: bottomSheetSize,
+              ),
             );
           }
           return InkWell(
@@ -354,7 +365,16 @@ class MyBottomSheetWidget extends StatelessWidget {
                 : CachedNetworkImage(
                     imageUrl: imageUrl,
                     memCacheHeight: 400,
-                    memCacheWidth: 400),
+                    memCacheWidth: 400,
+                    httpHeaders: {
+                      'User-Agent': AppConfig.userAgent,
+                    },
+                    errorWidget: (context, url, error) => Image.asset(
+                      defaultImage,
+                      cacheHeight: 400,
+                      cacheWidth: 400,
+                    ),
+                  ),
             title: Text(cm.currentChannel.show.name),
             content: Text(
               cm.currentChannel.show.description,

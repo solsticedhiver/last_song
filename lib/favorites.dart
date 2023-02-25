@@ -242,6 +242,14 @@ class _FavoritesGridState extends State<FavoritesGrid> {
                                           fit: BoxFit.fitHeight,
                                           memCacheHeight: 350,
                                           memCacheWidth: 350,
+                                          httpHeaders: {
+                                            'User-Agent': AppConfig.userAgent,
+                                          },
+                                          errorWidget: (context, url, error) =>
+                                              const SizedBox(
+                                            height: 350,
+                                            width: 350,
+                                          ),
                                         ))),
                           ListTile(
                             title: Center(child: Text(f.subchannel.title)),
@@ -343,8 +351,9 @@ class _FavoritesListState extends State<FavoritesList> {
                             )
                           : Image(
                               image: ResizeImage(
-                                  CachedNetworkImageProvider(
-                                      f.subchannel.imageUrl),
+                                  CachedNetworkImageProvider(headers: {
+                                    'User-Agent': AppConfig.userAgent,
+                                  }, f.subchannel.imageUrl),
                                   height: 64,
                                   width: 64))),
                   title: Text(f.subchannel.title),
