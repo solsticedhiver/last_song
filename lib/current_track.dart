@@ -58,6 +58,11 @@ class CurrentTrackWidgetSmallScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //debugPrint('in CurrentTrackWidgetSmallScreen.build()');
+    double imgSize = 400;
+    if (MediaQuery.of(context).size.width < 420) {
+      imgSize = MediaQuery.of(context).size.width - 20;
+    }
     return Container(
       padding: EdgeInsets.only(
           bottom: bottomSheetSize, left: 10, right: 10, top: 10),
@@ -65,28 +70,7 @@ class CurrentTrackWidgetSmallScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         textDirection: TextDirection.ltr,
         children: <Widget>[
-          Consumer<ChannelManager>(builder: (context, cm, child) {
-            double imgSize = 400;
-            if (MediaQuery.of(context).size.width < 420) {
-              imgSize = MediaQuery.of(context).size.width - 20;
-            }
-            if (cm.currentChannel.currentTrack.imageUrl.isEmpty) {
-              return Image.asset(AppConfig.defaultImage,
-                  height: imgSize, width: imgSize);
-            } else {
-              return CachedNetworkImage(
-                  imageUrl: cm.currentChannel.currentTrack.imageUrl,
-                  httpHeaders: {
-                    'User-Agent': AppConfig.userAgent,
-                  },
-                  errorWidget: (context, url, error) => SizedBox(
-                        height: imgSize,
-                        width: imgSize,
-                      ),
-                  height: imgSize,
-                  width: imgSize);
-            }
-          }),
+          CurrentTrackImage(imgSize: imgSize),
           Flexible(
             flex: 2,
             //fit: FlexFit.tight,
@@ -128,30 +112,7 @@ class CurrentTrackWidgetLargeScreen extends StatelessWidget {
         //mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Consumer<ChannelManager>(builder: (context, cm, child) {
-            if (cm.currentChannel.currentTrack.imageUrl.isEmpty) {
-              return Image.asset(
-                AppConfig.defaultImage,
-                height: imgSize,
-                width: imgSize,
-                fit: BoxFit.fill,
-              );
-            } else {
-              return CachedNetworkImage(
-                imageUrl: cm.currentChannel.currentTrack.imageUrl,
-                httpHeaders: {
-                  'User-Agent': AppConfig.userAgent,
-                },
-                errorWidget: (context, url, error) => SizedBox(
-                  height: imgSize,
-                  width: imgSize,
-                ),
-                height: imgSize,
-                width: imgSize,
-                fit: BoxFit.fill,
-              );
-            }
-          }),
+          CurrentTrackImage(imgSize: imgSize),
           SizedBox(width: gap),
           const Flexible(
             flex: 0,
@@ -160,6 +121,95 @@ class CurrentTrackWidgetLargeScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class CurrentTrackImage extends StatefulWidget {
+  final double imgSize;
+  const CurrentTrackImage({super.key, required this.imgSize});
+
+  @override
+  State<CurrentTrackImage> createState() => _CurrentTrackImageState();
+}
+
+class _CurrentTrackImageState extends State<CurrentTrackImage> {
+  bool isButtonVisible = true;
+  bool isFoundImageVisible = true;
+  String imageUrl = '';
+
+  @override
+  void initState() {
+    isButtonVisible = true;
+    isFoundImageVisible = true;
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    //debugPrint('in _CurrentWidgetImageState.build()');
+    Widget image;
+    Widget defaultImage = Image.asset(
+      AppConfig.defaultImage,
+      height: widget.imgSize,
+      width: widget.imgSize,
+      fit: BoxFit.fill,
+    );
+    return Consumer<ChannelManager>(builder: (context, cm, child) {
+      String newImageUrl = cm.currentChannel.currentTrack.imageUrl;
+      if (newImageUrl != imageUrl) {
+        //setState!
+        isFoundImageVisible = true;
+      }
+      imageUrl = newImageUrl;
+      if (imageUrl.isNotEmpty) {
+        image = CachedNetworkImage(
+          imageUrl: imageUrl,
+          httpHeaders: {
+            'User-Agent': AppConfig.userAgent,
+          },
+          errorWidget: (context, url, error) => SizedBox(
+            height: widget.imgSize,
+            width: widget.imgSize,
+          ),
+          height: widget.imgSize,
+          width: widget.imgSize,
+          fit: BoxFit.fill,
+        );
+      } else {
+        image = SizedBox(
+          width: widget.imgSize,
+          height: widget.imgSize,
+        );
+      }
+      return Stack(
+        alignment: Alignment.bottomRight,
+        children: [
+          defaultImage,
+          Visibility(visible: isFoundImageVisible, child: image),
+          Visibility(
+              visible: isButtonVisible,
+              child: Container(
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.deepOrange,
+                  ),
+                  child: IconButton(
+                    color: Colors.white70,
+                    icon: isFoundImageVisible
+                        ? const Icon(Icons.hide_image)
+                        : const Icon(Icons.image),
+                    onPressed: () {
+                      setState(
+                        () {
+                          //isButtonVisible = false;
+                          isFoundImageVisible = !isFoundImageVisible;
+                        },
+                      );
+                    },
+                  )))
+        ],
+      );
+    });
   }
 }
 
