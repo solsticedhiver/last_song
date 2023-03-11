@@ -1,25 +1,3 @@
-/*
-curl 'https://rms.api.bbc.co.uk/v2/services/bbc_radio_one/segments/latest?experience=domestic&offset=0&limit=4' \
-  -H 'Accept: application/json' \
-  -H 'Accept-Language: fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7' \
-  -H 'Cache-Control: no-cache' \
-  -H 'Connection: keep-alive' \
-  -H 'DNT: 1' \
-  -H 'Origin: https://www.bbc.co.uk' \
-  -H 'Pragma: no-cache' \
-  -H 'Referer: https://www.bbc.co.uk/' \
-  -H 'Sec-Fetch-Dest: empty' \
-  -H 'Sec-Fetch-Mode: cors' \
-  -H 'Sec-Fetch-Site: same-site' \
-  -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36' \
-  -H 'X-API-Key: 3A5LU4tQWvWW3lpgF5OT4IWUoyLaju9z' \
-  -H 'sec-ch-ua: "Chromium";v="109", "Not_A Brand";v="99"' \
-  -H 'sec-ch-ua-mobile: ?0' \
-  -H 'sec-ch-ua-platform: "Linux"' \
-  -H 'sec-gpc: 1' \
-  --compressed
-  */
-
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -29,28 +7,32 @@ import 'helpers.dart';
 
 import 'package:http/http.dart' as http;
 
-const String bbcRadioOne =
-//    'https://rms.api.bbc.co.uk/v2/services/bbc_radio_one/tracks/latest/playable?limit=10';
-    'https://rms.api.bbc.co.uk/v2/services/bbc_radio_one/segments/latest?experience=domestic&offset=0&limit=10';
+const String bbcLatestSegments =
+    'https://rms.api.bbc.co.uk/v2/services/SERVICE/segments/latest?experience=domestic&offset=0&limit=10';
 const String bbcCurrentShow =
     'https://rms.api.bbc.co.uk/v2/broadcasts/latest?service=SERVICE&on_air=now';
 
-class RadioOne extends Channel {
+class BBCRadio extends Channel {
   static List<dynamic> subchannels = [
     {"code": "bbc_radio_one", "name": "BBC Radio 1"},
+    {"code": "bbc_radio_two", "name": "BBC Radio 2"},
+    {"code": "bbc_radio_three", "name": "BBC Radio 3"},
+    {"code": "bbc_radio_four", "name": "BBC Radio 4"},
+    {"code": "bbc_radio_five_live", "name": "BBC Radio 5"},
+    //{"code": "bbc_radio_six", "name": "BBC Radio 6"},
   ];
 
-  RadioOne(String code, String name) {
+  BBCRadio(String code, String name) {
     radio = 'BBC Radio';
     subchannel.codename = code;
     subchannel.title = name;
-    subchannel.imageUrl = 'assets/img/radioone.png';
+    subchannel.imageUrl = 'assets/img/$code.png';
     subchannel.bigImageUrl = subchannel.imageUrl;
   }
 
   @override
   String toString() {
-    return 'RadioOne(subchannel: ${subchannel.toString()}';
+    return 'BBCRadio(subchannel: ${subchannel.toString()}';
   }
 
   @override
@@ -89,7 +71,9 @@ class RadioOne extends Channel {
       'User-Agent': AppConfig.userAgent,
     };
     try {
-      resp = await http.get(Uri.parse(bbcRadioOne), headers: headers);
+      final String bbcRadioUrl =
+          bbcLatestSegments.replaceFirst('SERVICE', subchannel.codename);
+      resp = await http.get(Uri.parse(bbcRadioUrl), headers: headers);
       //print(resp.statusCode);
     } catch (e) {
       debugPrint('debug: $e');
@@ -174,8 +158,34 @@ class RadioOne extends Channel {
     return ret;
   }
 }
+//const String bbcRadio =
+//    'https://rms.api.bbc.co.uk/v2/services/bbc_radio_one/tracks/latest/playable?limit=10';
+//    'https://rms.api.bbc.co.uk/v2/services/bbc_radio_one/segments/latest?experience=domestic&offset=0&limit=10';
+
 // https://rms.api.bbc.co.uk/docs/swagger.json#/definitions/ErrorResponse
 
 // curl -X 'GET'   'https://rms.api.bbc.co.uk/v2/broadcasts/latest?service=bbc_radio_one&on_air=now'   -H 'accept: application/json'   -H 'X-API-Key: 3A5LU4tQWvWW3lpgF5OT4IWUoyLaju9z'|jq .
 
 // curl -X 'GET'   'https://rms.api.bbc.co.uk/v2/broadcasts/latest?service=bbc_radio_one&on_air=previous&previous=120'   -H 'accept: application/json'   -H 'X-API-Key: 3A5LU4tQWvWW3lpgF5OT4IWUoyLaju9z'|jq .
+
+/*
+curl 'https://rms.api.bbc.co.uk/v2/services/bbc_radio_one/segments/latest?experience=domestic&offset=0&limit=4' \
+  -H 'Accept: application/json' \
+  -H 'Accept-Language: fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Connection: keep-alive' \
+  -H 'DNT: 1' \
+  -H 'Origin: https://www.bbc.co.uk' \
+  -H 'Pragma: no-cache' \
+  -H 'Referer: https://www.bbc.co.uk/' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: same-site' \
+  -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36' \
+  -H 'X-API-Key: 3A5LU4tQWvWW3lpgF5OT4IWUoyLaju9z' \
+  -H 'sec-ch-ua: "Chromium";v="109", "Not_A Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-gpc: 1' \
+  --compressed
+  */

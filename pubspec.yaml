@@ -78,7 +78,12 @@ flutter:
     - assets/img/itunes.png
     - assets/img/spotify.png
     - assets/img/deezer.png
-    - assets/img/radioone.png
+    - assets/img/bbc_radio_one.png
+    - assets/img/bbc_radio_two.png
+    - assets/img/bbc_radio_three.png
+    - assets/img/bbc_radio_four.png
+    - assets/img/bbc_radio_five_live.png
+    - assets/img/bbc_radio_six.png
 
     - assets/somafm_channels.json
 

@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import 'nova.dart';
 import 'somafm.dart';
-import 'bbcone.dart';
+import 'bbcradio.dart';
 
 class ChannelManager extends ChangeNotifier {
   final List<Channel> channels = [];
@@ -41,8 +41,8 @@ class ChannelManager extends ChangeNotifier {
       addChannel(SomaFm(s['id'], s['title'], s['image'], s['xlimage'],
           s['description'], s['dj']));
     }
-    for (var s in RadioOne.subchannels) {
-      addChannel(RadioOne(s['code'], s['name']));
+    for (var s in BBCRadio.subchannels) {
+      addChannel(BBCRadio(s['code'], s['name']));
     }
   }
 
