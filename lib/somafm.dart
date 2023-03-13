@@ -10,6 +10,15 @@ import 'helpers.dart';
 import 'bandcamp.dart';
 import 'discogs.dart';
 
+/*
+SomaFM Terms of Service includes the following paragraph:
+
+    Scrobbling and Automated Re-Posting of Playlists Forbidden
+    "Scrobbling" and/or automated re-posting of playlists and now playing information is against our terms of use, and we may block access to users or services what are doing this.
+
+I guess, we are not be allowed to do what we are doing in this file, after all? depending on how you read it?
+*/
+
 class SomaFm extends Channel {
   static Future<List<dynamic>> loadSubChannels() async {
     // list of channels available at https://api.somafm.com/channels.json (or somafm.com)
