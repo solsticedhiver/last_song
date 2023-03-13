@@ -187,7 +187,7 @@ class _CurrentTrackImageState extends State<CurrentTrackImage> {
           defaultImage,
           Visibility(visible: isFoundImageVisible, child: image),
           Visibility(
-              visible: isButtonVisible,
+              visible: imageUrl.isNotEmpty,
               child: Container(
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
@@ -201,7 +201,6 @@ class _CurrentTrackImageState extends State<CurrentTrackImage> {
                     onPressed: () {
                       setState(
                         () {
-                          //isButtonVisible = false;
                           isFoundImageVisible = !isFoundImageVisible;
                         },
                       );
