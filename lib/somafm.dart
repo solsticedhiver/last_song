@@ -74,18 +74,13 @@ class SomaFm extends Channel {
         if (resp.imageUrl.isNotEmpty) {
           currentTrack.imageUrl = resp.imageUrl;
         } else {
-          resp = await searchBandcamp('${track.album} ${track.artist}', 'a');
+          // try with discogs
+          ResponseDiscogs resp = await searchDiscogs({
+            'artist': track.artist,
+            'q': track.album,
+          });
           if (resp.imageUrl.isNotEmpty) {
             currentTrack.imageUrl = resp.imageUrl;
-          } else {
-            // try with discogs
-            ResponseDiscogs resp = await searchDiscogs({
-              'artist': track.artist,
-              'q': track.album,
-            });
-            if (resp.imageUrl.isNotEmpty) {
-              currentTrack.imageUrl = resp.imageUrl;
-            }
           }
         }
       }
