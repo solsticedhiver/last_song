@@ -92,7 +92,9 @@ Future<ResponseDiscogs> searchDiscogs(Map<String, String> search) async {
   };
   http.Response resp;
   try {
-    resp = await client.get(url, headers: headers);
+    resp = await client
+        .get(url, headers: headers)
+        .timeout(const Duration(seconds: 15));
   } catch (e) {
     return ResponseDiscogs(imageUrl, duration);
   }

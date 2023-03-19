@@ -36,7 +36,9 @@ Future<ResponseBandcamp> searchBandcamp(String s, String type) async {
       'https://bandcamp.com/api/bcsearch_public_api/1/autocomplete_elastic');
   final http.Response resp;
   try {
-    resp = await http.post(uri, body: rawData, headers: headers);
+    resp = await http
+        .post(uri, body: rawData, headers: headers)
+        .timeout(const Duration(seconds: 15));
   } catch (e) {
     debugPrint('debug: bandcamp search = $e');
     return ResponseBandcamp(imageUrl, duration);
@@ -71,9 +73,15 @@ Future<ResponseBandcamp> searchBandcamp(String s, String type) async {
 Future<String> lookForTrackDuration(String url) async {
   String duration = '';
 
-  final resp = await http.get(Uri.parse(url), headers: {
-    'User-Agent': AppConfig.userAgent,
-  });
+  final http.Response resp;
+  try {
+    resp = await http.get(Uri.parse(url), headers: {
+      'User-Agent': AppConfig.userAgent,
+    }).timeout(const Duration(seconds: 15));
+  } catch (e) {
+    debugPrint('debug: bandcamp duration look up = $e');
+    return duration;
+  }
   if (resp.statusCode != 200) {
     return duration;
   }

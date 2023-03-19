@@ -73,7 +73,9 @@ class BBCRadio extends Channel {
     try {
       final String bbcRadioUrl =
           bbcLatestSegments.replaceFirst('SERVICE', subchannel.codename);
-      resp = await http.get(Uri.parse(bbcRadioUrl), headers: headers);
+      resp = await http
+          .get(Uri.parse(bbcRadioUrl), headers: headers)
+          .timeout(const Duration(seconds: 15));
       //print(resp.statusCode);
     } catch (e) {
       debugPrint('debug: $e');
@@ -123,10 +125,12 @@ class BBCRadio extends Channel {
     };
     int ret = 0;
     try {
-      resp = await http.get(
-          Uri.parse(
-              bbcCurrentShow.replaceFirst('SERVICE', subchannel.codename)),
-          headers: headers);
+      resp = await http
+          .get(
+              Uri.parse(
+                  bbcCurrentShow.replaceFirst('SERVICE', subchannel.codename)),
+              headers: headers)
+          .timeout(const Duration(seconds: 15));
       //print(resp.statusCode);
     } catch (e) {
       debugPrint('debug: $e');

@@ -107,7 +107,7 @@ class SomaFm extends Channel {
     try {
       resp = await http.get(Uri.parse(page), headers: {
         'User-Agent': AppConfig.userAgent,
-      });
+      }).timeout(const Duration(seconds: 15));
     } catch (e) {
       debugPrint('debug: $e');
       return ret;

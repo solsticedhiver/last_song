@@ -83,7 +83,8 @@ class Nova extends Channel {
         currentTrack.diffusionDate = ct['diffusion_date'];
         currentTrack.duration = ct['duration'];
         //final ds = currentTrack.duration.split(':');
-        currentTrack.diffusionDate = DateTime.parse(currentTrack.diffusionDate).toIso8601String();
+        currentTrack.diffusionDate =
+            DateTime.parse(currentTrack.diffusionDate).toIso8601String();
       }
     }
     final cs = json['currentShow'];
@@ -107,7 +108,9 @@ class Nova extends Channel {
     // update if cache is old
     if (DateTime.now().compareTo(validity) >= 0) {
       try {
-        resp = await http.get(Uri.parse('$radioNova${subchannel.codename}'));
+        resp = await http
+            .get(Uri.parse('$radioNova${subchannel.codename}'))
+            .timeout(const Duration(seconds: 15));
         //print(resp.statusCode);
       } catch (e) {
         debugPrint('debug: $e');
@@ -197,7 +200,9 @@ class Nova extends Channel {
     };
     final http.Response resp;
     try {
-      resp = await http.post(Uri.parse(url), body: rawData, headers: headers);
+      resp = await http
+          .post(Uri.parse(url), body: rawData, headers: headers)
+          .timeout(const Duration(seconds: 15));
       //print(resp.statusCode);
     } catch (e) {
       debugPrint('debug: $e');
