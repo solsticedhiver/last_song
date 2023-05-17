@@ -1,14 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-
-import 'bandcamp.dart';
-import 'helpers.dart';
-
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:html_unescape/html_unescape.dart';
 import 'package:html/parser.dart' as parser;
+
+import 'bandcamp.dart';
+import 'helpers.dart';
 
 const String radioNova = 'https://www.nova.fr/wp-json/radios/';
 
@@ -66,10 +65,19 @@ class Nova extends Channel {
     return 'Nova(subchannel: ${subchannel.toString()}';
   }
 
-  int updateFromJson(Map<String, dynamic> json) {
+  String addTrackDuration(String diffusionDate, String duration) {
+    return DateTime.parse(diffusionDate)
+        .add(Duration(
+            seconds: int.parse(duration.split(':')[1]),
+            minutes: int.parse(duration.split(':')[0])))
+        .toString();
+  }
+
+  int updateFromJson(Map<String, dynamic> jsonData) {
     int ret = 0;
 
-    final ct = json['currentTrack'];
+    final ct = jsonData['currentTrack'];
+    //debugPrint(json.encode(ct).toString());
     if (ct != null) {
       if (currentTrack.title != ct['title']) {
         ret += 1;
@@ -82,18 +90,19 @@ class Nova extends Channel {
         }
         currentTrack.diffusionDate = ct['diffusion_date'];
         currentTrack.duration = ct['duration'];
-        //final ds = currentTrack.duration.split(':');
+        currentTrack.diffusionDate =
+            addTrackDuration(currentTrack.diffusionDate, currentTrack.duration);
         currentTrack.diffusionDate =
             DateTime.parse(currentTrack.diffusionDate).toIso8601String();
       }
     }
-    final cs = json['currentShow'];
+    final cs = jsonData['currentShow'];
     if (cs != null) {
       show.name = cs['title'];
       show.author = HtmlUnescape().convert(cs['author']);
       show.airingTime = '${cs["start_time"]} - ${cs["end_time"]}';
     }
-    final radio = json['radio'];
+    final radio = jsonData['radio'];
     if (radio != null) {
       show.imageUrl = radio['thumbnail'];
     }
