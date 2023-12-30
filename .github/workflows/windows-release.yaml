@@ -35,18 +35,21 @@ jobs:
     #- run: flutter test
     - run: flutter config --enable-windows-desktop
     - run: flutter build windows --release
+    - name: Rename main folder
+      run: mv build/windows/x64/runner/Release build/windows/x64/runner/last_song-${{ steps.version.outputs.version }}
+      shell: bash
     - name: Archive Release
       uses: thedoctor0/zip-release@0.7.1
       with:
         type: 'zip'
-        directory: 'build/windows/runner/'
-        path: 'Release'
-        filename: 'windows_x64.zip'
+        directory: 'build/windows/x64/runner/'
+        path: 'last_song-${{ steps.version.outputs.version }}'
+        filename: 'last_song-windows_x64.zip'
     - name: Create a Release in GitHub
       uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
-        artifacts: "build/windows/runner/windows_x64.zip"
+        artifacts: "build/windows/x64/runner/last_song-windows_x64.zip"
         token: "${{ secrets.GH_TOKEN }}"
         tag: "${{ needs.version.outputs.output1 }}"
         commit: "${{ github.sha }}"
