@@ -14,6 +14,8 @@ class LastSongListRoute extends StatelessWidget {
         final recentTracks = cm.currentChannel.recentTracks;
         return Scaffold(
           appBar: AppBar(
+            backgroundColor: Colors.deepOrange,
+            foregroundColor: Colors.white,
             title: const Text('Recently played songs'),
           ),
           body: Container(

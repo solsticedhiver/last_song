@@ -156,6 +156,8 @@ class FavoritesRoute extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.deepOrange,
+        foregroundColor: Colors.white,
         title: const Text('Favorites'),
       ),
       body: Consumer<Favorites>(

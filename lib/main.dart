@@ -76,7 +76,9 @@ class MyApp extends StatelessWidget {
       title: AppConfig.name,
       theme: ThemeData(
         //useMaterial3: true,
-        primarySwatch: Colors.deepOrange,
+        primaryColor: Colors.deepOrange,
+        primaryColorLight: Colors.deepOrange,
+        //primarySwatch: Colors.deepOrange,
       ),
       home: Consumer<ChannelManager>(builder: (context, channel, child) {
         return MyHomePage(
@@ -128,6 +130,8 @@ class MyHomePage extends StatelessWidget {
       drawer:
           MyDrawer(child: MyRadioExpansionPanelList(children: channelsByType)),
       appBar: AppBar(
+        backgroundColor: Colors.deepOrange,
+        foregroundColor: Colors.white,
         title: Text((MediaQuery.of(context).size.width < 700)
             ? title.replaceFirst(' played ', ' ').replaceFirst(' on ', ' - ')
             : title),
@@ -153,6 +157,8 @@ class MyHomePage extends StatelessWidget {
             });
       }),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.deepOrange,
+        foregroundColor: Colors.white,
         onPressed: () async {
           int ret = await cm.fetchCurrentTrack(cancel: true, manual: true);
           if (ret < 1) {
@@ -385,6 +391,8 @@ class MyBottomSheetWidget extends StatelessWidget {
               TextButton(
                 style: TextButton.styleFrom(
                   textStyle: Theme.of(context).textTheme.labelLarge,
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.deepOrange,
                 ),
                 child: const Text('Dismiss'),
                 onPressed: () {
