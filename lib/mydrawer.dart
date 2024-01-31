@@ -96,7 +96,7 @@ class _MyRadioExpansionPanelListState extends State<MyRadioExpansionPanelList> {
         child: ExpansionPanelList(
       expansionCallback: (panelIndex, isExpanded) {
         setState(() {
-          _drawerExpansionPanelListState[panelIndex] = !isExpanded;
+          _drawerExpansionPanelListState[panelIndex] = isExpanded;
         });
       },
       children: children,
